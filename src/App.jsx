@@ -4,12 +4,24 @@ import { supabase, mapRow, mapToRow } from './supabase.js';
 const LANG_KEY = "snackcheck-lang";
 
 const LANGS = {
-  nl: { appSub:"Snack beoordelingstool", allSnacks:"Alle snacks", myRatings:"Mijn ratings", search:"Zoek merk of product...", addRating:"Beoordelen", close:"✕ Sluiten", save:"Opslaan ✓", saved:"Opgeslagen!", savedSub:"Jouw beoordeling is toegevoegd.", back:"← Terug", reviews:"Beoordelingen", rateFirst:"Eerste snack beoordelen →", noRatings:"Nog geen snacks beoordeeld", noRatingsSub:"Voeg de eerste toe via de + knop", noMyRatings:"Nog geen ratings van", welcomed:"Welkom bij SnackCheck", welcomeSub:"Hoe mogen we je noemen?", yourName:"Jouw naam", namePh:"bijv. Shou", start:"Aan de slag →", brand:"Merk", brandPh:"bijv. Lays, Haribo, AH", product:"Productnaam", productPh:"bijv. Ovenbaked, Borrelnoten", flavor:"Smaak / Variant", flavorPh:"bijv. Paprika, Zeezout", category:"Categorie", rating:"Beoordeling", pros:"Pluspunten", prosPh:"bijv. Krokant, Lekker zout", cons:"Minpunten", consPh:"bijv. Te vet, Weinig smaak", photo:"Foto", photoOptional:"(optioneel)", photoTap:"Tik om een foto toe te voegen", minScore:"Min. score", onlyMulti:"Alleen 2+ ratings", reset:"✕ Reset", comma:"(komma gescheiden)", required:"*", scoreLabels:["","😕 Slecht","😐 Matig","🙂 Oké","😋 Goed","🤩 Geweldig!"], rated:"Beoordeeld", avgScore:"Gem. score", categories:"Categorieën", ratingsCount:(n)=>`${n} beoordeling${n!==1?"en":""}`, products:(n)=>`${n} product${n!==1?"en":""}`, myRatingsCount:(n,name)=>`${n} beoordeling${n!==1?"en":""} van ${name}`, you:" (jij)", sorts:["Nieuwste eerst","Oudste eerst","Hoogste score","Laagste score","Meest beoordeeld","A → Z"], cats:["Alles","Chips","Koek","Noten","Snoep","Choco","Puffs","Anders"] },
-  en: { appSub:"Snack rating tool", allSnacks:"All snacks", myRatings:"My ratings", search:"Search brand or product...", addRating:"Rate", close:"✕ Close", save:"Save ✓", saved:"Saved!", savedSub:"Your rating has been added.", back:"← Back", reviews:"Reviews", rateFirst:"Rate your first snack →", noRatings:"No snacks rated yet", noRatingsSub:"Add the first one with the + button", noMyRatings:"No ratings yet from", welcomed:"Welcome to SnackCheck", welcomeSub:"What should we call you?", yourName:"Your name", namePh:"e.g. Shou", start:"Get started →", brand:"Brand", brandPh:"e.g. Lays, Haribo", product:"Product name", productPh:"e.g. Ovenbaked, Classic", flavor:"Flavor / Variant", flavorPh:"e.g. Paprika, Sea Salt", category:"Category", rating:"Rating", pros:"Pros", prosPh:"e.g. Crunchy, Well salted", cons:"Cons", consPh:"e.g. Too greasy, Bland", photo:"Photo", photoOptional:"(optional)", photoTap:"Tap to add a photo", minScore:"Min. score", onlyMulti:"Only 2+ ratings", reset:"✕ Reset", comma:"(comma separated)", required:"*", scoreLabels:["","😕 Bad","😐 Mediocre","🙂 OK","😋 Good","🤩 Amazing!"], rated:"Rated", avgScore:"Avg. score", categories:"Categories", ratingsCount:(n)=>`${n} rating${n!==1?"s":""}`, products:(n)=>`${n} product${n!==1?"s":""}`, myRatingsCount:(n,name)=>`${n} rating${n!==1?"s":""} by ${name}`, you:" (you)", sorts:["Newest first","Oldest first","Highest score","Lowest score","Most rated","A → Z"], cats:["All","Chips","Biscuit","Nuts","Candy","Choco","Puffs","Other"] },
-  fr: { appSub:"Outil de notation", allSnacks:"Tous les snacks", myRatings:"Mes notes", search:"Rechercher...", addRating:"Noter", close:"✕ Fermer", save:"Enregistrer ✓", saved:"Enregistré!", savedSub:"Votre note a été ajoutée.", back:"← Retour", reviews:"Avis", rateFirst:"Noter votre premier snack →", noRatings:"Aucun snack noté", noRatingsSub:"Ajoutez le premier via le bouton +", noMyRatings:"Aucune note de", welcomed:"Bienvenue sur SnackCheck", welcomeSub:"Comment vous appelle-t-on?", yourName:"Votre nom", namePh:"ex. Shou", start:"Commencer →", brand:"Marque", brandPh:"ex. Lays, Haribo", product:"Nom du produit", productPh:"ex. Ovenbaked, Classic", flavor:"Saveur / Variante", flavorPh:"ex. Paprika, Sel de mer", category:"Catégorie", rating:"Note", pros:"Points positifs", prosPh:"ex. Croustillant, Bien salé", cons:"Points négatifs", consPh:"ex. Trop gras, Sans goût", photo:"Photo", photoOptional:"(optionnel)", photoTap:"Appuyez pour ajouter une photo", minScore:"Score min.", onlyMulti:"Seulement 2+ notes", reset:"✕ Réinitialiser", comma:"(séparé par virgule)", required:"*", scoreLabels:["","😕 Mauvais","😐 Moyen","🙂 OK","😋 Bon","🤩 Excellent!"], rated:"Noté", avgScore:"Score moy.", categories:"Catégories", ratingsCount:(n)=>`${n} avis`, products:(n)=>`${n} produit${n!==1?"s":""}`, myRatingsCount:(n,name)=>`${n} avis de ${name}`, you:" (moi)", sorts:["Plus récent","Plus ancien","Meilleur score","Score le plus bas","Plus noté","A → Z"], cats:["Tout","Chips","Biscuits","Noix","Bonbons","Choco","Puffs","Autre"] },
-  es: { appSub:"Herramienta de valoración", allSnacks:"Todos los snacks", myRatings:"Mis valoraciones", search:"Buscar...", addRating:"Valorar", close:"✕ Cerrar", save:"Guardar ✓", saved:"¡Guardado!", savedSub:"Tu valoración ha sido añadida.", back:"← Volver", reviews:"Valoraciones", rateFirst:"Valorar tu primer snack →", noRatings:"Sin snacks valorados", noRatingsSub:"Añade el primero con el botón +", noMyRatings:"Sin valoraciones de", welcomed:"Bienvenido a SnackCheck", welcomeSub:"¿Cómo te llamamos?", yourName:"Tu nombre", namePh:"ej. Shou", start:"Empezar →", brand:"Marca", brandPh:"ej. Lays, Haribo", product:"Nombre del producto", productPh:"ej. Ovenbaked, Classic", flavor:"Sabor / Variante", flavorPh:"ej. Pimentón, Sal marina", category:"Categoría", rating:"Valoración", pros:"Puntos positivos", prosPh:"ej. Crujiente, Bien salado", cons:"Puntos negativos", consPh:"ej. Muy grasiento, Soso", photo:"Foto", photoOptional:"(opcional)", photoTap:"Toca para añadir una foto", minScore:"Puntuación mín.", onlyMulti:"Solo 2+ valoraciones", reset:"✕ Reiniciar", comma:"(separado por comas)", required:"*", scoreLabels:["","😕 Malo","😐 Regular","🙂 OK","😋 Bueno","🤩 ¡Genial!"], rated:"Valorado", avgScore:"Punt. media", categories:"Categorías", ratingsCount:(n)=>`${n} valoración${n!==1?"es":""}`, products:(n)=>`${n} producto${n!==1?"s":""}`, myRatingsCount:(n,name)=>`${n} valoración${n!==1?"es":""} de ${name}`, you:" (yo)", sorts:["Más reciente","Más antiguo","Mayor puntuación","Menor puntuación","Más valorado","A → Z"], cats:["Todo","Chips","Galletas","Frutos secos","Dulces","Choco","Puffs","Otros"] },
-  de: { appSub:"Snack-Bewertungstool", allSnacks:"Alle Snacks", myRatings:"Meine Bewertungen", search:"Suchen...", addRating:"Bewerten", close:"✕ Schließen", save:"Speichern ✓", saved:"Gespeichert!", savedSub:"Deine Bewertung wurde hinzugefügt.", back:"← Zurück", reviews:"Bewertungen", rateFirst:"Ersten Snack bewerten →", noRatings:"Noch keine Snacks bewertet", noRatingsSub:"Füge den ersten über den + Knopf hinzu", noMyRatings:"Noch keine Bewertungen von", welcomed:"Willkommen bei SnackCheck", welcomeSub:"Wie sollen wir dich nennen?", yourName:"Dein Name", namePh:"z.B. Shou", start:"Loslegen →", brand:"Marke", brandPh:"z.B. Lays, Haribo", product:"Produktname", productPh:"z.B. Ovenbaked, Classic", flavor:"Geschmack / Variante", flavorPh:"z.B. Paprika, Meersalz", category:"Kategorie", rating:"Bewertung", pros:"Vorteile", prosPh:"z.B. Knusprig, Gut gesalzen", cons:"Nachteile", consPh:"z.B. Zu fettig, Geschmacklos", photo:"Foto", photoOptional:"(optional)", photoTap:"Tippen um ein Foto hinzuzufügen", minScore:"Mindest-Score", onlyMulti:"Nur 2+ Bewertungen", reset:"✕ Zurücksetzen", comma:"(kommagetrennt)", required:"*", scoreLabels:["","😕 Schlecht","😐 Mäßig","🙂 OK","😋 Gut","🤩 Großartig!"], rated:"Bewertet", avgScore:"Ø Score", categories:"Kategorien", ratingsCount:(n)=>`${n} Bewertung${n!==1?"en":""}`, products:(n)=>`${n} Produkt${n!==1?"e":""}`, myRatingsCount:(n,name)=>`${n} Bewertung${n!==1?"en":""} von ${name}`, you:" (ich)", sorts:["Neueste zuerst","Älteste zuerst","Höchste Bewertung","Niedrigste Bewertung","Meistbewertet","A → Z"], cats:["Alles","Chips","Kekse","Nüsse","Süßigkeiten","Schokolade","Puffs","Sonstiges"] },
-  it: { appSub:"Strumento di valutazione", allSnacks:"Tutti gli snack", myRatings:"Le mie valutazioni", search:"Cerca...", addRating:"Valuta", close:"✕ Chiudi", save:"Salva ✓", saved:"Salvato!", savedSub:"La tua valutazione è stata aggiunta.", back:"← Indietro", reviews:"Valutazioni", rateFirst:"Valuta il tuo primo snack →", noRatings:"Nessuno snack valutato", noRatingsSub:"Aggiungi il primo con il pulsante +", noMyRatings:"Nessuna valutazione di", welcomed:"Benvenuto su SnackCheck", welcomeSub:"Come ti chiamiamo?", yourName:"Il tuo nome", namePh:"es. Shou", start:"Inizia →", brand:"Marca", brandPh:"es. Lays, Haribo", product:"Nome prodotto", productPh:"es. Ovenbaked, Classic", flavor:"Gusto / Variante", flavorPh:"es. Paprika, Sale marino", category:"Categoria", rating:"Valutazione", pros:"Punti positivi", prosPh:"es. Croccante, Ben salato", cons:"Punti negativi", consPh:"es. Troppo unto, Insipido", photo:"Foto", photoOptional:"(opzionale)", photoTap:"Tocca per aggiungere una foto", minScore:"Punteggio min.", onlyMulti:"Solo 2+ valutazioni", reset:"✕ Reimposta", comma:"(separato da virgole)", required:"*", scoreLabels:["","😕 Pessimo","😐 Mediocre","🙂 OK","😋 Buono","🤩 Eccellente!"], rated:"Valutato", avgScore:"Punteggio medio", categories:"Categorie", ratingsCount:(n)=>`${n} valutazion${n!==1?"i":"e"}`, products:(n)=>`${n} prodott${n!==1?"i":"o"}`, myRatingsCount:(n,name)=>`${n} valutazion${n!==1?"i":"e"} di ${name}`, you:" (io)", sorts:["Più recente","Più vecchio","Punteggio più alto","Punteggio più basso","Più valutato","A → Z"], cats:["Tutto","Chips","Biscotti","Noci","Dolci","Cioccolato","Puffs","Altro"] },
+  nl: { appSub:"Snack beoordelingstool", allSnacks:"Alle snacks", myRatings:"Mijn ratings", search:"Zoek merk of product...", addRating:"Beoordelen", close:"✕ Sluiten", save:"Opslaan ✓", saved:"Opgeslagen!", savedSub:"Jouw beoordeling is toegevoegd.", back:"← Terug", reviews:"Beoordelingen", rateFirst:"Eerste snack beoordelen →", noRatings:"Nog geen snacks beoordeeld", noRatingsSub:"Voeg de eerste toe via de + knop", noMyRatings:"Nog geen ratings van", welcomed:"Welkom bij SnackCheck", welcomeSub:"Hoe mogen we je noemen?", yourName:"Jouw naam", namePh:"bijv. Shou", start:"Aan de slag →", brand:"Merk", brandPh:"bijv. Lays, Haribo, AH", product:"Productnaam", productPh:"bijv. Ovenbaked, Borrelnoten", flavor:"Smaak / Variant", flavorPh:"bijv. Paprika, Zeezout", category:"Categorie", rating:"Beoordeling", pros:"Pluspunten", prosPh:"bijv. Krokant, Lekker zout", cons:"Minpunten", consPh:"bijv. Te vet, Weinig smaak", photo:"Foto", photoOptional:"(optioneel)", photoTap:"Tik om een foto toe te voegen", minScore:"Min. score", onlyMulti:"Alleen 2+ ratings", reset:"✕ Reset", comma:"(komma gescheiden)", required:"*", scoreLabels:["","😕 Slecht","😐 Matig","🙂 Oké","😋 Goed","🤩 Geweldig!"], rated:"Beoordeeld", avgScore:"Gem. score", categories:"Categorieën", ratingsCount:(n)=>`${n} beoordeling${n!==1?"en":""}`, products:(n)=>`${n} product${n!==1?"en":""}`, myRatingsCount:(n,name)=>`${n} beoordeling${n!==1?"en":""} van ${name}`, you:" (jij)", sorts:["Nieuwste eerst","Oudste eerst","Hoogste score","Laagste score","Meest beoordeeld","A → Z"], cats:["Alles","Chips","Koek","Noten","Snoep","Choco","Puffs","Anders"],
+    landing:{ hero1:"Snacks beoordelen.", hero2:"De lekkerste vinden.", sub:"Een community-gedreven snackdatabase. Kijk wat anderen vinden voordat je koopt — of deel jouw eerlijke mening.", cta1:"Begin met beoordelen", cta2:"Bekijk de database", how:"Hoe het werkt", howTitle:"Eerlijke ratings van echte snackliefhebbers", howSub:"Geen gesponsorde reviews. Geen algoritmes. Gewoon mensen die beoordelen wat ze echt hebben gegeten.", f1t:"Beoordeel elke snack", f1d:"Score van 1–5 sterren, voeg pluspunten en minpunten toe, upload een foto.", f2t:"Gedeelde database", f2d:"Alle beoordelingen op één plek — iedereen kan bladeren en bijdragen.", f3t:"AI productinfo", f3d:"Calorieën, eiwitten, ingrediënten — automatisch opgezocht.", f4t:"Filter op voeding", f4d:"Vind snacks op max calorieën, min eiwitten, vezels en meer.", example:"Voorbeeld beoordeling", exampleTitle:"Zo ziet een beoordeling eruit", join:"Gratis meedoen", joinTitle:"Doe mee aan de community — het is gratis", joinSub:"Maak een account aan om je beoordelingen toe te voegen en jouw persoonlijke snackgeschiedenis op te bouwen.", joinBtn:"Gratis account aanmaken", footer:"snackscheck.com · Gemaakt met liefde voor snackliefhebbers" }
+  },
+  en: { appSub:"Snack rating tool", allSnacks:"All snacks", myRatings:"My ratings", search:"Search brand or product...", addRating:"Rate", close:"✕ Close", save:"Save ✓", saved:"Saved!", savedSub:"Your rating has been added.", back:"← Back", reviews:"Reviews", rateFirst:"Rate your first snack →", noRatings:"No snacks rated yet", noRatingsSub:"Add the first one with the + button", noMyRatings:"No ratings yet from", welcomed:"Welcome to SnackCheck", welcomeSub:"What should we call you?", yourName:"Your name", namePh:"e.g. Shou", start:"Get started →", brand:"Brand", brandPh:"e.g. Lays, Haribo", product:"Product name", productPh:"e.g. Ovenbaked, Classic", flavor:"Flavor / Variant", flavorPh:"e.g. Paprika, Sea Salt", category:"Category", rating:"Rating", pros:"Pros", prosPh:"e.g. Crunchy, Well salted", cons:"Cons", consPh:"e.g. Too greasy, Bland", photo:"Photo", photoOptional:"(optional)", photoTap:"Tap to add a photo", minScore:"Min. score", onlyMulti:"Only 2+ ratings", reset:"✕ Reset", comma:"(comma separated)", required:"*", scoreLabels:["","😕 Bad","😐 Mediocre","🙂 OK","😋 Good","🤩 Amazing!"], rated:"Rated", avgScore:"Avg. score", categories:"Categories", ratingsCount:(n)=>`${n} rating${n!==1?"s":""}`, products:(n)=>`${n} product${n!==1?"s":""}`, myRatingsCount:(n,name)=>`${n} rating${n!==1?"s":""} by ${name}`, you:" (you)", sorts:["Newest first","Oldest first","Highest score","Lowest score","Most rated","A → Z"], cats:["All","Chips","Biscuit","Nuts","Candy","Choco","Puffs","Other"],
+    landing:{ hero1:"Rate snacks.", hero2:"Find the good stuff.", sub:"A community-powered snack database. See what others think before you buy — or share your own honest take.", cta1:"Start rating snacks", cta2:"Browse the database", how:"How it works", howTitle:"Honest ratings from real snack lovers", howSub:"No sponsored reviews. No algorithms. Just people rating what they actually ate.", f1t:"Rate any snack", f1d:"Score from 1–5 stars, add pros and cons, upload a photo.", f2t:"Shared database", f2d:"All ratings in one place — anyone can browse and contribute.", f3t:"AI product info", f3d:"Calories, protein, ingredients — looked up automatically.", f4t:"Filter by nutrition", f4d:"Find snacks by max calories, min protein, fibre, and more.", example:"Example rating", exampleTitle:"See what a rating looks like", join:"Join for free", joinTitle:"Join the community — it's free", joinSub:"Create an account to add your ratings and build your personal snack history.", joinBtn:"Create free account", footer:"snackscheck.com · Made with love for snack enthusiasts everywhere" }
+  },
+  fr: { appSub:"Outil de notation", allSnacks:"Tous les snacks", myRatings:"Mes notes", search:"Rechercher...", addRating:"Noter", close:"✕ Fermer", save:"Enregistrer ✓", saved:"Enregistré!", savedSub:"Votre note a été ajoutée.", back:"← Retour", reviews:"Avis", rateFirst:"Noter votre premier snack →", noRatings:"Aucun snack noté", noRatingsSub:"Ajoutez le premier via le bouton +", noMyRatings:"Aucune note de", welcomed:"Bienvenue sur SnackCheck", welcomeSub:"Comment vous appelle-t-on?", yourName:"Votre nom", namePh:"ex. Shou", start:"Commencer →", brand:"Marque", brandPh:"ex. Lays, Haribo", product:"Nom du produit", productPh:"ex. Ovenbaked, Classic", flavor:"Saveur / Variante", flavorPh:"ex. Paprika, Sel de mer", category:"Catégorie", rating:"Note", pros:"Points positifs", prosPh:"ex. Croustillant, Bien salé", cons:"Points négatifs", consPh:"ex. Trop gras, Sans goût", photo:"Photo", photoOptional:"(optionnel)", photoTap:"Appuyez pour ajouter une photo", minScore:"Score min.", onlyMulti:"Seulement 2+ notes", reset:"✕ Réinitialiser", comma:"(séparé par virgule)", required:"*", scoreLabels:["","😕 Mauvais","😐 Moyen","🙂 OK","😋 Bon","🤩 Excellent!"], rated:"Noté", avgScore:"Score moy.", categories:"Catégories", ratingsCount:(n)=>`${n} avis`, products:(n)=>`${n} produit${n!==1?"s":""}`, myRatingsCount:(n,name)=>`${n} avis de ${name}`, you:" (moi)", sorts:["Plus récent","Plus ancien","Meilleur score","Score le plus bas","Plus noté","A → Z"], cats:["Tout","Chips","Biscuits","Noix","Bonbons","Choco","Puffs","Autre"],
+    landing:{ hero1:"Notez vos snacks.", hero2:"Trouvez les meilleurs.", sub:"Une base de données de snacks par la communauté. Voyez ce que les autres pensent avant d'acheter — ou partagez votre avis.", cta1:"Commencer à noter", cta2:"Parcourir la base", how:"Comment ça marche", howTitle:"Des avis honnêtes de vrais amateurs de snacks", howSub:"Pas de reviews sponsorisées. Pas d'algorithmes. Juste des gens qui notent ce qu'ils ont vraiment mangé.", f1t:"Notez n'importe quel snack", f1d:"Score de 1 à 5 étoiles, ajoutez des points positifs et négatifs, uploadez une photo.", f2t:"Base de données partagée", f2d:"Tous les avis au même endroit — tout le monde peut consulter et contribuer.", f3t:"Info produit IA", f3d:"Calories, protéines, ingrédients — recherchés automatiquement.", f4t:"Filtrer par nutrition", f4d:"Trouvez des snacks par calories max, protéines min, fibres et plus.", example:"Exemple d'avis", exampleTitle:"Voilà à quoi ressemble un avis", join:"Rejoindre gratuitement", joinTitle:"Rejoignez la communauté — c'est gratuit", joinSub:"Créez un compte pour ajouter vos avis et construire votre historique de snacks.", joinBtn:"Créer un compte gratuit", footer:"snackscheck.com · Fait avec amour pour les amateurs de snacks" }
+  },
+  es: { appSub:"Herramienta de valoración", allSnacks:"Todos los snacks", myRatings:"Mis valoraciones", search:"Buscar...", addRating:"Valorar", close:"✕ Cerrar", save:"Guardar ✓", saved:"¡Guardado!", savedSub:"Tu valoración ha sido añadida.", back:"← Volver", reviews:"Valoraciones", rateFirst:"Valorar tu primer snack →", noRatings:"Sin snacks valorados", noRatingsSub:"Añade el primero con el botón +", noMyRatings:"Sin valoraciones de", welcomed:"Bienvenido a SnackCheck", welcomeSub:"¿Cómo te llamamos?", yourName:"Tu nombre", namePh:"ej. Shou", start:"Empezar →", brand:"Marca", brandPh:"ej. Lays, Haribo", product:"Nombre del producto", productPh:"ej. Ovenbaked, Classic", flavor:"Sabor / Variante", flavorPh:"ej. Pimentón, Sal marina", category:"Categoría", rating:"Valoración", pros:"Puntos positivos", prosPh:"ej. Crujiente, Bien salado", cons:"Puntos negativos", consPh:"ej. Muy grasiento, Soso", photo:"Foto", photoOptional:"(opcional)", photoTap:"Toca para añadir una foto", minScore:"Puntuación mín.", onlyMulti:"Solo 2+ valoraciones", reset:"✕ Reiniciar", comma:"(separado por comas)", required:"*", scoreLabels:["","😕 Malo","😐 Regular","🙂 OK","😋 Bueno","🤩 ¡Genial!"], rated:"Valorado", avgScore:"Punt. media", categories:"Categorías", ratingsCount:(n)=>`${n} valoración${n!==1?"es":""}`, products:(n)=>`${n} producto${n!==1?"s":""}`, myRatingsCount:(n,name)=>`${n} valoración${n!==1?"es":""} de ${name}`, you:" (yo)", sorts:["Más reciente","Más antiguo","Mayor puntuación","Menor puntuación","Más valorado","A → Z"], cats:["Todo","Chips","Galletas","Frutos secos","Dulces","Choco","Puffs","Otros"],
+    landing:{ hero1:"Valora snacks.", hero2:"Encuentra los mejores.", sub:"Una base de datos de snacks impulsada por la comunidad. Ve lo que otros piensan antes de comprar — o comparte tu opinión.", cta1:"Empezar a valorar", cta2:"Ver la base de datos", how:"Cómo funciona", howTitle:"Valoraciones honestas de verdaderos amantes de los snacks", howSub:"Sin reviews patrocinadas. Sin algoritmos. Solo personas valorando lo que realmente comieron.", f1t:"Valora cualquier snack", f1d:"Puntuación de 1 a 5 estrellas, añade pros y contras, sube una foto.", f2t:"Base de datos compartida", f2d:"Todas las valoraciones en un lugar — cualquiera puede ver y contribuir.", f3t:"Info de producto IA", f3d:"Calorías, proteínas, ingredientes — buscados automáticamente.", f4t:"Filtrar por nutrición", f4d:"Encuentra snacks por calorías máx., proteínas mín., fibra y más.", example:"Valoración de ejemplo", exampleTitle:"Así es una valoración", join:"Únete gratis", joinTitle:"Únete a la comunidad — es gratis", joinSub:"Crea una cuenta para añadir tus valoraciones y construir tu historial de snacks.", joinBtn:"Crear cuenta gratis", footer:"snackscheck.com · Hecho con amor para los amantes de los snacks" }
+  },
+  de: { appSub:"Snack-Bewertungstool", allSnacks:"Alle Snacks", myRatings:"Meine Bewertungen", search:"Suchen...", addRating:"Bewerten", close:"✕ Schließen", save:"Speichern ✓", saved:"Gespeichert!", savedSub:"Deine Bewertung wurde hinzugefügt.", back:"← Zurück", reviews:"Bewertungen", rateFirst:"Ersten Snack bewerten →", noRatings:"Noch keine Snacks bewertet", noRatingsSub:"Füge den ersten über den + Knopf hinzu", noMyRatings:"Noch keine Bewertungen von", welcomed:"Willkommen bei SnackCheck", welcomeSub:"Wie sollen wir dich nennen?", yourName:"Dein Name", namePh:"z.B. Shou", start:"Loslegen →", brand:"Marke", brandPh:"z.B. Lays, Haribo", product:"Produktname", productPh:"z.B. Ovenbaked, Classic", flavor:"Geschmack / Variante", flavorPh:"z.B. Paprika, Meersalz", category:"Kategorie", rating:"Bewertung", pros:"Vorteile", prosPh:"z.B. Knusprig, Gut gesalzen", cons:"Nachteile", consPh:"z.B. Zu fettig, Geschmacklos", photo:"Foto", photoOptional:"(optional)", photoTap:"Tippen um ein Foto hinzuzufügen", minScore:"Mindest-Score", onlyMulti:"Nur 2+ Bewertungen", reset:"✕ Zurücksetzen", comma:"(kommagetrennt)", required:"*", scoreLabels:["","😕 Schlecht","😐 Mäßig","🙂 OK","😋 Gut","🤩 Großartig!"], rated:"Bewertet", avgScore:"Ø Score", categories:"Kategorien", ratingsCount:(n)=>`${n} Bewertung${n!==1?"en":""}`, products:(n)=>`${n} Produkt${n!==1?"e":""}`, myRatingsCount:(n,name)=>`${n} Bewertung${n!==1?"en":""} von ${name}`, you:" (ich)", sorts:["Neueste zuerst","Älteste zuerst","Höchste Bewertung","Niedrigste Bewertung","Meistbewertet","A → Z"], cats:["Alles","Chips","Kekse","Nüsse","Süßigkeiten","Schokolade","Puffs","Sonstiges"],
+    landing:{ hero1:"Snacks bewerten.", hero2:"Die besten finden.", sub:"Eine Community-betriebene Snack-Datenbank. Sieh was andere denken, bevor du kaufst — oder teile deine eigene Meinung.", cta1:"Snacks bewerten", cta2:"Datenbank durchsuchen", how:"So funktioniert's", howTitle:"Ehrliche Bewertungen von echten Snack-Liebhabern", howSub:"Keine gesponserten Reviews. Keine Algorithmen. Nur Menschen, die bewerten, was sie wirklich gegessen haben.", f1t:"Jeden Snack bewerten", f1d:"Bewertung von 1–5 Sternen, Vor- und Nachteile, Foto hochladen.", f2t:"Geteilte Datenbank", f2d:"Alle Bewertungen an einem Ort — jeder kann stöbern und beitragen.", f3t:"KI-Produktinfo", f3d:"Kalorien, Eiweiß, Zutaten — automatisch nachgeschlagen.", f4t:"Nach Nährwerten filtern", f4d:"Snacks nach max. Kalorien, min. Eiweiß, Ballaststoffen und mehr finden.", example:"Beispielbewertung", exampleTitle:"So sieht eine Bewertung aus", join:"Kostenlos mitmachen", joinTitle:"Der Community beitreten — kostenlos", joinSub:"Erstelle ein Konto, um deine Bewertungen hinzuzufügen und deine persönliche Snack-Geschichte aufzubauen.", joinBtn:"Kostenloses Konto erstellen", footer:"snackscheck.com · Mit Liebe für Snack-Enthusiasten gemacht" }
+  },
+  it: { appSub:"Strumento di valutazione", allSnacks:"Tutti gli snack", myRatings:"Le mie valutazioni", search:"Cerca...", addRating:"Valuta", close:"✕ Chiudi", save:"Salva ✓", saved:"Salvato!", savedSub:"La tua valutazione è stata aggiunta.", back:"← Indietro", reviews:"Valutazioni", rateFirst:"Valuta il tuo primo snack →", noRatings:"Nessuno snack valutato", noRatingsSub:"Aggiungi il primo con il pulsante +", noMyRatings:"Nessuna valutazione di", welcomed:"Benvenuto su SnackCheck", welcomeSub:"Come ti chiamiamo?", yourName:"Il tuo nome", namePh:"es. Shou", start:"Inizia →", brand:"Marca", brandPh:"es. Lays, Haribo", product:"Nome prodotto", productPh:"es. Ovenbaked, Classic", flavor:"Gusto / Variante", flavorPh:"es. Paprika, Sale marino", category:"Categoria", rating:"Valutazione", pros:"Punti positivi", prosPh:"es. Croccante, Ben salato", cons:"Punti negativi", consPh:"es. Troppo unto, Insipido", photo:"Foto", photoOptional:"(opzionale)", photoTap:"Tocca per aggiungere una foto", minScore:"Punteggio min.", onlyMulti:"Solo 2+ valutazioni", reset:"✕ Reimposta", comma:"(separato da virgole)", required:"*", scoreLabels:["","😕 Pessimo","😐 Mediocre","🙂 OK","😋 Buono","🤩 Eccellente!"], rated:"Valutato", avgScore:"Punteggio medio", categories:"Categorie", ratingsCount:(n)=>`${n} valutazion${n!==1?"i":"e"}`, products:(n)=>`${n} prodott${n!==1?"i":"o"}`, myRatingsCount:(n,name)=>`${n} valutazion${n!==1?"i":"e"} di ${name}`, you:" (io)", sorts:["Più recente","Più vecchio","Punteggio più alto","Punteggio più basso","Più valutato","A → Z"], cats:["Tutto","Chips","Biscotti","Noci","Dolci","Cioccolato","Puffs","Altro"],
+    landing:{ hero1:"Valuta gli snack.", hero2:"Trova i migliori.", sub:"Un database di snack alimentato dalla community. Guarda cosa pensano gli altri prima di acquistare — o condividi la tua opinione.", cta1:"Inizia a valutare", cta2:"Sfoglia il database", how:"Come funziona", howTitle:"Valutazioni oneste da veri amanti degli snack", howSub:"Nessuna recensione sponsorizzata. Nessun algoritmo. Solo persone che valutano quello che hanno davvero mangiato.", f1t:"Valuta qualsiasi snack", f1d:"Punteggio da 1 a 5 stelle, aggiungi pro e contro, carica una foto.", f2t:"Database condiviso", f2d:"Tutte le valutazioni in un posto — chiunque può sfogliare e contribuire.", f3t:"Info prodotto IA", f3d:"Calorie, proteine, ingredienti — ricercati automaticamente.", f4t:"Filtra per nutrizione", f4d:"Trova snack per calorie max, proteine min, fibre e altro.", example:"Valutazione di esempio", exampleTitle:"Ecco come appare una valutazione", join:"Unisciti gratis", joinTitle:"Unisciti alla community — è gratis", joinSub:"Crea un account per aggiungere le tue valutazioni e costruire la tua storia di snack.", joinBtn:"Crea account gratuito", footer:"snackscheck.com · Fatto con amore per gli appassionati di snack" }
+  },
 };
 const LANG_FLAGS = { nl:"🇳🇱", en:"🇬🇧", fr:"🇫🇷", es:"🇪🇸", de:"🇩🇪", it:"🇮🇹" };
 const CAT_ICONS = ["🛒","🥔","🍪","🥜","🍬","🍫","🍿","📦"];
@@ -210,7 +222,7 @@ export default function SnackCheck() {
   const [showLangPicker,setShowLangPicker]=useState(false);
   const [user,setUser]=useState(null);
   const [loading,setLoading]=useState(true);
-  const [view,setView]=useState("home");
+  const [view,setView]=useState("landing");
   const [tab,setTab]=useState("all");
   const [ratings,setRatings]=useState([]);
   const [cat,setCat]=useState("all");
@@ -232,6 +244,7 @@ export default function SnackCheck() {
   const [showAuthModal,setShowAuthModal]=useState(false);
   const infoDebRef=useRef();
   const t = LANGS[lang];
+  const l = t.landing;
   const userName = user?.user_metadata?.display_name;
 
   useEffect(()=>{
@@ -240,8 +253,8 @@ export default function SnackCheck() {
     (async()=>{
       const {data,error}=await supabase.from('ratings').select('*').order('timestamp',{ascending:false});
       if(!error&&data) setRatings(data.map(mapRow));
-      const l=localStorage.getItem(LANG_KEY);
-      if(l&&LANGS[l]) setLang(l);
+      const saved=localStorage.getItem(LANG_KEY);
+      if(saved&&LANGS[saved]) setLang(saved);
       setLoading(false);
     })();
     return ()=>subscription.unsubscribe();
@@ -327,10 +340,33 @@ export default function SnackCheck() {
     </div>
   );
 
+  // ── Lang Picker (reusable) ─────────────────────────────────────────────────
+  function LangPicker({light=false}) {
+    return (
+      <div style={{position:"relative"}}>
+        <button onClick={()=>setShowLangPicker(p=>!p)}
+          style={{background:light?"rgba(255,255,255,0.2)":"rgba(0,0,0,0.06)",color:light?"white":P.text,border:"none",borderRadius:16,padding:"5px 10px",cursor:"pointer",fontSize:16}}>
+          {LANG_FLAGS[lang]}
+        </button>
+        {showLangPicker&&(
+          <div style={{position:"absolute",right:0,top:36,background:P.card,borderRadius:12,border:`1.5px solid ${P.border}`,overflow:"hidden",zIndex:300,minWidth:140,boxShadow:"0 4px 20px rgba(0,0,0,0.1)"}}>
+            {Object.keys(LANGS).map(l=>(
+              <button key={l} onClick={()=>handleLang(l)}
+                style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 14px",border:"none",background:lang===l?P.orangeLight:"white",cursor:"pointer",fontSize:13,fontWeight:lang===l?700:400,color:lang===l?P.orange:P.text,borderBottom:`1px solid ${P.border}`}}>
+                <span style={{fontSize:16}}>{LANG_FLAGS[l]}</span>
+                {{nl:"Nederlands",en:"English",fr:"Français",es:"Español",de:"Deutsch",it:"Italiano"}[l]}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   function Header({subtitle,action}) {
     return (
       <div style={{background:P.orange,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100}}>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer"}} onClick={()=>setView("landing")}>
           <div style={{width:34,height:34,borderRadius:10,background:"rgba(255,255,255,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>🍬</div>
           <div>
             <div style={{fontSize:17,fontWeight:800,color:"white",letterSpacing:-0.5,lineHeight:1}}>SnacksCheck</div>
@@ -350,23 +386,7 @@ export default function SnackCheck() {
                 Log in
               </button>
           }
-          <div style={{position:"relative"}}>
-            <button onClick={()=>setShowLangPicker(p=>!p)}
-              style={{background:"rgba(255,255,255,0.2)",color:"white",border:"none",borderRadius:16,padding:"5px 10px",cursor:"pointer",fontSize:16}}>
-              {LANG_FLAGS[lang]}
-            </button>
-            {showLangPicker&&(
-              <div style={{position:"absolute",right:0,top:36,background:P.card,borderRadius:12,border:`1.5px solid ${P.border}`,overflow:"hidden",zIndex:200,minWidth:140,boxShadow:"0 4px 20px rgba(0,0,0,0.1)"}}>
-                {Object.keys(LANGS).map(l=>(
-                  <button key={l} onClick={()=>handleLang(l)}
-                    style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 14px",border:"none",background:lang===l?P.orangeLight:"white",cursor:"pointer",fontSize:13,fontWeight:lang===l?700:400,color:lang===l?P.orange:P.text,borderBottom:`1px solid ${P.border}`}}>
-                    <span style={{fontSize:16}}>{LANG_FLAGS[l]}</span>
-                    {{nl:"Nederlands",en:"English",fr:"Français",es:"Español",de:"Deutsch",it:"Italiano"}[l]}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <LangPicker light/>
         </div>}
       </div>
     );
@@ -379,6 +399,137 @@ export default function SnackCheck() {
       <div style={{width:72,height:72,borderRadius:"50%",background:P.greenLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:36}}>✅</div>
       <div style={{fontSize:22,fontWeight:700,color:P.text}}>{t.saved}</div>
       <div style={{color:P.muted,fontSize:14}}>{t.savedSub}</div>
+    </div>
+  );
+
+  // ── Landing page ──────────────────────────────────────────────────────────
+  if(view==="landing") return (
+    <div style={{minHeight:"100vh",background:P.bg,fontFamily:"system-ui,sans-serif"}}>
+      {authModal}
+      {/* Nav */}
+      <div style={{background:P.orange,padding:"14px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:36,height:36,borderRadius:10,background:"rgba(255,255,255,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>🍬</div>
+          <div style={{fontSize:18,fontWeight:800,color:"white",letterSpacing:-0.5}}>SnacksCheck</div>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          {user
+            ? <button onClick={()=>setView("home")}
+                style={{background:"rgba(255,255,255,0.2)",color:"white",border:"none",borderRadius:16,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:600}}>
+                Open app →
+              </button>
+            : <button onClick={()=>setShowAuthModal(true)}
+                style={{background:"rgba(255,255,255,0.2)",color:"white",border:"none",borderRadius:16,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:600}}>
+                Log in
+              </button>
+          }
+          <LangPicker light/>
+        </div>
+      </div>
+
+      {/* Hero */}
+      <div style={{background:P.orange,padding:"52px 24px 64px",textAlign:"center"}}>
+        <h1 style={{fontSize:42,fontWeight:800,color:"white",lineHeight:1.1,margin:"0 0 14px",letterSpacing:-1}}>
+          {l.hero1}<br/>{l.hero2}
+        </h1>
+        <p style={{fontSize:17,color:"rgba(255,255,255,0.85)",maxWidth:420,margin:"0 auto 32px",lineHeight:1.6}}>{l.sub}</p>
+        <div style={{display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap"}}>
+          <button onClick={()=>{if(!user){setShowAuthModal(true);}else{setView("rate");}}}
+            style={{background:"white",color:P.orangeDark,border:"none",borderRadius:12,padding:"13px 26px",fontSize:15,fontWeight:700,cursor:"pointer"}}>
+            {l.cta1}
+          </button>
+          <button onClick={()=>setView("home")}
+            style={{background:"rgba(255,255,255,0.2)",color:"white",border:"1.5px solid rgba(255,255,255,0.5)",borderRadius:12,padding:"13px 26px",fontSize:15,fontWeight:700,cursor:"pointer"}}>
+            {l.cta2}
+          </button>
+        </div>
+      </div>
+
+      {/* Snack strip */}
+      <div style={{display:"flex",gap:8,overflowX:"auto",padding:"14px 16px",background:P.orangeLight,borderBottom:`1px solid ${P.border}`}}>
+        {[["🥔","Lays Paprika","4.2"],["🍫","Tony's Pretzel","4.8"],["🥜","AH Borrelnoten","3.9"],["🍬","Haribo Goldbären","4.6"],["🍿","Popcorn Zeezout","4.1"],["🍪","Oreo Original","4.4"],["🥔","Pringles Original","4.0"]].map(([icon,name,score],i)=>(
+          <div key={i} style={{background:"white",border:`1px solid ${P.border}`,borderRadius:20,padding:"6px 14px",fontSize:13,color:P.muted,display:"flex",alignItems:"center",gap:6,whiteSpace:"nowrap",flexShrink:0}}>
+            <span>{icon}</span><span style={{color:P.text,fontWeight:500}}>{name}</span><span style={{color:P.orange,fontWeight:700}}>★ {score}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* How it works */}
+      <div style={{padding:"48px 24px",maxWidth:600,margin:"0 auto"}}>
+        <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.5,color:P.orange,marginBottom:10}}>{l.how}</div>
+        <h2 style={{fontSize:26,fontWeight:800,color:P.text,marginBottom:10,lineHeight:1.2}}>{l.howTitle}</h2>
+        <p style={{fontSize:15,color:P.muted,lineHeight:1.7,marginBottom:28}}>{l.howSub}</p>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:12}}>
+          {[
+            {icon:"⭐",title:l.f1t,desc:l.f1d,col:"#FFF8E8"},
+            {icon:"👥",title:l.f2t,desc:l.f2d,col:"#F0EEFF"},
+            {icon:"⚡",title:l.f3t,desc:l.f3d,col:"#E0F7F4"},
+            {icon:"🔍",title:l.f4t,desc:l.f4d,col:"#FFF0F5"},
+          ].map((f,i)=>(
+            <div key={i} style={{background:f.col,borderRadius:16,padding:"18px 16px",border:`1px solid ${P.border}`}}>
+              <div style={{fontSize:24,marginBottom:10}}>{f.icon}</div>
+              <div style={{fontSize:14,fontWeight:700,color:P.text,marginBottom:5}}>{f.title}</div>
+              <div style={{fontSize:13,color:P.muted,lineHeight:1.5}}>{f.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Example card */}
+      <div style={{background:P.orangeLight,padding:"40px 24px",borderTop:`1px solid ${P.border}`,borderBottom:`1px solid ${P.border}`}}>
+        <div style={{maxWidth:360,margin:"0 auto",textAlign:"center"}}>
+          <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.5,color:P.orange,marginBottom:10}}>{l.example}</div>
+          <h2 style={{fontSize:22,fontWeight:800,color:P.text,marginBottom:20}}>{l.exampleTitle}</h2>
+          <div style={{background:"white",borderRadius:16,padding:18,border:`1px solid ${P.border}`,textAlign:"left"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+              <div>
+                <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,color:P.orange}}>Lays</div>
+                <div style={{fontSize:16,fontWeight:700,color:P.text}}>Ovenbaked</div>
+                <div style={{fontSize:13,color:P.muted}}>Paprika</div>
+              </div>
+              <ScorePill score={4.2}/>
+            </div>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
+              <span style={{background:P.greenLight,color:P.green,borderRadius:6,padding:"2px 8px",fontSize:12,fontWeight:600}}>✓ Krokant</span>
+              <span style={{background:P.greenLight,color:P.green,borderRadius:6,padding:"2px 8px",fontSize:12,fontWeight:600}}>✓ Goed gekruid</span>
+              <span style={{background:P.redLight,color:P.red,borderRadius:6,padding:"2px 8px",fontSize:12,fontWeight:600}}>✗ Duur</span>
+            </div>
+            <div style={{marginTop:10,fontSize:12,color:P.muted,display:"flex",gap:8}}>
+              <span>3 beoordelingen</span><span>·</span><span>Chips</span><span>·</span><span>427 kcal/100g</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Join CTA */}
+      <div style={{padding:"48px 24px",textAlign:"center",maxWidth:480,margin:"0 auto"}}>
+        <div style={{display:"flex",justifyContent:"center",marginBottom:14}}>
+          {["S","M","J","L"].map((letter,i)=>(
+            <div key={i} style={{width:38,height:38,borderRadius:"50%",background:[P.orange,"#6C3FD4","#0AADA6","#E8336B"][i],border:"2.5px solid white",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:"white",marginLeft:i>0?-8:0}}>
+              {letter}
+            </div>
+          ))}
+        </div>
+        <h2 style={{fontSize:22,fontWeight:800,color:P.text,marginBottom:8}}>{l.joinTitle}</h2>
+        <p style={{fontSize:15,color:P.muted,lineHeight:1.6,marginBottom:24}}>{l.joinSub}</p>
+        <button onClick={()=>setShowAuthModal(true)}
+          style={{background:P.orange,color:"white",border:"none",borderRadius:12,padding:"14px 32px",fontSize:16,fontWeight:700,cursor:"pointer",marginBottom:12,display:"block",width:"100%"}}>
+          {l.joinBtn}
+        </button>
+        <button onClick={()=>setView("home")}
+          style={{background:"none",color:P.muted,border:`1.5px solid ${P.border}`,borderRadius:12,padding:"12px 32px",fontSize:15,fontWeight:600,cursor:"pointer",display:"block",width:"100%"}}>
+          {l.cta2}
+        </button>
+      </div>
+
+      {/* Footer */}
+      <div style={{background:P.card,borderTop:`1px solid ${P.border}`,padding:"24px",textAlign:"center"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:8}}>
+          <div style={{width:28,height:28,borderRadius:8,background:P.orange,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>🍬</div>
+          <span style={{fontSize:15,fontWeight:700,color:P.text}}>SnacksCheck</span>
+        </div>
+        <p style={{fontSize:13,color:P.muted}}>{l.footer}</p>
+      </div>
     </div>
   );
 
