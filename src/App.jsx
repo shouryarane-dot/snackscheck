@@ -5,24 +5,37 @@ const LANG_KEY = "snackcheck-lang";
 
 const LANGS = {
   nl: { appSub:"Snack beoordelingstool", allSnacks:"Alle snacks", myRatings:"Mijn ratings", search:"Zoek merk of product...", addRating:"Beoordelen", close:"✕ Sluiten", save:"Opslaan ✓", saved:"Opgeslagen!", savedSub:"Jouw beoordeling is toegevoegd.", back:"← Terug", reviews:"Beoordelingen", rateFirst:"Eerste snack beoordelen →", noRatings:"Nog geen snacks beoordeeld", noRatingsSub:"Voeg de eerste toe via de + knop", noMyRatings:"Nog geen ratings van", welcomed:"Welkom bij SnackCheck", welcomeSub:"Hoe mogen we je noemen?", yourName:"Jouw naam", namePh:"bijv. Shou", start:"Aan de slag →", brand:"Merk", brandPh:"bijv. Lays, Haribo, AH", product:"Productnaam", productPh:"bijv. Ovenbaked, Borrelnoten", flavor:"Smaak / Variant", flavorPh:"bijv. Paprika, Zeezout", category:"Categorie", rating:"Beoordeling", pros:"Pluspunten", prosPh:"bijv. Krokant, Lekker zout", cons:"Minpunten", consPh:"bijv. Te vet, Weinig smaak", photo:"Foto", photoOptional:"(optioneel)", photoTap:"Tik om een foto toe te voegen", minScore:"Min. score", onlyMulti:"Alleen 2+ ratings", reset:"✕ Reset", comma:"(komma gescheiden)", required:"*", scoreLabels:["","😕 Slecht","😐 Matig","🙂 Oké","😋 Goed","🤩 Geweldig!"], rated:"Beoordeeld", avgScore:"Gem. score", categories:"Categorieën", ratingsCount:(n)=>`${n} beoordeling${n!==1?"en":""}`, products:(n)=>`${n} product${n!==1?"en":""}`, myRatingsCount:(n,name)=>`${n} beoordeling${n!==1?"en":""} van ${name}`, you:" (jij)", sorts:["Nieuwste eerst","Oudste eerst","Hoogste score","Laagste score","Meest beoordeeld","A → Z"], cats:["Alles","Chips","Koek","Noten","Snoep","Choco","Puffs","Anders"],
-    landing:{ hero1:"Snacks beoordelen.", hero2:"De lekkerste vinden.", sub:"Een community-gedreven snackdatabase. Kijk wat anderen vinden voordat je koopt — of deel jouw eerlijke mening.", cta1:"Begin met beoordelen", cta2:"Bekijk de database", how:"Hoe het werkt", howTitle:"Eerlijke ratings van echte snackliefhebbers", howSub:"Geen gesponsorde reviews. Geen algoritmes. Gewoon mensen die beoordelen wat ze echt hebben gegeten.", f1t:"Beoordeel elke snack", f1d:"Score van 1–5 sterren, voeg pluspunten en minpunten toe, upload een foto.", f2t:"Gedeelde database", f2d:"Alle beoordelingen op één plek — iedereen kan bladeren en bijdragen.", f3t:"AI productinfo", f3d:"Calorieën, eiwitten, ingrediënten — automatisch opgezocht.", f4t:"Filter op voeding", f4d:"Vind snacks op max calorieën, min eiwitten, vezels en meer.", example:"Voorbeeld beoordeling", exampleTitle:"Zo ziet een beoordeling eruit", join:"Gratis meedoen", joinTitle:"Doe mee aan de community — het is gratis", joinSub:"Maak een account aan om je beoordelingen toe te voegen en jouw persoonlijke snackgeschiedenis op te bouwen.", joinBtn:"Gratis account aanmaken", footer:"snackscheck.com · Gemaakt met liefde voor snackliefhebbers" }
+    landing:{ hero1:"Snacks beoordelen.", hero2:"De lekkerste vinden.", sub:"Een community-gedreven snackdatabase. Kijk wat anderen vinden voordat je koopt — of deel jouw eerlijke mening.", cta1:"Begin met beoordelen", cta2:"Bekijk de database", how:"Hoe het werkt", howTitle:"Eerlijke ratings van echte snackliefhebbers", howSub:"Geen gesponsorde reviews. Geen algoritmes. Gewoon mensen die beoordelen wat ze echt hebben gegeten.", f1t:"Beoordeel elke snack", f1d:"Score van 1–5 sterren, voeg pluspunten en minpunten toe, upload een foto.", f2t:"Gedeelde database", f2d:"Alle beoordelingen op één plek — iedereen kan bladeren en bijdragen.", f3t:"AI productinfo & filters", f3d:"Calorieën, eiwitten, ingrediënten — automatisch opgezocht. Filter op voedingswaarden.", example:"Voorbeeld beoordeling", exampleTitle:"Zo ziet een beoordeling eruit", join:"Gratis meedoen", joinTitle:"Doe mee aan de community — het is gratis", joinSub:"Maak een account aan om je beoordelingen toe te voegen en jouw persoonlijke snackgeschiedenis op te bouwen.", joinBtn:"Gratis account aanmaken", footer:"snackscheck.com · Gemaakt met liefde voor snackliefhebbers", privacy:"Privacybeleid" },
+    account:{ title:"Mijn account", email:"E-mailadres", name:"Naam", deleteTitle:"Account verwijderen", deleteDesc:"Dit verwijdert al jouw beoordelingen. Stuur daarna een e-mail naar snackscheck@gmail.com om je account volledig te verwijderen.", deleteBtn:"Verwijder mijn beoordelingen & log uit", deleteConfirm:"Weet je het zeker? Dit kan niet ongedaan worden gemaakt.", yes:"Ja, verwijder", cancel:"Annuleren", logOut:"Uitloggen" },
+    privacy:{ title:"Privacybeleid", lastUpdated:"Laatst bijgewerkt: juni 2025", intro:"SnacksCheck (snackscheck.com) is een hobbyproject van een particulier. We nemen jouw privacy serieus en verwerken zo min mogelijk persoonsgegevens.", s1t:"Welke gegevens verzamelen we?", s1b:"Wanneer je een account aanmaakt, bewaren we je e-mailadres en de naam die je zelf kiest. Jouw beoordelingen (merk, productnaam, score, foto's) worden opgeslagen in onze database en zijn zichtbaar voor alle bezoekers.", s2t:"Waarom bewaren we deze gegevens?", s2b:"Je e-mailadres is nodig om in te loggen en je account te beschermen. Je naam verschijnt bij jouw beoordelingen. We gebruiken jouw gegevens niet voor marketing, advertenties of profilering.", s3t:"Wie heeft toegang?", s3b:"Jouw gegevens worden opgeslagen via Supabase (database, EU-regio) en Vercel (hosting). Beide partijen hebben een AVG-compliant verwerkersovereenkomst. We delen nooit gegevens met derden.", s4t:"AI-functionaliteit", s4b:"Wanneer je een snack beoordeelt, worden de merknaam, productnaam en smaak doorgestuurd naar de Anthropic API voor nutritionele informatie. Er worden geen persoonsgegevens doorgestuurd.", s5t:"Jouw rechten", s5b:"Je hebt het recht om jouw gegevens in te zien, te corrigeren of te laten verwijderen. Je kunt jouw beoordelingen zelf verwijderen via de app. Voor volledige verwijdering van je account stuur je een e-mail naar snackscheck@gmail.com. We reageren binnen 30 dagen.", s6t:"Contact", s6b:"Vragen over dit privacybeleid? Stuur een e-mail naar snackscheck@gmail.com.", back:"← Terug" }
   },
   en: { appSub:"Snack rating tool", allSnacks:"All snacks", myRatings:"My ratings", search:"Search brand or product...", addRating:"Rate", close:"✕ Close", save:"Save ✓", saved:"Saved!", savedSub:"Your rating has been added.", back:"← Back", reviews:"Reviews", rateFirst:"Rate your first snack →", noRatings:"No snacks rated yet", noRatingsSub:"Add the first one with the + button", noMyRatings:"No ratings yet from", welcomed:"Welcome to SnackCheck", welcomeSub:"What should we call you?", yourName:"Your name", namePh:"e.g. Shou", start:"Get started →", brand:"Brand", brandPh:"e.g. Lays, Haribo", product:"Product name", productPh:"e.g. Ovenbaked, Classic", flavor:"Flavor / Variant", flavorPh:"e.g. Paprika, Sea Salt", category:"Category", rating:"Rating", pros:"Pros", prosPh:"e.g. Crunchy, Well salted", cons:"Cons", consPh:"e.g. Too greasy, Bland", photo:"Photo", photoOptional:"(optional)", photoTap:"Tap to add a photo", minScore:"Min. score", onlyMulti:"Only 2+ ratings", reset:"✕ Reset", comma:"(comma separated)", required:"*", scoreLabels:["","😕 Bad","😐 Mediocre","🙂 OK","😋 Good","🤩 Amazing!"], rated:"Rated", avgScore:"Avg. score", categories:"Categories", ratingsCount:(n)=>`${n} rating${n!==1?"s":""}`, products:(n)=>`${n} product${n!==1?"s":""}`, myRatingsCount:(n,name)=>`${n} rating${n!==1?"s":""} by ${name}`, you:" (you)", sorts:["Newest first","Oldest first","Highest score","Lowest score","Most rated","A → Z"], cats:["All","Chips","Biscuit","Nuts","Candy","Choco","Puffs","Other"],
-    landing:{ hero1:"Rate snacks.", hero2:"Find the good stuff.", sub:"A community-powered snack database. See what others think before you buy — or share your own honest take.", cta1:"Start rating snacks", cta2:"Browse the database", how:"How it works", howTitle:"Honest ratings from real snack lovers", howSub:"No sponsored reviews. No algorithms. Just people rating what they actually ate.", f1t:"Rate any snack", f1d:"Score from 1–5 stars, add pros and cons, upload a photo.", f2t:"Shared database", f2d:"All ratings in one place — anyone can browse and contribute.", f3t:"AI product info", f3d:"Calories, protein, ingredients — looked up automatically.", f4t:"Filter by nutrition", f4d:"Find snacks by max calories, min protein, fibre, and more.", example:"Example rating", exampleTitle:"See what a rating looks like", join:"Join for free", joinTitle:"Join the community — it's free", joinSub:"Create an account to add your ratings and build your personal snack history.", joinBtn:"Create free account", footer:"snackscheck.com · Made with love for snack enthusiasts everywhere" }
+    landing:{ hero1:"Rate snacks.", hero2:"Find the good stuff.", sub:"A community-powered snack database. See what others think before you buy — or share your own honest take.", cta1:"Start rating snacks", cta2:"Browse the database", how:"How it works", howTitle:"Honest ratings from real snack lovers", howSub:"No sponsored reviews. No algorithms. Just people rating what they actually ate.", f1t:"Rate any snack", f1d:"Score from 1–5 stars, add pros and cons, upload a photo.", f2t:"Shared database", f2d:"All ratings in one place — anyone can browse and contribute.", f3t:"AI info & nutrition filters", f3d:"Calories, protein, ingredients — looked up automatically. Filter by nutrition values.", example:"Example rating", exampleTitle:"See what a rating looks like", join:"Join for free", joinTitle:"Join the community — it's free", joinSub:"Create an account to add your ratings and build your personal snack history.", joinBtn:"Create free account", footer:"snackscheck.com · Made with love for snack enthusiasts everywhere", privacy:"Privacy policy" },
+    account:{ title:"My account", email:"Email address", name:"Name", deleteTitle:"Delete account", deleteDesc:"This will delete all your ratings. Then send an email to snackscheck@gmail.com to fully delete your account.", deleteBtn:"Delete my ratings & sign out", deleteConfirm:"Are you sure? This cannot be undone.", yes:"Yes, delete", cancel:"Cancel", logOut:"Sign out" },
+    privacy:{ title:"Privacy Policy", lastUpdated:"Last updated: June 2025", intro:"SnacksCheck (snackscheck.com) is a personal hobby project. We take your privacy seriously and collect as little personal data as possible.", s1t:"What data do we collect?", s1b:"When you create an account, we store your email address and the display name you choose. Your ratings (brand, product name, score, photos) are stored in our database and are visible to all visitors.", s2t:"Why do we store this data?", s2b:"Your email is needed to log in and protect your account. Your name appears on your ratings. We do not use your data for marketing, advertising, or profiling.", s3t:"Who has access?", s3b:"Your data is stored via Supabase (database, EU region) and Vercel (hosting). Both have GDPR-compliant data processing agreements. We never share data with third parties.", s4t:"AI functionality", s4b:"When you rate a snack, the brand name, product name, and flavor are sent to the Anthropic API for nutritional information. No personal data is transmitted.", s5t:"Your rights", s5b:"You have the right to view, correct, or delete your data. You can delete your ratings directly in the app. For full account deletion, email snackscheck@gmail.com. We respond within 30 days.", s6t:"Contact", s6b:"Questions about this privacy policy? Email snackscheck@gmail.com.", back:"← Back" }
   },
   fr: { appSub:"Outil de notation", allSnacks:"Tous les snacks", myRatings:"Mes notes", search:"Rechercher...", addRating:"Noter", close:"✕ Fermer", save:"Enregistrer ✓", saved:"Enregistré!", savedSub:"Votre note a été ajoutée.", back:"← Retour", reviews:"Avis", rateFirst:"Noter votre premier snack →", noRatings:"Aucun snack noté", noRatingsSub:"Ajoutez le premier via le bouton +", noMyRatings:"Aucune note de", welcomed:"Bienvenue sur SnackCheck", welcomeSub:"Comment vous appelle-t-on?", yourName:"Votre nom", namePh:"ex. Shou", start:"Commencer →", brand:"Marque", brandPh:"ex. Lays, Haribo", product:"Nom du produit", productPh:"ex. Ovenbaked, Classic", flavor:"Saveur / Variante", flavorPh:"ex. Paprika, Sel de mer", category:"Catégorie", rating:"Note", pros:"Points positifs", prosPh:"ex. Croustillant, Bien salé", cons:"Points négatifs", consPh:"ex. Trop gras, Sans goût", photo:"Photo", photoOptional:"(optionnel)", photoTap:"Appuyez pour ajouter une photo", minScore:"Score min.", onlyMulti:"Seulement 2+ notes", reset:"✕ Réinitialiser", comma:"(séparé par virgule)", required:"*", scoreLabels:["","😕 Mauvais","😐 Moyen","🙂 OK","😋 Bon","🤩 Excellent!"], rated:"Noté", avgScore:"Score moy.", categories:"Catégories", ratingsCount:(n)=>`${n} avis`, products:(n)=>`${n} produit${n!==1?"s":""}`, myRatingsCount:(n,name)=>`${n} avis de ${name}`, you:" (moi)", sorts:["Plus récent","Plus ancien","Meilleur score","Score le plus bas","Plus noté","A → Z"], cats:["Tout","Chips","Biscuits","Noix","Bonbons","Choco","Puffs","Autre"],
-    landing:{ hero1:"Notez vos snacks.", hero2:"Trouvez les meilleurs.", sub:"Une base de données de snacks par la communauté. Voyez ce que les autres pensent avant d'acheter — ou partagez votre avis.", cta1:"Commencer à noter", cta2:"Parcourir la base", how:"Comment ça marche", howTitle:"Des avis honnêtes de vrais amateurs de snacks", howSub:"Pas de reviews sponsorisées. Pas d'algorithmes. Juste des gens qui notent ce qu'ils ont vraiment mangé.", f1t:"Notez n'importe quel snack", f1d:"Score de 1 à 5 étoiles, ajoutez des points positifs et négatifs, uploadez une photo.", f2t:"Base de données partagée", f2d:"Tous les avis au même endroit — tout le monde peut consulter et contribuer.", f3t:"Info produit IA", f3d:"Calories, protéines, ingrédients — recherchés automatiquement.", f4t:"Filtrer par nutrition", f4d:"Trouvez des snacks par calories max, protéines min, fibres et plus.", example:"Exemple d'avis", exampleTitle:"Voilà à quoi ressemble un avis", join:"Rejoindre gratuitement", joinTitle:"Rejoignez la communauté — c'est gratuit", joinSub:"Créez un compte pour ajouter vos avis et construire votre historique de snacks.", joinBtn:"Créer un compte gratuit", footer:"snackscheck.com · Fait avec amour pour les amateurs de snacks" }
+    landing:{ hero1:"Notez vos snacks.", hero2:"Trouvez les meilleurs.", sub:"Une base de données de snacks par la communauté. Voyez ce que les autres pensent avant d'acheter — ou partagez votre avis.", cta1:"Commencer à noter", cta2:"Parcourir la base", how:"Comment ça marche", howTitle:"Des avis honnêtes de vrais amateurs de snacks", howSub:"Pas de reviews sponsorisées. Pas d'algorithmes. Juste des gens qui notent ce qu'ils ont vraiment mangé.", f1t:"Notez n'importe quel snack", f1d:"Score de 1 à 5 étoiles, ajoutez des points positifs et négatifs, uploadez une photo.", f2t:"Base de données partagée", f2d:"Tous les avis au même endroit — tout le monde peut consulter et contribuer.", f3t:"IA & filtres nutrition", f3d:"Calories, protéines, ingrédients — recherchés automatiquement. Filtrez par valeurs nutritionnelles.", example:"Exemple d'avis", exampleTitle:"Voilà à quoi ressemble un avis", join:"Rejoindre gratuitement", joinTitle:"Rejoignez la communauté — c'est gratuit", joinSub:"Créez un compte pour ajouter vos avis et construire votre historique de snacks.", joinBtn:"Créer un compte gratuit", footer:"snackscheck.com · Fait avec amour pour les amateurs de snacks", privacy:"Politique de confidentialité" },
+    account:{ title:"Mon compte", email:"Adresse e-mail", name:"Nom", deleteTitle:"Supprimer le compte", deleteDesc:"Cela supprimera tous vos avis. Envoyez ensuite un e-mail à snackscheck@gmail.com pour supprimer entièrement votre compte.", deleteBtn:"Supprimer mes avis & déconnexion", deleteConfirm:"Êtes-vous sûr ? Cette action est irréversible.", yes:"Oui, supprimer", cancel:"Annuler", logOut:"Déconnexion" },
+    privacy:{ title:"Politique de confidentialité", lastUpdated:"Dernière mise à jour : juin 2025", intro:"SnacksCheck est un projet personnel. Nous prenons votre vie privée au sérieux.", s1t:"Quelles données collectons-nous ?", s1b:"Votre adresse e-mail et le nom d'affichage que vous choisissez. Vos avis sont visibles par tous.", s2t:"Pourquoi ?", s2b:"Votre e-mail est nécessaire pour la connexion. Nous n'utilisons pas vos données à des fins commerciales.", s3t:"Qui a accès ?", s3b:"Vos données sont stockées via Supabase et Vercel, tous deux conformes au RGPD.", s4t:"Fonctionnalité IA", s4b:"Le nom de la marque et du produit sont envoyés à l'API Anthropic. Aucune donnée personnelle n'est transmise.", s5t:"Vos droits", s5b:"Vous pouvez supprimer vos avis dans l'app. Pour la suppression complète du compte, écrivez à snackscheck@gmail.com.", s6t:"Contact", s6b:"Questions ? Écrivez à snackscheck@gmail.com.", back:"← Retour" }
   },
   es: { appSub:"Herramienta de valoración", allSnacks:"Todos los snacks", myRatings:"Mis valoraciones", search:"Buscar...", addRating:"Valorar", close:"✕ Cerrar", save:"Guardar ✓", saved:"¡Guardado!", savedSub:"Tu valoración ha sido añadida.", back:"← Volver", reviews:"Valoraciones", rateFirst:"Valorar tu primer snack →", noRatings:"Sin snacks valorados", noRatingsSub:"Añade el primero con el botón +", noMyRatings:"Sin valoraciones de", welcomed:"Bienvenido a SnackCheck", welcomeSub:"¿Cómo te llamamos?", yourName:"Tu nombre", namePh:"ej. Shou", start:"Empezar →", brand:"Marca", brandPh:"ej. Lays, Haribo", product:"Nombre del producto", productPh:"ej. Ovenbaked, Classic", flavor:"Sabor / Variante", flavorPh:"ej. Pimentón, Sal marina", category:"Categoría", rating:"Valoración", pros:"Puntos positivos", prosPh:"ej. Crujiente, Bien salado", cons:"Puntos negativos", consPh:"ej. Muy grasiento, Soso", photo:"Foto", photoOptional:"(opcional)", photoTap:"Toca para añadir una foto", minScore:"Puntuación mín.", onlyMulti:"Solo 2+ valoraciones", reset:"✕ Reiniciar", comma:"(separado por comas)", required:"*", scoreLabels:["","😕 Malo","😐 Regular","🙂 OK","😋 Bueno","🤩 ¡Genial!"], rated:"Valorado", avgScore:"Punt. media", categories:"Categorías", ratingsCount:(n)=>`${n} valoración${n!==1?"es":""}`, products:(n)=>`${n} producto${n!==1?"s":""}`, myRatingsCount:(n,name)=>`${n} valoración${n!==1?"es":""} de ${name}`, you:" (yo)", sorts:["Más reciente","Más antiguo","Mayor puntuación","Menor puntuación","Más valorado","A → Z"], cats:["Todo","Chips","Galletas","Frutos secos","Dulces","Choco","Puffs","Otros"],
-    landing:{ hero1:"Valora snacks.", hero2:"Encuentra los mejores.", sub:"Una base de datos de snacks impulsada por la comunidad. Ve lo que otros piensan antes de comprar — o comparte tu opinión.", cta1:"Empezar a valorar", cta2:"Ver la base de datos", how:"Cómo funciona", howTitle:"Valoraciones honestas de verdaderos amantes de los snacks", howSub:"Sin reviews patrocinadas. Sin algoritmos. Solo personas valorando lo que realmente comieron.", f1t:"Valora cualquier snack", f1d:"Puntuación de 1 a 5 estrellas, añade pros y contras, sube una foto.", f2t:"Base de datos compartida", f2d:"Todas las valoraciones en un lugar — cualquiera puede ver y contribuir.", f3t:"Info de producto IA", f3d:"Calorías, proteínas, ingredientes — buscados automáticamente.", f4t:"Filtrar por nutrición", f4d:"Encuentra snacks por calorías máx., proteínas mín., fibra y más.", example:"Valoración de ejemplo", exampleTitle:"Así es una valoración", join:"Únete gratis", joinTitle:"Únete a la comunidad — es gratis", joinSub:"Crea una cuenta para añadir tus valoraciones y construir tu historial de snacks.", joinBtn:"Crear cuenta gratis", footer:"snackscheck.com · Hecho con amor para los amantes de los snacks" }
+    landing:{ hero1:"Valora snacks.", hero2:"Encuentra los mejores.", sub:"Una base de datos de snacks impulsada por la comunidad. Ve lo que otros piensan antes de comprar — o comparte tu opinión.", cta1:"Empezar a valorar", cta2:"Ver la base de datos", how:"Cómo funciona", howTitle:"Valoraciones honestas de verdaderos amantes de los snacks", howSub:"Sin reviews patrocinadas. Sin algoritmos. Solo personas valorando lo que realmente comieron.", f1t:"Valora cualquier snack", f1d:"Puntuación de 1 a 5 estrellas, añade pros y contras, sube una foto.", f2t:"Base de datos compartida", f2d:"Todas las valoraciones en un lugar — cualquiera puede ver y contribuir.", f3t:"IA & filtros nutrición", f3d:"Calorías, proteínas, ingredientes — buscados automáticamente. Filtra por valores nutricionales.", example:"Valoración de ejemplo", exampleTitle:"Así es una valoración", join:"Únete gratis", joinTitle:"Únete a la comunidad — es gratis", joinSub:"Crea una cuenta para añadir tus valoraciones y construir tu historial de snacks.", joinBtn:"Crear cuenta gratis", footer:"snackscheck.com · Hecho con amor para los amantes de los snacks", privacy:"Política de privacidad" },
+    account:{ title:"Mi cuenta", email:"Correo electrónico", name:"Nombre", deleteTitle:"Eliminar cuenta", deleteDesc:"Esto eliminará todas tus valoraciones. Luego envía un correo a snackscheck@gmail.com para eliminar completamente tu cuenta.", deleteBtn:"Eliminar mis valoraciones y cerrar sesión", deleteConfirm:"¿Estás seguro? Esta acción no se puede deshacer.", yes:"Sí, eliminar", cancel:"Cancelar", logOut:"Cerrar sesión" },
+    privacy:{ title:"Política de privacidad", lastUpdated:"Última actualización: junio 2025", intro:"SnacksCheck es un proyecto personal. Tomamos tu privacidad en serio.", s1t:"¿Qué datos recopilamos?", s1b:"Tu correo electrónico y el nombre que eliges. Tus valoraciones son visibles para todos.", s2t:"¿Por qué?", s2b:"Tu correo es necesario para iniciar sesión. No usamos tus datos con fines comerciales.", s3t:"¿Quién tiene acceso?", s3b:"Tus datos se almacenan en Supabase y Vercel, ambos conformes al RGPD.", s4t:"Funcionalidad de IA", s4b:"El nombre de la marca y del producto se envían a la API de Anthropic. No se transmiten datos personales.", s5t:"Tus derechos", s5b:"Puedes eliminar tus valoraciones en la app. Para eliminar tu cuenta, escribe a snackscheck@gmail.com.", s6t:"Contacto", s6b:"¿Preguntas? Escribe a snackscheck@gmail.com.", back:"← Volver" }
   },
   de: { appSub:"Snack-Bewertungstool", allSnacks:"Alle Snacks", myRatings:"Meine Bewertungen", search:"Suchen...", addRating:"Bewerten", close:"✕ Schließen", save:"Speichern ✓", saved:"Gespeichert!", savedSub:"Deine Bewertung wurde hinzugefügt.", back:"← Zurück", reviews:"Bewertungen", rateFirst:"Ersten Snack bewerten →", noRatings:"Noch keine Snacks bewertet", noRatingsSub:"Füge den ersten über den + Knopf hinzu", noMyRatings:"Noch keine Bewertungen von", welcomed:"Willkommen bei SnackCheck", welcomeSub:"Wie sollen wir dich nennen?", yourName:"Dein Name", namePh:"z.B. Shou", start:"Loslegen →", brand:"Marke", brandPh:"z.B. Lays, Haribo", product:"Produktname", productPh:"z.B. Ovenbaked, Classic", flavor:"Geschmack / Variante", flavorPh:"z.B. Paprika, Meersalz", category:"Kategorie", rating:"Bewertung", pros:"Vorteile", prosPh:"z.B. Knusprig, Gut gesalzen", cons:"Nachteile", consPh:"z.B. Zu fettig, Geschmacklos", photo:"Foto", photoOptional:"(optional)", photoTap:"Tippen um ein Foto hinzuzufügen", minScore:"Mindest-Score", onlyMulti:"Nur 2+ Bewertungen", reset:"✕ Zurücksetzen", comma:"(kommagetrennt)", required:"*", scoreLabels:["","😕 Schlecht","😐 Mäßig","🙂 OK","😋 Gut","🤩 Großartig!"], rated:"Bewertet", avgScore:"Ø Score", categories:"Kategorien", ratingsCount:(n)=>`${n} Bewertung${n!==1?"en":""}`, products:(n)=>`${n} Produkt${n!==1?"e":""}`, myRatingsCount:(n,name)=>`${n} Bewertung${n!==1?"en":""} von ${name}`, you:" (ich)", sorts:["Neueste zuerst","Älteste zuerst","Höchste Bewertung","Niedrigste Bewertung","Meistbewertet","A → Z"], cats:["Alles","Chips","Kekse","Nüsse","Süßigkeiten","Schokolade","Puffs","Sonstiges"],
-    landing:{ hero1:"Snacks bewerten.", hero2:"Die besten finden.", sub:"Eine Community-betriebene Snack-Datenbank. Sieh was andere denken, bevor du kaufst — oder teile deine eigene Meinung.", cta1:"Snacks bewerten", cta2:"Datenbank durchsuchen", how:"So funktioniert's", howTitle:"Ehrliche Bewertungen von echten Snack-Liebhabern", howSub:"Keine gesponserten Reviews. Keine Algorithmen. Nur Menschen, die bewerten, was sie wirklich gegessen haben.", f1t:"Jeden Snack bewerten", f1d:"Bewertung von 1–5 Sternen, Vor- und Nachteile, Foto hochladen.", f2t:"Geteilte Datenbank", f2d:"Alle Bewertungen an einem Ort — jeder kann stöbern und beitragen.", f3t:"KI-Produktinfo", f3d:"Kalorien, Eiweiß, Zutaten — automatisch nachgeschlagen.", f4t:"Nach Nährwerten filtern", f4d:"Snacks nach max. Kalorien, min. Eiweiß, Ballaststoffen und mehr finden.", example:"Beispielbewertung", exampleTitle:"So sieht eine Bewertung aus", join:"Kostenlos mitmachen", joinTitle:"Der Community beitreten — kostenlos", joinSub:"Erstelle ein Konto, um deine Bewertungen hinzuzufügen und deine persönliche Snack-Geschichte aufzubauen.", joinBtn:"Kostenloses Konto erstellen", footer:"snackscheck.com · Mit Liebe für Snack-Enthusiasten gemacht" }
+    landing:{ hero1:"Snacks bewerten.", hero2:"Die besten finden.", sub:"Eine Community-betriebene Snack-Datenbank. Sieh was andere denken, bevor du kaufst — oder teile deine eigene Meinung.", cta1:"Snacks bewerten", cta2:"Datenbank durchsuchen", how:"So funktioniert's", howTitle:"Ehrliche Bewertungen von echten Snack-Liebhabern", howSub:"Keine gesponserten Reviews. Keine Algorithmen. Nur Menschen, die bewerten, was sie wirklich gegessen haben.", f1t:"Jeden Snack bewerten", f1d:"Bewertung von 1–5 Sternen, Vor- und Nachteile, Foto hochladen.", f2t:"Geteilte Datenbank", f2d:"Alle Bewertungen an einem Ort — jeder kann stöbern und beitragen.", f3t:"KI-Info & Ernährungsfilter", f3d:"Kalorien, Eiweiß, Zutaten — automatisch nachgeschlagen. Nach Nährwerten filtern.", example:"Beispielbewertung", exampleTitle:"So sieht eine Bewertung aus", join:"Kostenlos mitmachen", joinTitle:"Der Community beitreten — kostenlos", joinSub:"Erstelle ein Konto, um deine Bewertungen hinzuzufügen und deine persönliche Snack-Geschichte aufzubauen.", joinBtn:"Kostenloses Konto erstellen", footer:"snackscheck.com · Mit Liebe für Snack-Enthusiasten gemacht", privacy:"Datenschutzerklärung" },
+    account:{ title:"Mein Konto", email:"E-Mail-Adresse", name:"Name", deleteTitle:"Konto löschen", deleteDesc:"Dadurch werden alle deine Bewertungen gelöscht. Schreibe dann eine E-Mail an snackscheck@gmail.com, um dein Konto vollständig zu löschen.", deleteBtn:"Bewertungen löschen & abmelden", deleteConfirm:"Bist du sicher? Dies kann nicht rückgängig gemacht werden.", yes:"Ja, löschen", cancel:"Abbrechen", logOut:"Abmelden" },
+    privacy:{ title:"Datenschutzerklärung", lastUpdated:"Letzte Aktualisierung: Juni 2025", intro:"SnacksCheck ist ein persönliches Hobbyprojekt. Wir nehmen deinen Datenschutz ernst.", s1t:"Welche Daten sammeln wir?", s1b:"Deine E-Mail-Adresse und den Anzeigenamen, den du wählst. Deine Bewertungen sind für alle sichtbar.", s2t:"Warum?", s2b:"Deine E-Mail wird für die Anmeldung benötigt. Wir nutzen deine Daten nicht für Marketing.", s3t:"Wer hat Zugriff?", s3b:"Deine Daten werden über Supabase und Vercel gespeichert, beide DSGVO-konform.", s4t:"KI-Funktionalität", s4b:"Marken- und Produktname werden an die Anthropic API gesendet. Keine personenbezogenen Daten.", s5t:"Deine Rechte", s5b:"Du kannst deine Bewertungen in der App löschen. Für die vollständige Kontolöschung schreibe an snackscheck@gmail.com.", s6t:"Kontakt", s6b:"Fragen? Schreibe an snackscheck@gmail.com.", back:"← Zurück" }
   },
   it: { appSub:"Strumento di valutazione", allSnacks:"Tutti gli snack", myRatings:"Le mie valutazioni", search:"Cerca...", addRating:"Valuta", close:"✕ Chiudi", save:"Salva ✓", saved:"Salvato!", savedSub:"La tua valutazione è stata aggiunta.", back:"← Indietro", reviews:"Valutazioni", rateFirst:"Valuta il tuo primo snack →", noRatings:"Nessuno snack valutato", noRatingsSub:"Aggiungi il primo con il pulsante +", noMyRatings:"Nessuna valutazione di", welcomed:"Benvenuto su SnackCheck", welcomeSub:"Come ti chiamiamo?", yourName:"Il tuo nome", namePh:"es. Shou", start:"Inizia →", brand:"Marca", brandPh:"es. Lays, Haribo", product:"Nome prodotto", productPh:"es. Ovenbaked, Classic", flavor:"Gusto / Variante", flavorPh:"es. Paprika, Sale marino", category:"Categoria", rating:"Valutazione", pros:"Punti positivi", prosPh:"es. Croccante, Ben salato", cons:"Punti negativi", consPh:"es. Troppo unto, Insipido", photo:"Foto", photoOptional:"(opzionale)", photoTap:"Tocca per aggiungere una foto", minScore:"Punteggio min.", onlyMulti:"Solo 2+ valutazioni", reset:"✕ Reimposta", comma:"(separato da virgole)", required:"*", scoreLabels:["","😕 Pessimo","😐 Mediocre","🙂 OK","😋 Buono","🤩 Eccellente!"], rated:"Valutato", avgScore:"Punteggio medio", categories:"Categorie", ratingsCount:(n)=>`${n} valutazion${n!==1?"i":"e"}`, products:(n)=>`${n} prodott${n!==1?"i":"o"}`, myRatingsCount:(n,name)=>`${n} valutazion${n!==1?"i":"e"} di ${name}`, you:" (io)", sorts:["Più recente","Più vecchio","Punteggio più alto","Punteggio più basso","Più valutato","A → Z"], cats:["Tutto","Chips","Biscotti","Noci","Dolci","Cioccolato","Puffs","Altro"],
-    landing:{ hero1:"Valuta gli snack.", hero2:"Trova i migliori.", sub:"Un database di snack alimentato dalla community. Guarda cosa pensano gli altri prima di acquistare — o condividi la tua opinione.", cta1:"Inizia a valutare", cta2:"Sfoglia il database", how:"Come funziona", howTitle:"Valutazioni oneste da veri amanti degli snack", howSub:"Nessuna recensione sponsorizzata. Nessun algoritmo. Solo persone che valutano quello che hanno davvero mangiato.", f1t:"Valuta qualsiasi snack", f1d:"Punteggio da 1 a 5 stelle, aggiungi pro e contro, carica una foto.", f2t:"Database condiviso", f2d:"Tutte le valutazioni in un posto — chiunque può sfogliare e contribuire.", f3t:"Info prodotto IA", f3d:"Calorie, proteine, ingredienti — ricercati automaticamente.", f4t:"Filtra per nutrizione", f4d:"Trova snack per calorie max, proteine min, fibre e altro.", example:"Valutazione di esempio", exampleTitle:"Ecco come appare una valutazione", join:"Unisciti gratis", joinTitle:"Unisciti alla community — è gratis", joinSub:"Crea un account per aggiungere le tue valutazioni e costruire la tua storia di snack.", joinBtn:"Crea account gratuito", footer:"snackscheck.com · Fatto con amore per gli appassionati di snack" }
+    landing:{ hero1:"Valuta gli snack.", hero2:"Trova i migliori.", sub:"Un database di snack alimentato dalla community. Guarda cosa pensano gli altri prima di acquistare — o condividi la tua opinione.", cta1:"Inizia a valutare", cta2:"Sfoglia il database", how:"Come funziona", howTitle:"Valutazioni oneste da veri amanti degli snack", howSub:"Nessuna recensione sponsorizzata. Nessun algoritmo. Solo persone che valutano quello che hanno davvero mangiato.", f1t:"Valuta qualsiasi snack", f1d:"Punteggio da 1 a 5 stelle, aggiungi pro e contro, carica una foto.", f2t:"Database condiviso", f2d:"Tutte le valutazioni in un posto — chiunque può sfogliare e contribuire.", f3t:"IA & filtri nutrizione", f3d:"Calorie, proteine, ingredienti — ricercati automaticamente. Filtra per valori nutrizionali.", example:"Valutazione di esempio", exampleTitle:"Ecco come appare una valutazione", join:"Unisciti gratis", joinTitle:"Unisciti alla community — è gratis", joinSub:"Crea un account per aggiungere le tue valutazioni e costruire la tua storia di snack.", joinBtn:"Crea account gratuito", footer:"snackscheck.com · Fatto con amore per gli appassionati di snack", privacy:"Informativa sulla privacy" },
+    account:{ title:"Il mio account", email:"Indirizzo email", name:"Nome", deleteTitle:"Elimina account", deleteDesc:"Questo eliminerà tutte le tue valutazioni. Poi invia un'email a snackscheck@gmail.com per eliminare completamente il tuo account.", deleteBtn:"Elimina le mie valutazioni e disconnetti", deleteConfirm:"Sei sicuro? Questa azione non può essere annullata.", yes:"Sì, elimina", cancel:"Annulla", logOut:"Disconnetti" },
+    privacy:{ title:"Informativa sulla privacy", lastUpdated:"Ultimo aggiornamento: giugno 2025", intro:"SnacksCheck è un progetto personale. Prendiamo sul serio la tua privacy.", s1t:"Quali dati raccogliamo?", s1b:"Il tuo indirizzo email e il nome che scegli. Le tue valutazioni sono visibili a tutti.", s2t:"Perché?", s2b:"La tua email è necessaria per accedere. Non usiamo i tuoi dati per scopi commerciali.", s3t:"Chi ha accesso?", s3b:"I tuoi dati sono archiviati tramite Supabase e Vercel, entrambi conformi al GDPR.", s4t:"Funzionalità AI", s4b:"Il nome del marchio e del prodotto vengono inviati all'API di Anthropic. Nessun dato personale viene trasmesso.", s5t:"I tuoi diritti", s5b:"Puoi eliminare le tue valutazioni nell'app. Per l'eliminazione completa dell'account, scrivi a snackscheck@gmail.com.", s6t:"Contatto", s6b:"Domande? Scrivi a snackscheck@gmail.com.", back:"← Indietro" }
   },
 };
+
 const LANG_FLAGS = { nl:"🇳🇱", en:"🇬🇧", fr:"🇫🇷", es:"🇪🇸", de:"🇩🇪", it:"🇮🇹" };
 const CAT_ICONS = ["🛒","🥔","🍪","🥜","🍬","🍫","🍿","📦"];
 const CAT_IDS   = ["all","chips","koek","noten","snoep","chocolade","popcorn","anders"];
@@ -55,7 +68,7 @@ If unknown, estimate and set confidence to "low". Return only JSON.` }]
   } catch { return null; }
 }
 
-// ── Shared UI ─────────────────────────────────────────────────────────────────
+// ── Shared UI ────────────────────────────────────────────────────────────────
 function Stars({value, onChange, size=28}) {
   const [hov,setHov]=useState(0);
   return (
@@ -101,34 +114,21 @@ function ProductInfoCard({info}) {
           {info.confidence} confidence
         </span>
       </div>
-      {info.description && (
-        <p style={{fontSize:13,color:"#ccc",margin:"0 0 12px",lineHeight:1.5}}>{info.description}</p>
-      )}
+      {info.description&&<p style={{fontSize:13,color:"#ccc",margin:"0 0 12px",lineHeight:1.5}}>{info.description}</p>}
       <div style={{display:"flex",background:"#1a1a1a",borderRadius:8,padding:3,marginBottom:12,gap:3}}>
         {["nutrition","ingredients"].map(tb=>(
           <button key={tb} onClick={()=>setInfoTab(tb)}
             style={{flex:1,padding:"6px",border:"none",borderRadius:6,cursor:"pointer",fontSize:12,fontWeight:600,
-              background:infoTab===tb?P.orange:"transparent",
-              color:infoTab===tb?"white":"#666",transition:"all .15s"}}>
+              background:infoTab===tb?P.orange:"transparent",color:infoTab===tb?"white":"#666",transition:"all .15s"}}>
             {tb==="nutrition"?"Nutrition":"Ingredients"}
           </button>
         ))}
       </div>
-      {infoTab==="nutrition" && info.per100g && (
+      {infoTab==="nutrition"&&info.per100g&&(
         <div>
-          <div style={{fontSize:11,color:"#666",marginBottom:6}}>
-            PER 100g{info.servingSize?` · serving ~${info.servingSize}g`:""}
-          </div>
+          <div style={{fontSize:11,color:"#666",marginBottom:6}}>PER 100g{info.servingSize?` · serving ~${info.servingSize}g`:""}</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6}}>
-            {[
-              {label:"Calories",val:`${info.per100g.calories} kcal`},
-              {label:"Protein",val:`${info.per100g.protein}g`},
-              {label:"Fat",val:`${info.per100g.fat}g`},
-              {label:"Carbs",val:`${info.per100g.carbs}g`},
-              {label:"Sugar",val:`${info.per100g.sugar}g`},
-              {label:"Salt",val:`${info.per100g.salt}g`},
-              {label:"Fibre",val:`${info.per100g.fibre??"—"}${info.per100g.fibre!=null?"g":""}`},
-            ].map((n,i)=>(
+            {[{label:"Calories",val:`${info.per100g.calories} kcal`},{label:"Protein",val:`${info.per100g.protein}g`},{label:"Fat",val:`${info.per100g.fat}g`},{label:"Carbs",val:`${info.per100g.carbs}g`},{label:"Sugar",val:`${info.per100g.sugar}g`},{label:"Salt",val:`${info.per100g.salt}g`},{label:"Fibre",val:`${info.per100g.fibre??"—"}${info.per100g.fibre!=null?"g":""}`}].map((n,i)=>(
               <div key={i} style={{background:"#1a1a1a",borderRadius:8,padding:"7px 8px",textAlign:"center"}}>
                 <div style={{fontSize:13,fontWeight:700,color:"white"}}>{n.val}</div>
                 <div style={{fontSize:10,color:"#666",marginTop:2}}>{n.label}</div>
@@ -137,17 +137,11 @@ function ProductInfoCard({info}) {
           </div>
         </div>
       )}
-      {infoTab==="ingredients" && (
+      {infoTab==="ingredients"&&(
         <div style={{fontSize:13,color:"#bbb",lineHeight:1.9}}>
-          {ingList.length > 0
-            ? ingList.map((ing,i)=>(
-                <span key={i}>
-                  <span style={{color:"white",fontWeight:500}}>{ing.trim()}</span>
-                  {i < ingList.length-1 && <span style={{color:"#444"}}>, </span>}
-                </span>
-              ))
-            : <span style={{color:"#555",fontStyle:"italic"}}>No ingredients data available.</span>
-          }
+          {ingList.length>0?ingList.map((ing,i)=>(
+            <span key={i}><span style={{color:"white",fontWeight:500}}>{ing.trim()}</span>{i<ingList.length-1&&<span style={{color:"#444"}}>, </span>}</span>
+          )):<span style={{color:"#555",fontStyle:"italic"}}>No ingredients data available.</span>}
         </div>
       )}
       <div style={{fontSize:10,color:"#444",marginTop:10}}>* AI-estimated. May not reflect exact packaging values.</div>
@@ -166,8 +160,7 @@ function AuthModal({ onClose, t }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const canSubmit = mode==='signup' ? (name.trim()&&email&&password.length>=6) : (email&&password);
-
+  const canSubmit = mode==='signup'?(name.trim()&&email&&password.length>=6):(email&&password);
   const submit = async () => {
     if(!canSubmit||busy) return;
     setBusy(true); setError('');
@@ -179,7 +172,6 @@ function AuthModal({ onClose, t }) {
       if(err){setError(err.message);setBusy(false);}else onClose();
     }
   };
-
   return (
     <div style={{background:P.card,borderRadius:20,padding:28,maxWidth:340,width:"100%",margin:"0 auto",boxShadow:"0 8px 40px rgba(0,0,0,0.12)"}}>
       <div style={{width:56,height:56,borderRadius:16,background:P.orange,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,marginBottom:16}}>🍬</div>
@@ -187,29 +179,17 @@ function AuthModal({ onClose, t }) {
         {[['login','Log in'],['signup','Sign up']].map(([m,label])=>(
           <button key={m} onClick={()=>{setMode(m);setError('');}}
             style={{flex:1,padding:"8px",border:"none",borderRadius:10,cursor:"pointer",fontSize:13,fontWeight:600,
-              background:mode===m?P.orange:"transparent",color:mode===m?"white":"#888",transition:"all .15s"}}>
-            {label}
-          </button>
+              background:mode===m?P.orange:"transparent",color:mode===m?"white":"#888",transition:"all .15s"}}>{label}</button>
         ))}
       </div>
-      {mode==='signup'&&(
-        <>
-          <label style={lbl}>{t.yourName} *</label>
-          <input style={{...inp,marginBottom:12}} placeholder={t.namePh} value={name}
-            onChange={e=>setName(e.target.value)} autoFocus onKeyDown={e=>e.key==='Enter'&&submit()}/>
-        </>
-      )}
+      {mode==='signup'&&<><label style={lbl}>{t.yourName} *</label><input style={{...inp,marginBottom:12}} placeholder={t.namePh} value={name} onChange={e=>setName(e.target.value)} autoFocus onKeyDown={e=>e.key==='Enter'&&submit()}/></>}
       <label style={lbl}>Email *</label>
-      <input style={{...inp,marginBottom:12}} type="email" placeholder="your@email.com" value={email}
-        onChange={e=>setEmail(e.target.value)} autoFocus={mode==='login'} onKeyDown={e=>e.key==='Enter'&&submit()}/>
+      <input style={{...inp,marginBottom:12}} type="email" placeholder="your@email.com" value={email} onChange={e=>setEmail(e.target.value)} autoFocus={mode==='login'} onKeyDown={e=>e.key==='Enter'&&submit()}/>
       <label style={lbl}>Password * {mode==='signup'&&<span style={{textTransform:"none",fontWeight:400,letterSpacing:0,fontSize:10}}>(min. 6 characters)</span>}</label>
-      <input style={{...inp,marginBottom:error?8:20}} type="password" placeholder="••••••••" value={password}
-        onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()}/>
+      <input style={{...inp,marginBottom:error?8:20}} type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()}/>
       {error&&<div style={{fontSize:13,color:P.red,marginBottom:14,padding:"8px 12px",background:P.redLight,borderRadius:8}}>{error}</div>}
       <button onClick={submit} disabled={busy||!canSubmit}
-        style={{width:"100%",padding:"13px",borderRadius:12,border:"none",
-          background:(busy||!canSubmit)?P.muted:P.orange,color:"white",fontWeight:700,fontSize:15,
-          cursor:(busy||!canSubmit)?"not-allowed":"pointer",transition:"background .15s"}}>
+        style={{width:"100%",padding:"13px",borderRadius:12,border:"none",background:(busy||!canSubmit)?P.muted:P.orange,color:"white",fontWeight:700,fontSize:15,cursor:(busy||!canSubmit)?"not-allowed":"pointer",transition:"background .15s"}}>
         {busy?'...':(mode==='login'?'Log in →':'Create account →')}
       </button>
     </div>
@@ -242,9 +222,13 @@ export default function SnackCheck() {
   const [infoLoading,setInfoLoading]=useState(false);
   const [submitted,setSubmitted]=useState(false);
   const [showAuthModal,setShowAuthModal]=useState(false);
+  const [deleteConfirmed,setDeleteConfirmed]=useState(false);
+  const [deleteBusy,setDeleteBusy]=useState(false);
   const infoDebRef=useRef();
   const t = LANGS[lang];
   const l = t.landing;
+  const pa = t.account;
+  const pp = t.privacy;
   const userName = user?.user_metadata?.display_name;
 
   useEffect(()=>{
@@ -272,9 +256,19 @@ export default function SnackCheck() {
     },900);
   },[form.brand,form.name,form.flavor,view]);
 
-  const handleLang = l=>{setLang(l);setShowLangPicker(false);localStorage.setItem(LANG_KEY,l);};
+  const handleLang = code=>{setLang(code);setShowLangPicker(false);localStorage.setItem(LANG_KEY,code);};
   const goToRate = ()=>{if(!user){setShowAuthModal(true);}else{setView("rate");}};
   const avg = list=>list.reduce((s,r)=>s+r.score,0)/list.length;
+
+  const handleDeleteAccount = async () => {
+    if(!user||deleteBusy) return;
+    setDeleteBusy(true);
+    await supabase.from('ratings').delete().eq('user_id',user.id);
+    await supabase.auth.signOut();
+    setDeleteBusy(false);
+    setDeleteConfirmed(false);
+    setView("landing");
+  };
 
   const filtered = ratings.filter(r=>
     (cat==="all"||r.category===cat)&&
@@ -340,7 +334,6 @@ export default function SnackCheck() {
     </div>
   );
 
-  // ── Lang Picker (reusable) ─────────────────────────────────────────────────
   function LangPicker({light=false}) {
     return (
       <div style={{position:"relative"}}>
@@ -350,11 +343,11 @@ export default function SnackCheck() {
         </button>
         {showLangPicker&&(
           <div style={{position:"absolute",right:0,top:36,background:P.card,borderRadius:12,border:`1.5px solid ${P.border}`,overflow:"hidden",zIndex:300,minWidth:140,boxShadow:"0 4px 20px rgba(0,0,0,0.1)"}}>
-            {Object.keys(LANGS).map(l=>(
-              <button key={l} onClick={()=>handleLang(l)}
-                style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 14px",border:"none",background:lang===l?P.orangeLight:"white",cursor:"pointer",fontSize:13,fontWeight:lang===l?700:400,color:lang===l?P.orange:P.text,borderBottom:`1px solid ${P.border}`}}>
-                <span style={{fontSize:16}}>{LANG_FLAGS[l]}</span>
-                {{nl:"Nederlands",en:"English",fr:"Français",es:"Español",de:"Deutsch",it:"Italiano"}[l]}
+            {Object.keys(LANGS).map(code=>(
+              <button key={code} onClick={()=>handleLang(code)}
+                style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 14px",border:"none",background:lang===code?P.orangeLight:"white",cursor:"pointer",fontSize:13,fontWeight:lang===code?700:400,color:lang===code?P.orange:P.text,borderBottom:`1px solid ${P.border}`}}>
+                <span style={{fontSize:16}}>{LANG_FLAGS[code]}</span>
+                {{nl:"Nederlands",en:"English",fr:"Français",es:"Español",de:"Deutsch",it:"Italiano"}[code]}
               </button>
             ))}
           </div>
@@ -375,10 +368,10 @@ export default function SnackCheck() {
         </div>
         {action||<div style={{display:"flex",alignItems:"center",gap:8}}>
           {user
-            ? <><Avatar name={userName} size={30}/>
+            ? <><div style={{cursor:"pointer"}} onClick={()=>setView("account")}><Avatar name={userName} size={30}/></div>
                 <button onClick={()=>supabase.auth.signOut()}
                   style={{background:"rgba(255,255,255,0.2)",color:"white",border:"none",borderRadius:16,padding:"5px 10px",cursor:"pointer",fontSize:13,fontWeight:600}}>
-                  Log out
+                  {pa.logOut}
                 </button>
               </>
             : <button onClick={()=>setShowAuthModal(true)}
@@ -402,11 +395,96 @@ export default function SnackCheck() {
     </div>
   );
 
+  // ── Privacy policy ────────────────────────────────────────────────────────
+  if(view==="privacy") return (
+    <div style={{minHeight:"100vh",background:P.bg,fontFamily:"system-ui,sans-serif"}}>
+      <Header subtitle={pp.title}/>
+      {authModal}
+      <div style={{padding:"24px 20px",maxWidth:600,margin:"0 auto"}}>
+        <button onClick={()=>setView("landing")} style={{background:"none",border:"none",color:P.orange,cursor:"pointer",fontSize:14,fontWeight:700,padding:0,marginBottom:24}}>{pp.back}</button>
+        <h1 style={{fontSize:24,fontWeight:800,color:P.text,marginBottom:6}}>{pp.title}</h1>
+        <p style={{fontSize:13,color:P.muted,marginBottom:28}}>{pp.lastUpdated}</p>
+        <p style={{fontSize:14,color:P.muted,lineHeight:1.7,marginBottom:24}}>{pp.intro}</p>
+        {[
+          {title:pp.s1t, body:pp.s1b},
+          {title:pp.s2t, body:pp.s2b},
+          {title:pp.s3t, body:pp.s3b},
+          {title:pp.s4t, body:pp.s4b},
+          {title:pp.s5t, body:pp.s5b},
+          {title:pp.s6t, body:pp.s6b},
+        ].map((s,i)=>(
+          <div key={i} style={{marginBottom:24}}>
+            <div style={{fontSize:15,fontWeight:700,color:P.text,marginBottom:6}}>{s.title}</div>
+            <div style={{fontSize:14,color:P.muted,lineHeight:1.7}}>{s.body}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // ── Account page ──────────────────────────────────────────────────────────
+  if(view==="account"&&user) return (
+    <div style={{minHeight:"100vh",background:P.bg,fontFamily:"system-ui,sans-serif"}}>
+      <Header subtitle={pa.title}/>
+      {authModal}
+      <div style={{padding:"24px 20px",maxWidth:480,margin:"0 auto"}}>
+        <button onClick={()=>setView("home")} style={{background:"none",border:"none",color:P.orange,cursor:"pointer",fontSize:14,fontWeight:700,padding:0,marginBottom:24}}>{t.back}</button>
+        <div style={{background:P.card,borderRadius:16,border:`1.5px solid ${P.border}`,padding:20,marginBottom:16}}>
+          <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:16}}>
+            <Avatar name={userName} size={52}/>
+            <div>
+              <div style={{fontSize:18,fontWeight:700,color:P.text}}>{userName}</div>
+              <div style={{fontSize:13,color:P.muted}}>{user.email}</div>
+            </div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>
+            {[
+              {label:t.rated, val:ratings.filter(r=>r.userId===user.id).length},
+              {label:t.categories, val:[...new Set(ratings.filter(r=>r.userId===user.id).map(r=>r.category))].length},
+            ].map((s,i)=>(
+              <div key={i} style={{background:P.bg,borderRadius:10,padding:"12px 10px",textAlign:"center"}}>
+                <div style={{fontSize:22,fontWeight:800,color:P.orange}}>{s.val}</div>
+                <div style={{fontSize:11,color:P.muted,textTransform:"uppercase",letterSpacing:.5}}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{background:P.card,borderRadius:16,border:`1.5px solid ${P.border}`,padding:20,marginBottom:16}}>
+          <div style={{fontSize:13,fontWeight:700,color:P.text,marginBottom:4}}>{l.privacy}</div>
+          <button onClick={()=>setView("privacy")} style={{background:"none",border:"none",color:P.orange,cursor:"pointer",fontSize:13,padding:0,fontWeight:600}}>
+            {l.privacy} →
+          </button>
+        </div>
+
+        <div style={{background:P.redLight,borderRadius:16,border:`1.5px solid #fca5a5`,padding:20}}>
+          <div style={{fontSize:15,fontWeight:700,color:P.red,marginBottom:8}}>{pa.deleteTitle}</div>
+          <p style={{fontSize:13,color:"#7f1d1d",lineHeight:1.6,marginBottom:16}}>{pa.deleteDesc}</p>
+          {!deleteConfirmed
+            ? <button onClick={()=>setDeleteConfirmed(true)}
+                style={{background:"white",color:P.red,border:`1.5px solid ${P.red}`,borderRadius:10,padding:"10px 18px",fontSize:14,fontWeight:700,cursor:"pointer"}}>
+                {pa.deleteBtn}
+              </button>
+            : <div style={{display:"flex",gap:10}}>
+                <button onClick={handleDeleteAccount} disabled={deleteBusy}
+                  style={{background:P.red,color:"white",border:"none",borderRadius:10,padding:"10px 18px",fontSize:14,fontWeight:700,cursor:"pointer"}}>
+                  {deleteBusy?"...":pa.yes}
+                </button>
+                <button onClick={()=>setDeleteConfirmed(false)}
+                  style={{background:"white",color:P.muted,border:`1.5px solid ${P.border}`,borderRadius:10,padding:"10px 18px",fontSize:14,fontWeight:600,cursor:"pointer"}}>
+                  {pa.cancel}
+                </button>
+              </div>
+          }
+        </div>
+      </div>
+    </div>
+  );
+
   // ── Landing page ──────────────────────────────────────────────────────────
   if(view==="landing") return (
     <div style={{minHeight:"100vh",background:P.bg,fontFamily:"system-ui,sans-serif"}}>
       {authModal}
-      {/* Nav */}
       <div style={{background:P.orange,padding:"14px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:36,height:36,borderRadius:10,background:"rgba(255,255,255,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>🍬</div>
@@ -414,14 +492,8 @@ export default function SnackCheck() {
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           {user
-            ? <button onClick={()=>setView("home")}
-                style={{background:"rgba(255,255,255,0.2)",color:"white",border:"none",borderRadius:16,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:600}}>
-                Open app →
-              </button>
-            : <button onClick={()=>setShowAuthModal(true)}
-                style={{background:"rgba(255,255,255,0.2)",color:"white",border:"none",borderRadius:16,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:600}}>
-                Log in
-              </button>
+            ? <button onClick={()=>setView("home")} style={{background:"rgba(255,255,255,0.2)",color:"white",border:"none",borderRadius:16,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:600}}>Open app →</button>
+            : <button onClick={()=>setShowAuthModal(true)} style={{background:"rgba(255,255,255,0.2)",color:"white",border:"none",borderRadius:16,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:600}}>Log in</button>
           }
           <LangPicker light/>
         </div>
@@ -429,19 +501,13 @@ export default function SnackCheck() {
 
       {/* Hero */}
       <div style={{background:P.orange,padding:"52px 24px 64px",textAlign:"center"}}>
-        <h1 style={{fontSize:42,fontWeight:800,color:"white",lineHeight:1.1,margin:"0 0 14px",letterSpacing:-1}}>
-          {l.hero1}<br/>{l.hero2}
-        </h1>
+        <h1 style={{fontSize:42,fontWeight:800,color:"white",lineHeight:1.1,margin:"0 0 14px",letterSpacing:-1}}>{l.hero1}<br/>{l.hero2}</h1>
         <p style={{fontSize:17,color:"rgba(255,255,255,0.85)",maxWidth:420,margin:"0 auto 32px",lineHeight:1.6}}>{l.sub}</p>
         <div style={{display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap"}}>
           <button onClick={()=>{if(!user){setShowAuthModal(true);}else{setView("rate");}}}
-            style={{background:"white",color:P.orangeDark,border:"none",borderRadius:12,padding:"13px 26px",fontSize:15,fontWeight:700,cursor:"pointer"}}>
-            {l.cta1}
-          </button>
+            style={{background:"white",color:P.orangeDark,border:"none",borderRadius:12,padding:"13px 26px",fontSize:15,fontWeight:700,cursor:"pointer"}}>{l.cta1}</button>
           <button onClick={()=>setView("home")}
-            style={{background:"rgba(255,255,255,0.2)",color:"white",border:"1.5px solid rgba(255,255,255,0.5)",borderRadius:12,padding:"13px 26px",fontSize:15,fontWeight:700,cursor:"pointer"}}>
-            {l.cta2}
-          </button>
+            style={{background:"rgba(255,255,255,0.2)",color:"white",border:"1.5px solid rgba(255,255,255,0.5)",borderRadius:12,padding:"13px 26px",fontSize:15,fontWeight:700,cursor:"pointer"}}>{l.cta2}</button>
         </div>
       </div>
 
@@ -454,17 +520,16 @@ export default function SnackCheck() {
         ))}
       </div>
 
-      {/* How it works */}
-      <div style={{padding:"48px 24px",maxWidth:600,margin:"0 auto"}}>
+      {/* How it works — 3 blocks */}
+      <div style={{padding:"48px 24px",maxWidth:620,margin:"0 auto"}}>
         <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.5,color:P.orange,marginBottom:10}}>{l.how}</div>
         <h2 style={{fontSize:26,fontWeight:800,color:P.text,marginBottom:10,lineHeight:1.2}}>{l.howTitle}</h2>
         <p style={{fontSize:15,color:P.muted,lineHeight:1.7,marginBottom:28}}>{l.howSub}</p>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:12}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
           {[
             {icon:"⭐",title:l.f1t,desc:l.f1d,col:"#FFF8E8"},
             {icon:"👥",title:l.f2t,desc:l.f2d,col:"#F0EEFF"},
             {icon:"⚡",title:l.f3t,desc:l.f3d,col:"#E0F7F4"},
-            {icon:"🔍",title:l.f4t,desc:l.f4d,col:"#FFF0F5"},
           ].map((f,i)=>(
             <div key={i} style={{background:f.col,borderRadius:16,padding:"18px 16px",border:`1px solid ${P.border}`}}>
               <div style={{fontSize:24,marginBottom:10}}>{f.icon}</div>
@@ -475,27 +540,34 @@ export default function SnackCheck() {
         </div>
       </div>
 
-      {/* Example card */}
+      {/* Example card with image */}
       <div style={{background:P.orangeLight,padding:"40px 24px",borderTop:`1px solid ${P.border}`,borderBottom:`1px solid ${P.border}`}}>
         <div style={{maxWidth:360,margin:"0 auto",textAlign:"center"}}>
           <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.5,color:P.orange,marginBottom:10}}>{l.example}</div>
           <h2 style={{fontSize:22,fontWeight:800,color:P.text,marginBottom:20}}>{l.exampleTitle}</h2>
-          <div style={{background:"white",borderRadius:16,padding:18,border:`1px solid ${P.border}`,textAlign:"left"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
-              <div>
-                <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,color:P.orange}}>Lays</div>
-                <div style={{fontSize:16,fontWeight:700,color:P.text}}>Ovenbaked</div>
-                <div style={{fontSize:13,color:P.muted}}>Paprika</div>
+          <div style={{background:"white",borderRadius:16,overflow:"hidden",border:`1px solid ${P.border}`,textAlign:"left"}}>
+            {/* Fake photo placeholder */}
+            <div style={{width:"100%",height:140,background:"linear-gradient(135deg,#FFE4B5 0%,#FFC971 60%,#F5A623 100%)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:60,position:"relative"}}>
+              🥔
+              <div style={{position:"absolute",bottom:8,right:8,background:"rgba(0,0,0,0.45)",color:"white",fontSize:10,fontWeight:600,borderRadius:6,padding:"2px 7px"}}>📷 Shou</div>
+            </div>
+            <div style={{padding:16}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+                <div>
+                  <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,color:P.orange}}>Lays</div>
+                  <div style={{fontSize:16,fontWeight:700,color:P.text}}>Ovenbaked</div>
+                  <div style={{fontSize:13,color:P.muted}}>Paprika</div>
+                </div>
+                <ScorePill score={4.2}/>
               </div>
-              <ScorePill score={4.2}/>
-            </div>
-            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
-              <span style={{background:P.greenLight,color:P.green,borderRadius:6,padding:"2px 8px",fontSize:12,fontWeight:600}}>✓ Krokant</span>
-              <span style={{background:P.greenLight,color:P.green,borderRadius:6,padding:"2px 8px",fontSize:12,fontWeight:600}}>✓ Goed gekruid</span>
-              <span style={{background:P.redLight,color:P.red,borderRadius:6,padding:"2px 8px",fontSize:12,fontWeight:600}}>✗ Duur</span>
-            </div>
-            <div style={{marginTop:10,fontSize:12,color:P.muted,display:"flex",gap:8}}>
-              <span>3 beoordelingen</span><span>·</span><span>Chips</span><span>·</span><span>427 kcal/100g</span>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
+                <span style={{background:P.greenLight,color:P.green,borderRadius:6,padding:"2px 8px",fontSize:12,fontWeight:600}}>✓ Krokant</span>
+                <span style={{background:P.greenLight,color:P.green,borderRadius:6,padding:"2px 8px",fontSize:12,fontWeight:600}}>✓ Goed gekruid</span>
+                <span style={{background:P.redLight,color:P.red,borderRadius:6,padding:"2px 8px",fontSize:12,fontWeight:600}}>✗ Duur</span>
+              </div>
+              <div style={{marginTop:10,fontSize:12,color:P.muted,display:"flex",gap:8}}>
+                <span>3 beoordelingen</span><span>·</span><span>Chips</span><span>·</span><span>427 kcal/100g</span>
+              </div>
             </div>
           </div>
         </div>
@@ -505,9 +577,7 @@ export default function SnackCheck() {
       <div style={{padding:"48px 24px",textAlign:"center",maxWidth:480,margin:"0 auto"}}>
         <div style={{display:"flex",justifyContent:"center",marginBottom:14}}>
           {["S","M","J","L"].map((letter,i)=>(
-            <div key={i} style={{width:38,height:38,borderRadius:"50%",background:[P.orange,"#6C3FD4","#0AADA6","#E8336B"][i],border:"2.5px solid white",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:"white",marginLeft:i>0?-8:0}}>
-              {letter}
-            </div>
+            <div key={i} style={{width:38,height:38,borderRadius:"50%",background:[P.orange,"#6C3FD4","#0AADA6","#E8336B"][i],border:"2.5px solid white",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:"white",marginLeft:i>0?-8:0}}>{letter}</div>
           ))}
         </div>
         <h2 style={{fontSize:22,fontWeight:800,color:P.text,marginBottom:8}}>{l.joinTitle}</h2>
@@ -528,7 +598,8 @@ export default function SnackCheck() {
           <div style={{width:28,height:28,borderRadius:8,background:P.orange,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>🍬</div>
           <span style={{fontSize:15,fontWeight:700,color:P.text}}>SnacksCheck</span>
         </div>
-        <p style={{fontSize:13,color:P.muted}}>{l.footer}</p>
+        <p style={{fontSize:13,color:P.muted,marginBottom:8}}>{l.footer}</p>
+        <button onClick={()=>setView("privacy")} style={{background:"none",border:"none",color:P.orange,cursor:"pointer",fontSize:13,fontWeight:600}}>{l.privacy}</button>
       </div>
     </div>
   );
@@ -770,9 +841,7 @@ export default function SnackCheck() {
         </div>
       )}
       <div style={{padding:"6px 16px",fontSize:11,color:P.muted,background:P.bg,letterSpacing:.3}}>
-        {tab==="all"
-          ?`${t.products(codes.length)} · ${t.sorts[SORTS_IDS.indexOf(sortBy)]}`
-          :t.myRatingsCount(myRatings.length,userName||"...")}
+        {tab==="all"?`${t.products(codes.length)} · ${t.sorts[SORTS_IDS.indexOf(sortBy)]}`:t.myRatingsCount(myRatings.length,userName||"...")}
       </div>
       {tab==="all"&&(codes.length===0
         ? <div style={{textAlign:"center",padding:60,color:P.muted}}>
@@ -783,18 +852,24 @@ export default function SnackCheck() {
         : <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(155px,1fr))",gap:12,padding:14}}>
             {codes.map(code=>{
               const list=grouped[code],first=list[0],a=avg(list),catIdx=CAT_IDS.indexOf(first.category);
+              const firstImage=list.find(r=>r.image)?.image||null;
               return (
                 <div key={code} onClick={()=>{setSelProd(code);setView("detail");}}
-                  style={{background:P.card,borderRadius:16,padding:14,border:`1.5px solid ${P.border}`,cursor:"pointer",transition:"all .15s"}}
+                  style={{background:P.card,borderRadius:16,overflow:"hidden",border:`1.5px solid ${P.border}`,cursor:"pointer",transition:"all .15s"}}
                   onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.borderColor=P.orange;}}
                   onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.borderColor=P.border;}}>
-                  <div style={{fontSize:26,marginBottom:8}}>{CAT_ICONS[catIdx]}</div>
-                  <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:2,color:P.text}}>{first.brand}</div>
-                  <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:2,color:P.text}}>{first.name}</div>
-                  <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:6,color:P.text}}>{first.flavor}</div>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:8}}>
-                    <ScorePill score={parseFloat(a.toFixed(1))}/>
-                    <span style={{fontSize:11,color:P.muted}}>{list.length}×</span>
+                  {firstImage
+                    ? <img src={firstImage} alt={first.name} style={{width:"100%",height:100,objectFit:"cover",display:"block"}}/>
+                    : <div style={{width:"100%",height:100,background:P.orangeLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:36}}>{CAT_ICONS[catIdx]}</div>
+                  }
+                  <div style={{padding:12}}>
+                    <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:1,color:P.text}}>{first.brand}</div>
+                    <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:1,color:P.text}}>{first.name}</div>
+                    <div style={{fontSize:12,color:P.muted,marginBottom:8}}>{first.flavor}</div>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                      <ScorePill score={parseFloat(a.toFixed(1))}/>
+                      <span style={{fontSize:11,color:P.muted}}>{list.length}×</span>
+                    </div>
                   </div>
                 </div>
               );
@@ -809,11 +884,7 @@ export default function SnackCheck() {
           </div>
         : <div style={{padding:14}}>
             <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:16}}>
-              {[
-                {label:t.rated,val:myRatings.length},
-                {label:t.avgScore,val:avg(myRatings).toFixed(1)+" ★"},
-                {label:t.categories,val:[...new Set(myRatings.map(r=>r.category))].length},
-              ].map((s,i)=>(
+              {[{label:t.rated,val:myRatings.length},{label:t.avgScore,val:avg(myRatings).toFixed(1)+" ★"},{label:t.categories,val:[...new Set(myRatings.map(r=>r.category))].length}].map((s,i)=>(
                 <div key={i} style={{background:P.card,border:`1.5px solid ${P.border}`,borderRadius:12,padding:"12px 10px",textAlign:"center"}}>
                   <div style={{fontSize:i===1?16:20,fontWeight:800,color:P.orange}}>{s.val}</div>
                   <div style={{fontSize:10,color:P.muted,marginTop:3,letterSpacing:.5,textTransform:"uppercase"}}>{s.label}</div>
@@ -847,8 +918,7 @@ export default function SnackCheck() {
       )}
       <div style={{position:"fixed",bottom:24,right:24,zIndex:50}}>
         <button onClick={goToRate}
-          style={{width:54,height:54,borderRadius:"50%",background:P.orange,color:"white",border:"none",fontSize:26,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
-            boxShadow:"0 4px 16px rgba(245,166,35,0.45)"}}>+</button>
+          style={{width:54,height:54,borderRadius:"50%",background:P.orange,color:"white",border:"none",fontSize:26,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px rgba(245,166,35,0.45)"}}>+</button>
       </div>
     </div>
   );
