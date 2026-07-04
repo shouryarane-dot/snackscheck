@@ -84,12 +84,13 @@ async function fetchProductInfo(brand, name, flavor) {
         es: p.ingredients_text_es||p.ingredients_text_en||p.ingredients_text||"",
         it: p.ingredients_text_it||p.ingredients_text_en||p.ingredients_text||"",
       },
+      allergens: (p.allergens_tags||[]).map(a=>a.replace(/^en:/,"")),
       confidence: "high",
       source: "Open Food Facts",
     };
   };
   const search = async (q) => {
-    const res = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=1&fields=product_name,brands,nutriments,ingredients_text,ingredients_text_en,ingredients_text_nl,ingredients_text_fr,ingredients_text_de,ingredients_text_es,ingredients_text_it,serving_size`);
+    const res = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=1&fields=product_name,brands,nutriments,ingredients_text,ingredients_text_en,ingredients_text_nl,ingredients_text_fr,ingredients_text_de,ingredients_text_es,ingredients_text_it,serving_size,allergens_tags`);
     const d = await res.json();
     return d.products?.[0] || null;
   };
@@ -185,9 +186,19 @@ function ProductInfoCard({info, lang="en"}) {
       )}
       {infoTab==="ingredients"&&(
         <div style={{fontSize:13,color:"#bbb",lineHeight:1.9}}>
-          {ingList.length>0?ingList.map((ing,i)=>(
-            <span key={i}><span style={{color:"white",fontWeight:500}}>{ing.trim()}</span>{i<ingList.length-1&&<span style={{color:"#444"}}>, </span>}</span>
-          )):<span style={{color:"#555",fontStyle:"italic"}}>No ingredients data available.</span>}
+          {ingList.length>0?ingList.map((ing,i)=>{
+            const parts = ing.trim().split(/(_[^_]+_)/g);
+            return (
+              <span key={i}>
+                {parts.map((part,j)=>
+                  part.startsWith("_")&&part.endsWith("_")
+                    ? <span key={j} style={{color:"#FFB800",fontWeight:700,textDecoration:"underline"}} title="Allergen">{part.slice(1,-1)}</span>
+                    : <span key={j} style={{color:"white",fontWeight:500}}>{part}</span>
+                )}
+                {i<ingList.length-1&&<span style={{color:"#444"}}>, </span>}
+              </span>
+            );
+          }):<span style={{color:"#555",fontStyle:"italic"}}>No ingredients data available.</span>}
         </div>
       )}
       <div style={{fontSize:10,color:"#444",marginTop:10}}>* Source: Open Food Facts (openfoodfacts.org). May not reflect exact packaging values.</div>
@@ -288,6 +299,7 @@ export default function SnackCheck() {
   const [maxCalories,setMaxCalories]=useState(0);
   const [minProtein,setMinProtein]=useState(0);
   const [minFibre,setMinFibre]=useState(0);
+  const [avoidAllergens,setAvoidAllergens]=useState([]);
   const [form,setForm]=useState({brand:"",name:"",flavor:"",category:"chips",score:0,pros:"",cons:"",image:null,location:""});
   const [acQuery,setAcQuery]=useState("");
   const [acOpen,setAcOpen]=useState(false);
@@ -394,7 +406,13 @@ export default function SnackCheck() {
     .filter(c=>!onlyMulti||grouped[c].length>1)
     .filter(c=>{if(maxCalories===0)return true;const v=productNutrient(grouped[c],"calories");return v!=null&&v<=maxCalories;})
     .filter(c=>{if(minProtein===0)return true;const v=productNutrient(grouped[c],"protein");return v!=null&&v>=minProtein;})
-    .filter(c=>{if(minFibre===0)return true;const v=productNutrient(grouped[c],"fibre");return v!=null&&v>=minFibre;});
+    .filter(c=>{if(minFibre===0)return true;const v=productNutrient(grouped[c],"fibre");return v!=null&&v>=minFibre;})
+    .filter(c=>{
+      if(avoidAllergens.length===0) return true;
+      const prod=products.find(p=>p.productCode===c);
+      const allergens=prod?.productInfo?.allergens||[];
+      return !avoidAllergens.some(a=>allergens.includes(a));
+    });
   codes.sort((a,b)=>{
     const la=grouped[a],lb=grouped[b];
     switch(sortBy){
@@ -413,7 +431,7 @@ export default function SnackCheck() {
     .filter(r=>(cat==="all"||r.category===cat)&&(!search||r.brand.toLowerCase().includes(search.toLowerCase())))
     .sort((a,b)=>sortBy==="score_desc"?b.score-a.score:sortBy==="score_asc"?a.score-b.score:sortBy==="az"?a.brand.localeCompare(b.brand):sortBy==="oldest"?a.timestamp-b.timestamp:b.timestamp-a.timestamp);
 
-  const filterCount=(minScore>0?1:0)+(onlyMulti?1:0)+(filterBrand?1:0)+(filterFlavor?1:0)+(maxCalories>0?1:0)+(minProtein>0?1:0)+(minFibre>0?1:0);
+  const filterCount=(minScore>0?1:0)+(onlyMulti?1:0)+(filterBrand?1:0)+(filterFlavor?1:0)+(maxCalories>0?1:0)+(minProtein>0?1:0)+(minFibre>0?1:0)+(avoidAllergens.length>0?1:0);
 
   const handleDelete = async id=>{
     const {error}=await supabase.from('ratings').delete().eq('id',id);
@@ -1061,6 +1079,20 @@ export default function SnackCheck() {
               </select>
             </div>
           </div>
+          <div style={{width:"100%"}}>
+            <div style={{...lbl,marginBottom:8}}>Avoid allergens</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              {["milk","gluten","eggs","nuts","peanuts","soy","fish","shellfish","sesame"].map(a=>{
+                const active=avoidAllergens.includes(a);
+                return (
+                  <button key={a} onClick={()=>setAvoidAllergens(prev=>active?prev.filter(x=>x!==a):[...prev,a])}
+                    style={{padding:"5px 12px",borderRadius:20,border:`1.5px solid ${active?P.orange:P.border}`,background:active?P.orangeLight:"white",color:active?P.orange:P.muted,fontSize:12,fontWeight:active?700:400,cursor:"pointer",transition:"all .15s"}}>
+                    {a}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <div style={{width:"100%",display:"flex",gap:10}}>
             <div style={{flex:1}}>
               <div style={{...lbl,marginBottom:6}}>{t.brand}</div>
@@ -1091,7 +1123,7 @@ export default function SnackCheck() {
           </div>
           {filterCount>0&&(
             <div style={{display:"flex",alignItems:"flex-end"}}>
-              <button onClick={()=>{setMinScore(0);setOnlyMulti(false);setFilterBrand("");setFilterFlavor("");setMaxCalories(0);setMinProtein(0);setMinFibre(0);}}
+              <button onClick={()=>{setMinScore(0);setOnlyMulti(false);setFilterBrand("");setFilterFlavor("");setMaxCalories(0);setMinProtein(0);setMinFibre(0);setAvoidAllergens([]);}}
                 style={{padding:"7px 12px",borderRadius:10,border:`1.5px solid ${P.border}`,background:P.bg,color:P.muted,cursor:"pointer",fontSize:13}}>
                 {t.reset}
               </button>
