@@ -20,6 +20,8 @@ export const mapRow = (row) => ({
   image: row.image || null,
   timestamp: row.timestamp,
   rater: row.rater,
+  location: row.location || null,
+  productInfo: row.product_info || null,
 })
 
 // Map app object (camelCase) → Supabase row (snake_case)
@@ -37,4 +39,6 @@ export const mapToRow = (r) => ({
   image: r.image || null,
   timestamp: r.timestamp,
   rater: r.rater,
+  location: r.location || null,
+  product_info: r.productInfo || null,
 })

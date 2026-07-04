@@ -12,7 +12,15 @@ const LANGS = {
   en: { appSub:"Snack rating tool", allSnacks:"All snacks", myRatings:"My ratings", search:"Search brand or product...", addRating:"Rate", close:"✕ Close", save:"Save ✓", saved:"Saved!", savedSub:"Your rating has been added.", back:"← Back", reviews:"Reviews", rateFirst:"Rate your first snack →", noRatings:"No snacks rated yet", noRatingsSub:"Add the first one with the + button", noMyRatings:"No ratings yet from", welcomed:"Welcome to SnackCheck", welcomeSub:"What should we call you?", yourName:"Your name", namePh:"e.g. Alex", start:"Get started →", brand:"Brand", brandPh:"e.g. Lays, Haribo", product:"Product name", productPh:"e.g. Ovenbaked, Classic", flavor:"Flavor / Variant", flavorPh:"e.g. Paprika, Sea Salt", category:"Category", rating:"Rating", pros:"Pros", prosPh:"e.g. Crunchy, Well salted", cons:"Cons", consPh:"e.g. Too greasy, Bland", photo:"Photo", photoOptional:"(optional)", photoTap:"Tap to add a photo", minScore:"Min. score", onlyMulti:"Only 2+ ratings", reset:"✕ Reset", comma:"(comma separated)", required:"*", scoreLabels:["","😕 Bad","😐 Mediocre","🙂 OK","😋 Good","🤩 Amazing!"], rated:"Rated", avgScore:"Avg. score", categories:"Categories", ratingsCount:(n)=>`${n} rating${n!==1?"s":""}`, products:(n)=>`${n} product${n!==1?"s":""}`, myRatingsCount:(n,name)=>`${n} rating${n!==1?"s":""} by ${name}`, you:" (you)", sorts:["Newest first","Oldest first","Highest score","Lowest score","Most rated","A → Z"], cats:["All","Chips","Biscuit","Nuts","Candy","Choco","Puffs","Other"],
     landing:{ hero1:"Rate snacks.", hero2:"Find the good stuff.", sub:"A community-powered snack database. See what others think before you buy — or share your own honest take.", cta1:"Start rating snacks", cta2:"Browse the database", how:"How it works", howTitle:"Honest ratings from real snack lovers", howSub:"No sponsored reviews. No algorithms. Just people rating what they actually ate.", f1t:"Rate any snack", f1d:"Score from 1–5 stars, add pros and cons, upload a photo.", f2t:"Shared database", f2d:"All ratings in one place — anyone can browse and contribute.", f3t:"AI info & nutrition filters", f3d:"Calories, protein, ingredients — looked up automatically. Filter by nutrition values.", example:"Example rating", exampleTitle:"See what a rating looks like", join:"Join for free", joinTitle:"Join the community — it's free", joinSub:"Create an account to add your ratings and build your personal snack history.", joinBtn:"Create free account", footer:"snackscheck.com · Made with love for snack enthusiasts everywhere", privacy:"Privacy policy", exPro1:"Crunchy", exPro2:"Well seasoned", exCon1:"Pricey" },
     account:{ title:"My account", email:"Email address", name:"Name", deleteTitle:"Delete account", deleteDesc:"This will delete all your ratings. Then send an email to privacy@snackscheck.com to fully delete your account.", deleteBtn:"Delete my ratings & sign out", deleteConfirm:"Are you sure? This cannot be undone.", yes:"Yes, delete", cancel:"Cancel", logOut:"Sign out" },
-    privacy:{ title:"Privacy Policy", lastUpdated:"Last updated: June 2025", intro:"SnacksCheck (snackscheck.com) is a personal hobby project. We take your privacy seriously and collect as little personal data as possible.", s1t:"What data do we collect?", s1b:"When you create an account, we store your email address and the display name you choose. Your ratings (brand, product name, score, photos) are stored in our database and are visible to all visitors.", s2t:"Why do we store this data?", s2b:"Your email is needed to log in and protect your account. Your name appears on your ratings. We do not use your data for marketing, advertising, or profiling.", s3t:"Who has access?", s3b:"Your data is stored via Supabase (database, EU region) and Vercel (hosting). Both have GDPR-compliant data processing agreements. We never share data with third parties.", s4t:"AI functionality", s4b:"When you rate a snack, the brand name, product name, and flavor are sent to the Anthropic API for nutritional information. No personal data is transmitted.", s5t:"Your rights", s5b:"You have the right to view, correct, or delete your data. You can delete your ratings directly in the app. For full account deletion, email privacy@snackscheck.com. We respond within 30 days.", s6t:"Contact", s6b:"Questions about this privacy policy? Email privacy@snackscheck.com.", back:"← Back" }
+    privacy:{ title:"Privacy Policy", lastUpdated:"Last updated: June 2025", intro:"SnacksCheck (snackscheck.com) is a personal hobby project. We take your privacy seriously and collect as little personal data as possible.", s1t:"What data do we collect?", s1b:"When you create an account, we store your email address and the display name you choose. Your ratings (brand, product name, score, photos) are stored in our database and are visible to all visitors.", s2t:"Why do we store this data?", s2b:"Your email is needed to log in and protect your account. Your name appears on your ratings. We do not use your data for marketing, advertising, or profiling.", s3t:"Who has access?", s3b:"Your data is stored via Supabase (database, EU region) and Vercel (hosting). Both have GDPR-compliant data processing agreements. We never share data with third parties.", s4t:"AI functionality", s4b:"When you rate a snack, the brand name, product name, and flavor are sent to the Anthropic API for nutritional information. No personal data is transmitted.", s5t:"Your rights", s5b:"You have the right to view, correct, or delete your data. You can delete your ratings directly in the app. For full account deletion, email privacy@snackscheck.com. We respond within 30 days.", s6t:"Contact", s6b:"Questions about this privacy policy? Email privacy@snackscheck.com.", back:"← Back" },
+    tos:{ title:"Terms of Service", lastUpdated:"Last updated: July 2025", back:"← Back",
+      intro:"By using SnacksCheck (snackscheck.com), you agree to these terms. SnacksCheck is a personal hobby project and a free, community-powered snack rating platform.",
+      s1t:"1. Who can use SnacksCheck", s1b:"You must be at least 13 years old to create an account. By signing up, you confirm that you meet this age requirement.",
+      s2t:"2. What you can and cannot post", s2b:"You may post honest snack ratings, photos of snack products, and genuine opinions. You may not post: nudity or sexually explicit content, photos of people (especially minors), hateful, abusive, or discriminatory content, spam, fake reviews, or content you don't have the right to share.",
+      s3t:"3. Your content", s3b:"You own the content you post. By posting it, you grant SnacksCheck a non-exclusive, royalty-free license to display it on the platform. You can delete your own ratings at any time in the app.",
+      s4t:"4. Our right to remove content", s4b:"We reserve the right to remove any content that violates these terms or that we consider harmful, without prior notice. Repeated violations may result in account suspension.",
+      s5t:"5. No warranties", s5b:"SnacksCheck is provided as-is, as a hobby project. We make no guarantees about uptime, accuracy of nutritional information, or continuity of the service.",
+      s6t:"6. Contact", s6b:"Questions or reports? Email privacy@snackscheck.com." }
   },
   fr: { appSub:"Outil de notation", allSnacks:"Tous les snacks", myRatings:"Mes notes", search:"Rechercher...", addRating:"Noter", close:"✕ Fermer", save:"Enregistrer ✓", saved:"Enregistré!", savedSub:"Votre note a été ajoutée.", back:"← Retour", reviews:"Avis", rateFirst:"Noter votre premier snack →", noRatings:"Aucun snack noté", noRatingsSub:"Ajoutez le premier via le bouton +", noMyRatings:"Aucune note de", welcomed:"Bienvenue sur SnackCheck", welcomeSub:"Comment vous appelle-t-on?", yourName:"Votre nom", namePh:"ex. Alex", start:"Commencer →", brand:"Marque", brandPh:"ex. Lays, Haribo", product:"Nom du produit", productPh:"ex. Ovenbaked, Classic", flavor:"Saveur / Variante", flavorPh:"ex. Paprika, Sel de mer", category:"Catégorie", rating:"Note", pros:"Points positifs", prosPh:"ex. Croustillant, Bien salé", cons:"Points négatifs", consPh:"ex. Trop gras, Sans goût", photo:"Photo", photoOptional:"(optionnel)", photoTap:"Appuyez pour ajouter une photo", minScore:"Score min.", onlyMulti:"Seulement 2+ notes", reset:"✕ Réinitialiser", comma:"(séparé par virgule)", required:"*", scoreLabels:["","😕 Mauvais","😐 Moyen","🙂 OK","😋 Bon","🤩 Excellent!"], rated:"Noté", avgScore:"Score moy.", categories:"Catégories", ratingsCount:(n)=>`${n} avis`, products:(n)=>`${n} produit${n!==1?"s":""}`, myRatingsCount:(n,name)=>`${n} avis de ${name}`, you:" (moi)", sorts:["Plus récent","Plus ancien","Meilleur score","Score le plus bas","Plus noté","A → Z"], cats:["Tout","Chips","Biscuits","Noix","Bonbons","Choco","Puffs","Autre"],
     landing:{ hero1:"Notez vos snacks.", hero2:"Trouvez les meilleurs.", sub:"Une base de données de snacks par la communauté. Voyez ce que les autres pensent avant d'acheter — ou partagez votre avis.", cta1:"Commencer à noter", cta2:"Parcourir la base", how:"Comment ça marche", howTitle:"Des avis honnêtes de vrais amateurs de snacks", howSub:"Pas de reviews sponsorisées. Pas d'algorithmes. Juste des gens qui notent ce qu'ils ont vraiment mangé.", f1t:"Notez n'importe quel snack", f1d:"Score de 1 à 5 étoiles, ajoutez des points positifs et négatifs, uploadez une photo.", f2t:"Base de données partagée", f2d:"Tous les avis au même endroit — tout le monde peut consulter et contribuer.", f3t:"IA & filtres nutrition", f3d:"Calories, protéines, ingrédients — recherchés automatiquement. Filtrez par valeurs nutritionnelles.", example:"Exemple d'avis", exampleTitle:"Voilà à quoi ressemble un avis", join:"Rejoindre gratuitement", joinTitle:"Rejoignez la communauté — c'est gratuit", joinSub:"Créez un compte pour ajouter vos avis et construire votre historique de snacks.", joinBtn:"Créer un compte gratuit", footer:"snackscheck.com · Fait avec amour pour les amateurs de snacks", privacy:"Politique de confidentialité", exPro1:"Croustillant", exPro2:"Bien assaisonné", exCon1:"Cher" },
@@ -54,17 +62,28 @@ const avatarColor = name => { const cols=[P.orange,"#6C3FD4","#0AADA6","#E8336B"
 
 async function fetchProductInfo(brand, name, flavor) {
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({
-        model:"claude-sonnet-4-20250514", max_tokens:600,
-        messages:[{ role:"user", content:`You are a snack food database. For: Brand="${brand}", Product="${name}", Flavor="${flavor}", return ONLY a JSON object, no markdown:
-{"description":"2 sentence description","per100g":{"calories":0,"protein":0,"fat":0,"carbs":0,"sugar":0,"salt":0,"fibre":0},"servingSize":0,"ingredients":"comma-separated ingredients","confidence":"high|medium|low"}
-If unknown, estimate and set confidence to "low". Return only JSON.` }]
-      })
-    });
+    const query = encodeURIComponent(`${brand} ${name} ${flavor}`.trim());
+    const res = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${query}&search_simple=1&action=process&json=1&page_size=1&fields=product_name,brands,nutriments,ingredients_text,serving_size`);
     const d = await res.json();
-    return JSON.parse((d.content?.find(b=>b.type==="text")?.text||"{}").replace(/```json|```/g,"").trim());
+    const p = d.products?.[0];
+    if(!p) return null;
+    const n = p.nutriments || {};
+    return {
+      description: `${p.brands||brand} ${p.product_name||name}. ${flavor} variant.`,
+      per100g: {
+        calories: Math.round(n["energy-kcal_100g"]||n["energy_100g"]/4.184||0),
+        protein:  Math.round((n.proteins_100g||0)*10)/10,
+        fat:      Math.round((n.fat_100g||0)*10)/10,
+        carbs:    Math.round((n.carbohydrates_100g||0)*10)/10,
+        sugar:    Math.round((n.sugars_100g||0)*10)/10,
+        salt:     Math.round((n.salt_100g||0)*10)/10,
+        fibre:    Math.round((n.fiber_100g||0)*10)/10,
+      },
+      servingSize: parseInt(p.serving_size)||null,
+      ingredients: p.ingredients_text||"",
+      confidence: "high",
+      source: "Open Food Facts",
+    };
   } catch { return null; }
 }
 
@@ -108,7 +127,7 @@ function ProductInfoCard({info}) {
   return (
     <div style={{background:"#111",borderRadius:12,padding:14}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-        <span style={{fontSize:11,fontWeight:700,color:P.orange,letterSpacing:1,textTransform:"uppercase"}}>AI Product Info</span>
+        <span style={{fontSize:11,fontWeight:700,color:P.orange,letterSpacing:1,textTransform:"uppercase"}}>Product Info</span>
         <span style={{fontSize:10,padding:"2px 7px",borderRadius:10,background:"#222",
           color:info.confidence==="high"?"#22C55E":info.confidence==="medium"?"#FFB800":"#EF4444"}}>
           {info.confidence} confidence
@@ -144,7 +163,7 @@ function ProductInfoCard({info}) {
           )):<span style={{color:"#555",fontStyle:"italic"}}>No ingredients data available.</span>}
         </div>
       )}
-      <div style={{fontSize:10,color:"#444",marginTop:10}}>* AI-estimated. May not reflect exact packaging values.</div>
+      <div style={{fontSize:10,color:"#444",marginTop:10}}>* Source: Open Food Facts (openfoodfacts.org). May not reflect exact packaging values.</div>
     </div>
   );
 }
@@ -153,14 +172,16 @@ const inp = {width:"100%",border:`1.5px solid ${P.border}`,borderRadius:10,paddi
 const lbl = {fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,color:P.muted,display:"block",marginBottom:6,fontFamily:"system-ui,sans-serif"};
 
 // ── Auth Modal ────────────────────────────────────────────────────────────────
-function AuthModal({ onClose, t }) {
+function AuthModal({ onClose, t, onOpenTos }) {
   const [mode, setMode] = useState('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const canSubmit = mode==='signup'?(name.trim()&&email&&password.length>=6):(email&&password);
+  const [resetSent, setResetSent] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const canSubmit = mode==='signup'?(name.trim()&&email&&password.length>=6&&ageConfirmed):(email&&password);
   const submit = async () => {
     if(!canSubmit||busy) return;
     setBusy(true); setError('');
@@ -172,12 +193,19 @@ function AuthModal({ onClose, t }) {
       if(err){setError(err.message);setBusy(false);}else onClose();
     }
   };
+  const sendReset = async () => {
+    if(!email){setError('Enter your email address first.');return;}
+    setBusy(true); setError('');
+    const {error:err}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:`${window.location.origin}`});
+    setBusy(false);
+    if(err){setError(err.message);}else{setResetSent(true);}
+  };
   return (
     <div style={{background:P.card,borderRadius:20,padding:28,maxWidth:340,width:"100%",margin:"0 auto",boxShadow:"0 8px 40px rgba(0,0,0,0.12)"}}>
       <div style={{width:56,height:56,borderRadius:16,background:P.orange,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,marginBottom:16}}>🍬</div>
       <div style={{display:"flex",background:"#F5F5F5",borderRadius:12,padding:3,marginBottom:20,gap:3}}>
         {[['login','Log in'],['signup','Sign up']].map(([m,label])=>(
-          <button key={m} onClick={()=>{setMode(m);setError('');}}
+          <button key={m} onClick={()=>{setMode(m);setError('');setResetSent(false);}}
             style={{flex:1,padding:"8px",border:"none",borderRadius:10,cursor:"pointer",fontSize:13,fontWeight:600,
               background:mode===m?P.orange:"transparent",color:mode===m?"white":"#888",transition:"all .15s"}}>{label}</button>
         ))}
@@ -185,13 +213,29 @@ function AuthModal({ onClose, t }) {
       {mode==='signup'&&<><label style={lbl}>{t.yourName} *</label><input style={{...inp,marginBottom:12}} placeholder={t.namePh} value={name} onChange={e=>setName(e.target.value)} autoFocus onKeyDown={e=>e.key==='Enter'&&submit()}/></>}
       <label style={lbl}>Email *</label>
       <input style={{...inp,marginBottom:12}} type="email" placeholder="your@email.com" value={email} onChange={e=>setEmail(e.target.value)} autoFocus={mode==='login'} onKeyDown={e=>e.key==='Enter'&&submit()}/>
-      <label style={lbl}>Password * {mode==='signup'&&<span style={{textTransform:"none",fontWeight:400,letterSpacing:0,fontSize:10}}>(min. 6 characters)</span>}</label>
-      <input style={{...inp,marginBottom:error?8:20}} type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()}/>
+      {mode==='login'&&!resetSent&&<>
+        <label style={lbl}>Password *</label>
+        <input style={{...inp,marginBottom:6}} type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()}/>
+        <div style={{textAlign:"right",marginBottom:16}}>
+          <button onClick={sendReset} disabled={busy}
+            style={{background:"none",border:"none",color:P.orange,cursor:"pointer",fontSize:12,fontWeight:600,padding:0}}>
+            Forgot password?
+          </button>
+        </div>
+      </>}
+      {mode==='signup'&&<><label style={lbl}>Password * <span style={{textTransform:"none",fontWeight:400,letterSpacing:0,fontSize:10}}>(min. 6 characters)</span></label>
+        <input style={{...inp,marginBottom:16}} type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()}/>
+        <label style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:error?8:20,cursor:"pointer",fontSize:13,color:P.muted,lineHeight:1.5}}>
+          <input type="checkbox" checked={ageConfirmed} onChange={e=>setAgeConfirmed(e.target.checked)} style={{marginTop:3,accentColor:P.orange,width:15,height:15,flexShrink:0}}/>
+          I confirm I am 13 or older and agree to the <button onClick={onOpenTos} style={{background:"none",border:"none",color:P.orange,cursor:"pointer",fontSize:13,fontWeight:600,padding:0,textDecoration:"underline"}}>Terms of Service</button>
+        </label>
+      </>}
+      {resetSent&&<div style={{fontSize:13,color:P.green,marginBottom:14,padding:"10px 12px",background:P.greenLight,borderRadius:8}}>✓ Password reset email sent! Check your inbox.</div>}
       {error&&<div style={{fontSize:13,color:P.red,marginBottom:14,padding:"8px 12px",background:P.redLight,borderRadius:8}}>{error}</div>}
-      <button onClick={submit} disabled={busy||!canSubmit}
+      {!resetSent&&<button onClick={submit} disabled={busy||!canSubmit}
         style={{width:"100%",padding:"13px",borderRadius:12,border:"none",background:(busy||!canSubmit)?P.muted:P.orange,color:"white",fontWeight:700,fontSize:15,cursor:(busy||!canSubmit)?"not-allowed":"pointer",transition:"background .15s"}}>
         {busy?'...':(mode==='login'?'Log in →':'Create account →')}
-      </button>
+      </button>}
     </div>
   );
 }
@@ -217,13 +261,17 @@ export default function SnackCheck() {
   const [maxCalories,setMaxCalories]=useState(0);
   const [minProtein,setMinProtein]=useState(0);
   const [minFibre,setMinFibre]=useState(0);
-  const [form,setForm]=useState({brand:"",name:"",flavor:"",category:"chips",score:0,pros:"",cons:"",image:null});
+  const [form,setForm]=useState({brand:"",name:"",flavor:"",category:"chips",score:0,pros:"",cons:"",image:null,location:""});
+  const [acQuery,setAcQuery]=useState("");
+  const [acOpen,setAcOpen]=useState(false);
   const [productInfo,setProductInfo]=useState(null);
   const [infoLoading,setInfoLoading]=useState(false);
   const [submitted,setSubmitted]=useState(false);
   const [showAuthModal,setShowAuthModal]=useState(false);
   const [deleteConfirmed,setDeleteConfirmed]=useState(false);
   const [deleteBusy,setDeleteBusy]=useState(false);
+  const [backfillBusy,setBackfillBusy]=useState(false);
+  const [backfillDone,setBackfillDone]=useState(false);
   const infoDebRef=useRef();
   const t = LANGS[lang];
   const l = t.landing;
@@ -250,6 +298,15 @@ export default function SnackCheck() {
     if(!form.brand||!form.name||!form.flavor){setProductInfo(null);return;}
     infoDebRef.current=setTimeout(async()=>{
       setInfoLoading(true);
+      // 1. Check our own database first
+      const prodCode=toCode(form.brand,form.name,form.flavor);
+      const existing=ratings.find(r=>r.productCode===prodCode&&r.productInfo);
+      if(existing){
+        setProductInfo(existing.productInfo);
+        setInfoLoading(false);
+        return;
+      }
+      // 2. Fall back to Open Food Facts
       const info=await fetchProductInfo(form.brand,form.name,form.flavor);
       setProductInfo(info);
       setInfoLoading(false);
@@ -259,6 +316,22 @@ export default function SnackCheck() {
   const handleLang = code=>{setLang(code);setShowLangPicker(false);localStorage.setItem(LANG_KEY,code);};
   const goToRate = ()=>{if(!user){setShowAuthModal(true);}else{setView("rate");}};
   const avg = list=>list.reduce((s,r)=>s+r.score,0)/list.length;
+
+  const handleBackfill = async () => {
+    setBackfillBusy(true);
+    const missing = ratings.filter(r=>!r.productInfo);
+    for(const r of missing) {
+      const info = await fetchProductInfo(r.brand, r.name, r.flavor);
+      if(info) {
+        await supabase.from('ratings').update({product_info: info}).eq('id', r.id);
+      }
+    }
+    // reload ratings
+    const {data}=await supabase.from('ratings').select('*').order('timestamp',{ascending:false});
+    if(data) setRatings(data.map(mapRow));
+    setBackfillBusy(false);
+    setBackfillDone(true);
+  };
 
   const handleDeleteAccount = async () => {
     if(!user||deleteBusy) return;
@@ -319,18 +392,18 @@ export default function SnackCheck() {
       flavor:form.flavor,category:form.category,score:form.score,
       pros:form.pros.split(",").map(s=>s.trim()).filter(Boolean),
       cons:form.cons.split(",").map(s=>s.trim()).filter(Boolean),
-      image:form.image||null,productInfo:productInfo||null,timestamp:Date.now(),rater:userName};
+      image:form.image||null,productInfo:productInfo||null,timestamp:Date.now(),rater:userName,location:form.location.trim()||null};
     const {error}=await supabase.from('ratings').insert([mapToRow(r)]);
     if(error){console.error(error);return;}
     setRatings(prev=>[...prev,r]);
     setSubmitted(true);
-    setTimeout(()=>{setSubmitted(false);setView("home");setForm({brand:"",name:"",flavor:"",category:"chips",score:0,pros:"",cons:"",image:null});setProductInfo(null);},2000);
+    setTimeout(()=>{setSubmitted(false);setView("home");setForm({brand:"",name:"",flavor:"",category:"chips",score:0,pros:"",cons:"",image:null,location:""});setProductInfo(null);setAcQuery("");setAcOpen(false);},2000);
   };
 
   const authModal = showAuthModal&&(
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}
       onClick={e=>e.target===e.currentTarget&&setShowAuthModal(false)}>
-      <AuthModal onClose={()=>setShowAuthModal(false)} t={t}/>
+      <AuthModal onClose={()=>setShowAuthModal(false)} t={t} onOpenTos={()=>{setShowAuthModal(false);setView("tos");}}/>
     </div>
   );
 
@@ -385,7 +458,7 @@ export default function SnackCheck() {
     );
   }
 
-  if(loading) return <div style={{minHeight:"100vh",background:P.bg,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"system-ui,sans-serif",color:P.muted,fontSize:14}}>Laden...</div>;
+  if(loading) return <div style={{minHeight:"100vh",background:P.bg,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"system-ui,sans-serif",color:P.muted,fontSize:14}}>Loading...</div>;
 
   if(submitted) return (
     <div style={{minHeight:"100vh",background:P.bg,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16,fontFamily:"system-ui,sans-serif"}}>
@@ -422,6 +495,36 @@ export default function SnackCheck() {
     </div>
   );
 
+  // ── Terms of Service ──────────────────────────────────────────────────────
+  if(view==="tos") {
+    const tos = LANGS.en.tos;
+    return (
+      <div style={{minHeight:"100vh",background:P.bg,fontFamily:"system-ui,sans-serif"}}>
+        <Header subtitle={tos.title}/>
+        {authModal}
+        <div style={{padding:"24px 20px",maxWidth:600,margin:"0 auto"}}>
+          <button onClick={()=>setView("landing")} style={{background:"none",border:"none",color:P.orange,cursor:"pointer",fontSize:14,fontWeight:700,padding:0,marginBottom:24}}>{tos.back}</button>
+          <h1 style={{fontSize:24,fontWeight:800,color:P.text,marginBottom:6}}>{tos.title}</h1>
+          <p style={{fontSize:13,color:P.muted,marginBottom:28}}>{tos.lastUpdated}</p>
+          <p style={{fontSize:14,color:P.muted,lineHeight:1.7,marginBottom:24}}>{tos.intro}</p>
+          {[
+            {title:tos.s1t, body:tos.s1b},
+            {title:tos.s2t, body:tos.s2b},
+            {title:tos.s3t, body:tos.s3b},
+            {title:tos.s4t, body:tos.s4b},
+            {title:tos.s5t, body:tos.s5b},
+            {title:tos.s6t, body:tos.s6b},
+          ].map((s,i)=>(
+            <div key={i} style={{marginBottom:24}}>
+              <div style={{fontSize:15,fontWeight:700,color:P.text,marginBottom:6}}>{s.title}</div>
+              <div style={{fontSize:14,color:P.muted,lineHeight:1.7}}>{s.body}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   // ── Account page ──────────────────────────────────────────────────────────
   if(view==="account"&&user) return (
     <div style={{minHeight:"100vh",background:P.bg,fontFamily:"system-ui,sans-serif"}}>
@@ -451,12 +554,26 @@ export default function SnackCheck() {
         </div>
 
         <div style={{background:P.card,borderRadius:16,border:`1.5px solid ${P.border}`,padding:20,marginBottom:16}}>
-          <div style={{fontSize:13,fontWeight:700,color:P.text,marginBottom:4}}>{l.privacy}</div>
-          <button onClick={()=>setView("privacy")} style={{background:"none",border:"none",color:P.orange,cursor:"pointer",fontSize:13,padding:0,fontWeight:600}}>
-            {l.privacy} →
-          </button>
+          <div style={{fontSize:13,fontWeight:700,color:P.text,marginBottom:8}}>Legal</div>
+          <div style={{display:"flex",gap:16}}>
+            <button onClick={()=>setView("privacy")} style={{background:"none",border:"none",color:P.orange,cursor:"pointer",fontSize:13,padding:0,fontWeight:600}}>{l.privacy} →</button>
+            <button onClick={()=>setView("tos")} style={{background:"none",border:"none",color:P.orange,cursor:"pointer",fontSize:13,padding:0,fontWeight:600}}>Terms of Service →</button>
+          </div>
         </div>
 
+        {user?.email==='shourya.rane@gmail.com'&&(
+          <div style={{background:"#F0FFF4",borderRadius:16,border:`1.5px solid #86EFAC`,padding:20,marginBottom:16}}>
+            <div style={{fontSize:15,fontWeight:700,color:"#166534",marginBottom:8}}>🛠 Admin: Backfill nutritional info</div>
+            <p style={{fontSize:13,color:"#166534",lineHeight:1.6,marginBottom:16}}>Fetches nutritional info from Open Food Facts for all ratings that don't have it yet. Run once.</p>
+            {backfillDone
+              ? <div style={{fontSize:13,color:P.green,fontWeight:600}}>✓ Done! Nutritional info updated.</div>
+              : <button onClick={handleBackfill} disabled={backfillBusy}
+                  style={{background:"#16A34A",color:"white",border:"none",borderRadius:10,padding:"10px 18px",fontSize:14,fontWeight:700,cursor:"pointer"}}>
+                  {backfillBusy?"Fetching... (this may take a moment)":"Run backfill →"}
+                </button>
+            }
+          </div>
+        )}
         <div style={{background:P.redLight,borderRadius:16,border:`1.5px solid #fca5a5`,padding:20}}>
           <div style={{fontSize:15,fontWeight:700,color:P.red,marginBottom:8}}>{pa.deleteTitle}</div>
           <p style={{fontSize:13,color:"#7f1d1d",lineHeight:1.6,marginBottom:16}}>{pa.deleteDesc}</p>
@@ -599,7 +716,11 @@ export default function SnackCheck() {
           <span style={{fontSize:15,fontWeight:700,color:P.text}}>SnacksCheck</span>
         </div>
         <p style={{fontSize:13,color:P.muted,marginBottom:8}}>{l.footer}</p>
-        <button onClick={()=>setView("privacy")} style={{background:"none",border:"none",color:P.orange,cursor:"pointer",fontSize:13,fontWeight:600}}>{l.privacy}</button>
+        <div style={{display:"flex",justifyContent:"center",gap:16}}>
+          <button onClick={()=>setView("privacy")} style={{background:"none",border:"none",color:P.orange,cursor:"pointer",fontSize:13,fontWeight:600}}>{l.privacy}</button>
+          <span style={{color:P.border}}>·</span>
+          <button onClick={()=>setView("tos")} style={{background:"none",border:"none",color:P.orange,cursor:"pointer",fontSize:13,fontWeight:600}}>Terms of Service</button>
+        </div>
       </div>
     </div>
   );
@@ -616,6 +737,51 @@ export default function SnackCheck() {
           <Avatar name={userName} size={32}/>
           <div style={{fontSize:13,fontWeight:700,color:P.text}}>{userName}</div>
         </div>
+        {/* Autocomplete search */}
+        {(()=>{
+          const acResults = acQuery.length >= 2
+            ? [...new Map(ratings.filter(r =>
+                r.brand.toLowerCase().includes(acQuery.toLowerCase()) ||
+                r.name.toLowerCase().includes(acQuery.toLowerCase())
+              ).map(r => [r.productCode, r])).values()].slice(0, 6)
+            : [];
+          const pick = r => {
+            setForm(f=>({...f, brand:r.brand, name:r.name, flavor:r.flavor, category:r.category}));
+            setAcQuery("");
+            setAcOpen(false);
+          };
+          return (
+            <div style={{marginBottom:20,position:"relative"}}>
+              <label style={lbl}>🔍 Search existing snacks (optional)</label>
+              <input style={{...inp}} placeholder="e.g. Lays, Haribo, Pringles..."
+                value={acQuery}
+                onChange={e=>{setAcQuery(e.target.value);setAcOpen(true);}}
+                onFocus={()=>setAcOpen(true)}
+                onBlur={()=>setTimeout(()=>setAcOpen(false),150)}
+              />
+              {acOpen&&acResults.length>0&&(
+                <div style={{position:"absolute",top:"100%",left:0,right:0,background:P.card,border:`1.5px solid ${P.orange}`,borderRadius:12,zIndex:50,overflow:"hidden",boxShadow:"0 4px 20px rgba(0,0,0,0.1)",marginTop:4}}>
+                  {acResults.map(r=>(
+                    <div key={r.id} onMouseDown={()=>pick(r)}
+                      style={{padding:"10px 14px",cursor:"pointer",borderBottom:`1px solid ${P.border}`,display:"flex",alignItems:"center",justifyContent:"space-between"}}
+                      onMouseEnter={e=>e.currentTarget.style.background=P.orangeLight}
+                      onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                      <div>
+                        <div style={{fontSize:13,fontWeight:700,color:P.text}}>{r.brand} {r.name}</div>
+                        <div style={{fontSize:12,color:P.muted}}>{r.flavor}</div>
+                      </div>
+                      <ScorePill score={r.score}/>
+                    </div>
+                  ))}
+                  <div style={{padding:"8px 14px",fontSize:11,color:P.muted,background:P.bg}}>Select to auto-fill the form below</div>
+                </div>
+              )}
+              {acQuery.length>=2&&acResults.length===0&&(
+                <div style={{fontSize:12,color:P.muted,marginTop:6}}>No match found — fill in the form below to add it.</div>
+              )}
+            </div>
+          );
+        })()}
         <label style={lbl}>{t.brand} {t.required}</label>
         <input style={{...inp,marginBottom:16}} placeholder={t.brandPh} value={form.brand} onChange={e=>setForm({...form,brand:e.target.value})}/>
         <label style={lbl}>{t.product} {t.required}</label>
@@ -645,6 +811,8 @@ export default function SnackCheck() {
         <input style={{...inp,marginBottom:16}} placeholder={t.prosPh} value={form.pros} onChange={e=>setForm({...form,pros:e.target.value})}/>
         <label style={lbl}>{t.cons} <span style={{textTransform:"none",fontWeight:400,letterSpacing:0}}>{t.comma}</span></label>
         <input style={{...inp,marginBottom:16}} placeholder={t.consPh} value={form.cons} onChange={e=>setForm({...form,cons:e.target.value})}/>
+        <label style={lbl}>📍 City / Country <span style={{textTransform:"none",fontWeight:400,letterSpacing:0}}>(optional)</span></label>
+        <input style={{...inp,marginBottom:16}} placeholder="e.g. Amsterdam, Netherlands" value={form.location} onChange={e=>setForm({...form,location:e.target.value})}/>
         <label style={lbl}>{t.photo} <span style={{textTransform:"none",fontWeight:400,letterSpacing:0}}>{t.photoOptional}</span></label>
         {form.image
           ? <div style={{position:"relative",marginBottom:24}}>
@@ -658,8 +826,11 @@ export default function SnackCheck() {
                 <div style={{fontSize:28,marginBottom:6}}>📷</div>
                 <div style={{fontSize:13,color:P.muted}}>{t.photoTap}</div>
               </div>
-              <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{
+              <input type="file" accept="image/jpeg,image/png,image/webp" style={{display:"none"}} onChange={e=>{
                 const file=e.target.files[0]; if(!file) return;
+                const allowed=["image/jpeg","image/png","image/webp"];
+                if(!allowed.includes(file.type)){alert("Only JPEG, PNG, or WebP images are allowed.");e.target.value="";return;}
+                if(file.size>5*1024*1024){alert("Image must be under 5 MB.");e.target.value="";return;}
                 const reader=new FileReader();
                 reader.onload=ev=>setForm(f=>({...f,image:ev.target.result}));
                 reader.readAsDataURL(file);
@@ -720,8 +891,12 @@ export default function SnackCheck() {
                   </div>
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
                     <ScorePill score={r.score}/>
-                    <span style={{fontSize:11,color:P.muted}}>{timeAgo(r.timestamp)}</span>
+                    <div style={{textAlign:"right"}}>
+                      <div style={{fontSize:11,color:P.muted}}>{timeAgo(r.timestamp)}</div>
+                      {r.location&&<div style={{fontSize:11,color:P.muted}}>📍 {r.location}</div>}
+                    </div>
                     {isMe&&<button onClick={()=>handleDelete(r.id)} style={{background:P.redLight,color:P.red,border:"none",borderRadius:8,width:28,height:28,cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"}}>🗑</button>}
+                    {!isMe&&<a href={`mailto:privacy@snackscheck.com?subject=Report rating&body=Rating ID: ${r.id}%0ABrand: ${r.brand} ${r.name}%0ARater: ${r.rater}%0AReason: (please describe the issue)`} style={{background:"#FFF5F5",color:P.red,border:"none",borderRadius:8,width:28,height:28,cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center",textDecoration:"none"}} title="Report this rating">🚩</a>}
                   </div>
                 </div>
                 {r.image&&<img src={r.image} alt="snack" style={{width:"100%",borderRadius:10,maxHeight:180,objectFit:"cover",marginBottom:8}}/>}
