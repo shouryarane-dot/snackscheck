@@ -75,13 +75,21 @@ async function fetchProductInfo(brand, name, flavor) {
         fibre:    Math.round((n.fiber_100g||0)*10)/10,
       },
       servingSize: parseInt(p.serving_size)||null,
-      ingredients: p.ingredients_text||"",
+      ingredients: p.ingredients_text_en||p.ingredients_text||"",
+      ingredientsByLang: {
+        en: p.ingredients_text_en||p.ingredients_text||"",
+        nl: p.ingredients_text_nl||p.ingredients_text_en||p.ingredients_text||"",
+        fr: p.ingredients_text_fr||p.ingredients_text_en||p.ingredients_text||"",
+        de: p.ingredients_text_de||p.ingredients_text_en||p.ingredients_text||"",
+        es: p.ingredients_text_es||p.ingredients_text_en||p.ingredients_text||"",
+        it: p.ingredients_text_it||p.ingredients_text_en||p.ingredients_text||"",
+      },
       confidence: "high",
       source: "Open Food Facts",
     };
   };
   const search = async (q) => {
-    const res = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=1&fields=product_name,brands,nutriments,ingredients_text,serving_size`);
+    const res = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=1&fields=product_name,brands,nutriments,ingredients_text,ingredients_text_en,ingredients_text_nl,ingredients_text_fr,ingredients_text_de,ingredients_text_es,ingredients_text_it,serving_size`);
     const d = await res.json();
     return d.products?.[0] || null;
   };
@@ -138,10 +146,11 @@ function Avatar({name, size=32}) {
     </div>
   );
 }
-function ProductInfoCard({info}) {
+function ProductInfoCard({info, lang="en"}) {
   const [infoTab, setInfoTab] = useState("nutrition");
   if(!info) return null;
-  const ingList = info.ingredients ? info.ingredients.split(",") : [];
+  const ingText = info.ingredientsByLang?.[lang] || info.ingredientsByLang?.en || info.ingredients || "";
+  const ingList = ingText ? ingText.split(",") : [];
   return (
     <div style={{background:"#111",borderRadius:12,padding:14}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
@@ -871,7 +880,7 @@ export default function SnackCheck() {
                   <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
                   Looking up product info...
                 </div>
-              : <ProductInfoCard info={productInfo}/>
+              : <ProductInfoCard info={productInfo} lang={lang}/>
             }
           </div>
         )}
@@ -946,7 +955,7 @@ export default function SnackCheck() {
               <span style={{color:P.muted,fontSize:13}}>{t.ratingsCount(pRatings.length)}</span>
             </div>
           </div>
-          {detailInfo&&<div style={{marginBottom:20}}><ProductInfoCard info={detailInfo}/></div>}
+          {detailInfo&&<div style={{marginBottom:20}}><ProductInfoCard info={detailInfo} lang={lang}/></div>}
           <button onClick={()=>{
             if(!user){setShowAuthModal(true);return;}
             setForm({brand:first.brand,name:first.name,flavor:first.flavor,category:first.category,score:0,pros:"",cons:"",image:null});
