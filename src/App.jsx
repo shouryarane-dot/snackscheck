@@ -61,12 +61,7 @@ const initials = name => (name||"?").split(/[\s_]+/).map(w=>w[0]).join("").toUpp
 const avatarColor = name => { const cols=[P.orange,"#6C3FD4","#0AADA6","#E8336B","#3B82F6"]; let h=0; for(const c of (name||"?")) h=(h*31+c.charCodeAt(0))%cols.length; return cols[h]; };
 
 async function fetchProductInfo(brand, name, flavor) {
-  try {
-    const query = encodeURIComponent(`${brand} ${name} ${flavor}`.trim());
-    const res = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${query}&search_simple=1&action=process&json=1&page_size=1&fields=product_name,brands,nutriments,ingredients_text,serving_size`);
-    const d = await res.json();
-    const p = d.products?.[0];
-    if(!p) return null;
+  const parseResult = (p, brand, name, flavor) => {
     const n = p.nutriments || {};
     return {
       description: `${p.brands||brand} ${p.product_name||name}. ${flavor} variant.`,
@@ -84,6 +79,29 @@ async function fetchProductInfo(brand, name, flavor) {
       confidence: "high",
       source: "Open Food Facts",
     };
+  };
+  const search = async (q) => {
+    const res = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=1&fields=product_name,brands,nutriments,ingredients_text,serving_size`);
+    const d = await res.json();
+    return d.products?.[0] || null;
+  };
+  try {
+    // Deduplicate: remove brand words that already appear in name
+    const brandWords = brand.toLowerCase().split(/\s+/);
+    const cleanName = name.split(/\s+/).filter(w=>!brandWords.includes(w.toLowerCase())).join(" ").trim() || name;
+
+    // Try progressively simpler queries
+    const queries = [
+      `${brand} ${cleanName} ${flavor}`,   // brand + deduplicated name + flavor
+      `${brand} ${flavor}`,                  // brand + flavor only
+      `${brand} ${cleanName}`,               // brand + deduplicated name
+      brand,                                 // brand only
+    ];
+    for (const q of queries) {
+      const p = await search(q);
+      if (p && p.nutriments && Object.keys(p.nutriments).length > 0) return parseResult(p, brand, name, flavor);
+    }
+    return null;
   } catch { return null; }
 }
 
