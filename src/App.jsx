@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { supabase, mapRow, mapToRow } from './supabase.js';
+import { supabase, mapRow, mapToRow, mapProduct, upsertProduct, fetchProducts, updateProductInfo } from './supabase.js';
 
 const LANG_KEY = "snackcheck-lang";
 
@@ -282,6 +282,7 @@ export default function SnackCheck() {
   const [form,setForm]=useState({brand:"",name:"",flavor:"",category:"chips",score:0,pros:"",cons:"",image:null,location:""});
   const [acQuery,setAcQuery]=useState("");
   const [acOpen,setAcOpen]=useState(false);
+  const [products,setProducts]=useState([]);
   const [newPw,setNewPw]=useState("");
   const [pwBusy,setPwBusy]=useState(false);
   const [pwDone,setPwDone]=useState(false);
@@ -314,6 +315,8 @@ export default function SnackCheck() {
     (async()=>{
       const {data,error}=await supabase.from('ratings').select('*').order('timestamp',{ascending:false});
       if(!error&&data) setRatings(data.map(mapRow));
+      const prods=await fetchProducts();
+      setProducts(prods);
       const saved=localStorage.getItem(LANG_KEY);
       if(saved&&LANGS[saved]) setLang(saved);
       setLoading(false);
@@ -348,16 +351,13 @@ export default function SnackCheck() {
 
   const handleBackfill = async () => {
     setBackfillBusy(true);
-    const missing = ratings.filter(r=>!r.productInfo);
-    for(const r of missing) {
-      const info = await fetchProductInfo(r.brand, r.name, r.flavor);
-      if(info) {
-        await supabase.from('ratings').update({product_info: info}).eq('id', r.id);
-      }
+    const missing = products.filter(p=>!p.productInfo);
+    for(const p of missing) {
+      const info = await fetchProductInfo(p.brand, p.name, p.flavor);
+      if(info) await updateProductInfo(p.productCode, info);
     }
-    // reload ratings
-    const {data}=await supabase.from('ratings').select('*').order('timestamp',{ascending:false});
-    if(data) setRatings(data.map(mapRow));
+    const prods = await fetchProducts();
+    setProducts(prods);
     setBackfillBusy(false);
     setBackfillDone(true);
   };
@@ -417,11 +417,23 @@ export default function SnackCheck() {
   const handleSubmit = async ()=>{
     if(!form.brand||!form.name||!form.flavor||!form.category||!form.score) return;
     const prodCode=toCode(form.brand,form.name,form.flavor);
+
+    // Upsert product — fetch nutritional info if not already known
+    const existingProd = products.find(p=>p.productCode===prodCode);
+    let info = existingProd?.productInfo || null;
+    if(!info) {
+      info = await fetchProductInfo(form.brand, form.name, form.flavor);
+    }
+    await upsertProduct(form.brand, form.name, form.flavor, form.category, prodCode, info);
+    // Refresh products list
+    const prods = await fetchProducts();
+    setProducts(prods);
+
     const r={id:Date.now(),userId:user.id,productCode:prodCode,brand:form.brand,name:form.name,
       flavor:form.flavor,category:form.category,score:form.score,
       pros:form.pros.split(",").map(s=>s.trim()).filter(Boolean),
       cons:form.cons.split(",").map(s=>s.trim()).filter(Boolean),
-      image:form.image||null,productInfo:productInfo||null,timestamp:Date.now(),rater:userName,location:form.location.trim()||null};
+      image:form.image||null,productInfo:null,timestamp:Date.now(),rater:userName,location:form.location.trim()||null};
     const {error}=await supabase.from('ratings').insert([mapToRow(r)]);
     if(error){console.error(error);return;}
     setRatings(prev=>[...prev,r]);
@@ -626,7 +638,7 @@ export default function SnackCheck() {
         {user?.email==='shourya.rane@gmail.com'&&(
           <div style={{background:"#F0FFF4",borderRadius:16,border:`1.5px solid #86EFAC`,padding:20,marginBottom:16}}>
             <div style={{fontSize:15,fontWeight:700,color:"#166534",marginBottom:8}}>🛠 Admin: Backfill nutritional info</div>
-            <p style={{fontSize:13,color:"#166534",lineHeight:1.6,marginBottom:16}}>Fetches nutritional info from Open Food Facts for all ratings that don't have it yet. Run once.</p>
+            <p style={{fontSize:13,color:"#166534",lineHeight:1.6,marginBottom:16}}>Fetches nutritional info from Open Food Facts for all products missing it. Run after adding new products.</p>
             {backfillDone
               ? <div style={{fontSize:13,color:P.green,fontWeight:600}}>✓ Done! Nutritional info updated.</div>
               : <button onClick={handleBackfill} disabled={backfillBusy}
@@ -802,10 +814,11 @@ export default function SnackCheck() {
         {/* Autocomplete search */}
         {(()=>{
           const acResults = acQuery.length >= 2
-            ? [...new Map(ratings.filter(r =>
-                r.brand.toLowerCase().includes(acQuery.toLowerCase()) ||
-                r.name.toLowerCase().includes(acQuery.toLowerCase())
-              ).map(r => [r.productCode, r])).values()].slice(0, 6)
+            ? products.filter(p =>
+                p.brand.toLowerCase().includes(acQuery.toLowerCase()) ||
+                p.name.toLowerCase().includes(acQuery.toLowerCase()) ||
+                p.flavor?.toLowerCase().includes(acQuery.toLowerCase())
+              ).slice(0, 6)
             : [];
           const pick = r => {
             setForm(f=>({...f, brand:r.brand, name:r.name, flavor:r.flavor, category:r.category}));
@@ -916,7 +929,7 @@ export default function SnackCheck() {
     const first=pRatings[0];
     const a=avg(pRatings);
     const catIdx=CAT_IDS.indexOf(first.category);
-    const detailInfo=pRatings.find(r=>r.productInfo)?.productInfo||null;
+    const detailInfo=products.find(p=>p.productCode===first.productCode)?.productInfo||pRatings.find(r=>r.productInfo)?.productInfo||null;
     return (
       <div style={{minHeight:"100vh",background:P.bg,fontFamily:"system-ui,sans-serif"}}>
         <Header subtitle={first.brand}/>

@@ -42,3 +42,51 @@ export const mapToRow = (r) => ({
   location: r.location || null,
   product_info: r.productInfo || null,
 })
+
+// Map products table row → app object
+export const mapProduct = (row) => ({
+  id: row.id,
+  productCode: row.product_code,
+  brand: row.brand,
+  name: row.name,
+  flavor: row.flavor,
+  category: row.category,
+  productInfo: row.product_info || null,
+})
+
+// Upsert a product and return it (creates if new, updates info if exists)
+export const upsertProduct = async (brand, name, flavor, category, productCode, productInfo) => {
+  const { data, error } = await supabase
+    .from('products')
+    .upsert({
+      product_code: productCode,
+      brand,
+      name,
+      flavor,
+      category,
+      product_info: productInfo || null,
+    }, { onConflict: 'product_code' })
+    .select()
+    .single()
+  if (error) console.error('upsertProduct error:', error)
+  return data
+}
+
+// Fetch all products (for autocomplete)
+export const fetchProducts = async () => {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .order('brand', { ascending: true })
+  if (error) { console.error('fetchProducts error:', error); return [] }
+  return (data || []).map(mapProduct)
+}
+
+// Update nutritional info for a product
+export const updateProductInfo = async (productCode, productInfo) => {
+  const { error } = await supabase
+    .from('products')
+    .update({ product_info: productInfo })
+    .eq('product_code', productCode)
+  if (error) console.error('updateProductInfo error:', error)
+}
