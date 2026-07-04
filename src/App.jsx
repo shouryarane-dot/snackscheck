@@ -264,6 +264,10 @@ export default function SnackCheck() {
   const [form,setForm]=useState({brand:"",name:"",flavor:"",category:"chips",score:0,pros:"",cons:"",image:null,location:""});
   const [acQuery,setAcQuery]=useState("");
   const [acOpen,setAcOpen]=useState(false);
+  const [newPw,setNewPw]=useState("");
+  const [pwBusy,setPwBusy]=useState(false);
+  const [pwDone,setPwDone]=useState(false);
+  const [pwErr,setPwErr]=useState("");
   const [productInfo,setProductInfo]=useState(null);
   const [infoLoading,setInfoLoading]=useState(false);
   const [submitted,setSubmitted]=useState(false);
@@ -280,8 +284,15 @@ export default function SnackCheck() {
   const userName = user?.user_metadata?.display_name;
 
   useEffect(()=>{
+    // Detect password recovery flow from URL hash
+    const hash = window.location.hash;
+    if(hash.includes("type=recovery")) setView("resetPassword");
+
     supabase.auth.getSession().then(({data:{session}})=>setUser(session?.user??null));
-    const {data:{subscription}}=supabase.auth.onAuthStateChange((_e,session)=>setUser(session?.user??null));
+    const {data:{subscription}}=supabase.auth.onAuthStateChange((event,session)=>{
+      setUser(session?.user??null);
+      if(event==="PASSWORD_RECOVERY") setView("resetPassword");
+    });
     (async()=>{
       const {data,error}=await supabase.from('ratings').select('*').order('timestamp',{ascending:false});
       if(!error&&data) setRatings(data.map(mapRow));
@@ -494,6 +505,39 @@ export default function SnackCheck() {
       </div>
     </div>
   );
+
+  // ── Reset Password ────────────────────────────────────────────────────────
+  if(view==="resetPassword") {
+    const saveNewPw = async () => {
+      if(newPw.length<6){setPwErr("Password must be at least 6 characters.");return;}
+      setPwBusy(true); setPwErr("");
+      const {error}=await supabase.auth.updateUser({password:newPw});
+      setPwBusy(false);
+      if(error){setPwErr(error.message);}
+      else{setPwDone(true);setTimeout(()=>setView("home"),2000);}
+    };
+    return (
+      <div style={{minHeight:"100vh",background:P.bg,fontFamily:"system-ui,sans-serif",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+        <div style={{background:P.card,borderRadius:20,padding:32,maxWidth:340,width:"100%",boxShadow:"0 8px 40px rgba(0,0,0,0.10)"}}>
+          <div style={{width:56,height:56,borderRadius:16,background:P.orange,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,marginBottom:16}}>🔑</div>
+          <h2 style={{fontSize:20,fontWeight:800,color:P.text,marginBottom:6}}>Set new password</h2>
+          <p style={{fontSize:14,color:P.muted,marginBottom:20}}>Choose a new password for your account.</p>
+          {pwDone
+            ? <div style={{fontSize:14,color:P.green,fontWeight:600,padding:"12px",background:P.greenLight,borderRadius:10}}>✓ Password updated! Taking you to the app...</div>
+            : <>
+              <input type="password" placeholder="New password (min. 6 characters)"
+                style={{...inp,marginBottom:12}} value={newPw} onChange={e=>setNewPw(e.target.value)}
+                onKeyDown={e=>e.key==="Enter"&&saveNewPw()} autoFocus/>
+              {pwErr&&<div style={{fontSize:13,color:P.red,marginBottom:12,padding:"8px 12px",background:P.redLight,borderRadius:8}}>{pwErr}</div>}
+              <button onClick={saveNewPw} disabled={pwBusy}
+                style={{width:"100%",padding:"13px",borderRadius:12,border:"none",background:pwBusy?P.muted:P.orange,color:"white",fontWeight:700,fontSize:15,cursor:pwBusy?"not-allowed":"pointer"}}>
+                {pwBusy?"Saving...":"Save new password →"}
+              </button>
+            </>}
+        </div>
+      </div>
+    );
+  }
 
   // ── Terms of Service ──────────────────────────────────────────────────────
   if(view==="tos") {
