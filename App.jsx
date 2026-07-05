@@ -293,7 +293,7 @@ export default function SnackCheck() {
   const [sortBy,setSortBy]=useState("recent");
   const [showFilter,setShowFilter]=useState(false);
   const [minScore,setMinScore]=useState(0);
-  const [onlyMulti,setOnlyMulti]=useState(false);
+  const [onlyMulti,setOnlyMulti]=useState(false); // kept for legacy, UI removed
   const [filterBrand,setFilterBrand]=useState("");
   const [filterFlavor,setFilterFlavor]=useState("");
   const [maxCalories,setMaxCalories]=useState(0);
@@ -372,7 +372,8 @@ export default function SnackCheck() {
 
   const handleBackfill = async () => {
     setBackfillBusy(true);
-    const missing = products.filter(p=>!p.productInfo);
+    // Re-fetch if productInfo is missing OR if ingredientsByLang is missing (old records)
+    const missing = products.filter(p=>!p.productInfo || !p.productInfo.ingredientsByLang);
     for(const p of missing) {
       const info = await fetchProductInfo(p.brand, p.name, p.flavor);
       if(info) await updateProductInfo(p.productCode, info);
@@ -431,7 +432,7 @@ export default function SnackCheck() {
     .filter(r=>(cat==="all"||r.category===cat)&&(!search||r.brand.toLowerCase().includes(search.toLowerCase())))
     .sort((a,b)=>sortBy==="score_desc"?b.score-a.score:sortBy==="score_asc"?a.score-b.score:sortBy==="az"?a.brand.localeCompare(b.brand):sortBy==="oldest"?a.timestamp-b.timestamp:b.timestamp-a.timestamp);
 
-  const filterCount=(minScore>0?1:0)+(onlyMulti?1:0)+(filterBrand?1:0)+(filterFlavor?1:0)+(maxCalories>0?1:0)+(minProtein>0?1:0)+(minFibre>0?1:0)+(avoidAllergens.length>0?1:0);
+  const filterCount=(minScore>0?1:0)+(filterBrand?1:0)+(filterFlavor?1:0)+(maxCalories>0?1:0)+(minProtein>0?1:0)+(minFibre>0?1:0)+(avoidAllergens.length>0?1:0);
 
   const handleDelete = async id=>{
     const {error}=await supabase.from('ratings').delete().eq('id',id);
@@ -1080,14 +1081,15 @@ export default function SnackCheck() {
             </div>
           </div>
           <div style={{width:"100%"}}>
-            <div style={{...lbl,marginBottom:8}}>Avoid allergens</div>
+            <div style={{...lbl,marginBottom:4}}>Hide if contains</div>
+            <div style={{fontSize:11,color:P.muted,marginBottom:8}}>Selected allergens → product hidden from results</div>
             <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
               {["milk","gluten","eggs","nuts","peanuts","soy","fish","shellfish","sesame"].map(a=>{
                 const active=avoidAllergens.includes(a);
                 return (
                   <button key={a} onClick={()=>setAvoidAllergens(prev=>active?prev.filter(x=>x!==a):[...prev,a])}
-                    style={{padding:"5px 12px",borderRadius:20,border:`1.5px solid ${active?P.orange:P.border}`,background:active?P.orangeLight:"white",color:active?P.orange:P.muted,fontSize:12,fontWeight:active?700:400,cursor:"pointer",transition:"all .15s"}}>
-                    {a}
+                    style={{padding:"5px 12px",borderRadius:20,border:`1.5px solid ${active?"#EF4444":P.border}`,background:active?"#FFF0F0":"white",color:active?"#EF4444":P.muted,fontSize:12,fontWeight:active?700:400,cursor:"pointer",transition:"all .15s"}}>
+                    {active?"✕ ":""}{a}
                   </button>
                 );
               })}
@@ -1114,16 +1116,9 @@ export default function SnackCheck() {
               ))}
             </div>
           </div>
-          <div>
-            <div style={{...lbl,marginBottom:8}}>{t.onlyMulti}</div>
-            <button onClick={()=>setOnlyMulti(p=>!p)}
-              style={{padding:"7px 12px",borderRadius:10,border:`1.5px solid ${onlyMulti?P.orange:P.border}`,background:onlyMulti?P.orangeLight:P.bg,color:onlyMulti?P.orange:P.muted,fontWeight:600,cursor:"pointer",fontSize:13}}>
-              {onlyMulti?"✓":"○"} {t.onlyMulti}
-            </button>
-          </div>
           {filterCount>0&&(
             <div style={{display:"flex",alignItems:"flex-end"}}>
-              <button onClick={()=>{setMinScore(0);setOnlyMulti(false);setFilterBrand("");setFilterFlavor("");setMaxCalories(0);setMinProtein(0);setMinFibre(0);setAvoidAllergens([]);}}
+              <button onClick={()=>{setMinScore(0);setFilterBrand("");setFilterFlavor("");setMaxCalories(0);setMinProtein(0);setMinFibre(0);setAvoidAllergens([]);}}
                 style={{padding:"7px 12px",borderRadius:10,border:`1.5px solid ${P.border}`,background:P.bg,color:P.muted,cursor:"pointer",fontSize:13}}>
                 {t.reset}
               </button>
