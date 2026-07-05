@@ -321,7 +321,7 @@ export default function SnackCheck() {
   const [cat,setCat]=useState("all");
   const [search,setSearch]=useState("");
   const [selProd,setSelProd]=useState(null);
-  const [sortBy,setSortBy]=useState("recent");
+  const [sortBy,setSortBy]=useState("score_desc");
   const [showFilter,setShowFilter]=useState(false);
   const [minScore,setMinScore]=useState(0);
   const [onlyMulti,setOnlyMulti]=useState(false); // kept for legacy, UI removed
@@ -331,6 +331,7 @@ export default function SnackCheck() {
   const [minProtein,setMinProtein]=useState(0);
   const [minFibre,setMinFibre]=useState(0);
   const [avoidAllergens,setAvoidAllergens]=useState([]);
+  const [nutriscoreMax,setNutriscoreMax]=useState("");
   const [dirPage,setDirPage]=useState(1);
   const [isMobile,setIsMobile]=useState(window.innerWidth<640);
   const [form,setForm]=useState({brand:"",name:"",flavor:"",category:"chips",score:0,pros:"",cons:"",image:null,location:""});
@@ -452,6 +453,7 @@ export default function SnackCheck() {
     .filter(p=>{if(maxCalories===0)return true;const v=p.productInfo?.per100g?.calories;return v!=null&&v<=maxCalories;})
     .filter(p=>{if(minProtein===0)return true;const v=p.productInfo?.per100g?.protein;return v!=null&&v>=minProtein;})
     .filter(p=>{if(minFibre===0)return true;const v=p.productInfo?.per100g?.fibre;return v!=null&&v>=minFibre;})
+    .filter(p=>{if(!nutriscoreMax)return true;const ns=p.productInfo?.nutriscore;if(!ns)return false;return ns.charCodeAt(0)<=nutriscoreMax.charCodeAt(0);})
     .filter(p=>{
       if(avoidAllergens.length===0)return true;
       const storedAllergens=p.productInfo?.allergens||[];
@@ -502,7 +504,7 @@ export default function SnackCheck() {
     .filter(r=>(cat==="all"||r.category===cat)&&(!search||r.brand.toLowerCase().includes(search.toLowerCase())))
     .sort((a,b)=>sortBy==="score_desc"?b.score-a.score:sortBy==="score_asc"?a.score-b.score:sortBy==="az"?a.brand.localeCompare(b.brand):sortBy==="oldest"?a.timestamp-b.timestamp:b.timestamp-a.timestamp);
 
-  const filterCount=(minScore>0?1:0)+(filterBrand?1:0)+(filterFlavor?1:0)+(maxCalories>0?1:0)+(minProtein>0?1:0)+(minFibre>0?1:0)+(avoidAllergens.length>0?1:0);
+  const filterCount=(minScore>0?1:0)+(filterBrand?1:0)+(filterFlavor?1:0)+(maxCalories>0?1:0)+(minProtein>0?1:0)+(minFibre>0?1:0)+(avoidAllergens.length>0?1:0)+(nutriscoreMax?1:0);
 
   const handleDelete = async id=>{
     const {error}=await supabase.from('ratings').delete().eq('id',id);
@@ -1148,7 +1150,7 @@ export default function SnackCheck() {
         {tab==="all"&&(
           <button onClick={()=>setShowFilter(p=>!p)}
             style={{border:`1.5px solid ${filterCount>0?P.orange:P.border}`,borderRadius:10,padding:"9px 12px",fontSize:13,background:filterCount>0?P.orangeLight:P.bg,cursor:"pointer",color:filterCount>0?P.orange:P.muted,fontWeight:600,whiteSpace:"nowrap"}}>
-            ⚙{filterCount>0?` (${filterCount})`:""}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:filterCount>0?4:0}}><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>{filterCount>0?`(${filterCount})`:""}
           </button>
         )}
       </div>
@@ -1203,6 +1205,21 @@ export default function SnackCheck() {
             </div>
           </div>
           <div>
+            <div style={{...lbl,marginBottom:8}}>Nutri-Score max</div>
+            <div style={{display:"flex",gap:5}}>
+              {["","a","b","c","d","e"].map(ns=>{
+                const colors={a:"#038141",b:"#85BB2F",c:"#FECB02",d:"#EE8100",e:"#E63E11"};
+                const active=nutriscoreMax===ns;
+                return (
+                  <button key={ns} onClick={()=>setNutriscoreMax(ns)}
+                    style={{minWidth:32,height:32,borderRadius:8,border:`1.5px solid ${active?(colors[ns]||P.orange):P.border}`,background:active?(colors[ns]||P.orange):P.bg,color:active?"white":P.muted,fontWeight:700,cursor:"pointer",fontSize:13,padding:"0 8px",textTransform:"uppercase"}}>
+                    {ns||"★"}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div>
             <div style={{...lbl,marginBottom:8}}>{t.minScore}</div>
             <div style={{display:"flex",gap:5}}>
               {[0,1,2,3,4,5].map(n=>(
@@ -1215,7 +1232,7 @@ export default function SnackCheck() {
           </div>
           {filterCount>0&&(
             <div style={{display:"flex",alignItems:"flex-end"}}>
-              <button onClick={()=>{setMinScore(0);setFilterBrand("");setFilterFlavor("");setMaxCalories(0);setMinProtein(0);setMinFibre(0);setAvoidAllergens([]);}}
+              <button onClick={()=>{setMinScore(0);setFilterBrand("");setFilterFlavor("");setMaxCalories(0);setMinProtein(0);setMinFibre(0);setAvoidAllergens([]);setNutriscoreMax("");}}
                 style={{padding:"7px 12px",borderRadius:10,border:`1.5px solid ${P.border}`,background:P.bg,color:P.muted,cursor:"pointer",fontSize:13}}>
                 {t.reset}
               </button>
