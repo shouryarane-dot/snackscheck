@@ -1206,6 +1206,8 @@ export default function SnackCheck() {
                 const catIdx=CAT_IDS.indexOf(p.category);
                 const brandLower=p.brand.toLowerCase();
                 const displayName=p.name.toLowerCase().startsWith(brandLower)?p.name.slice(p.brand.length).trim():p.name;
+                // Use OFF image, or first user-uploaded rating photo as fallback
+                const cardImage=p.imageUrl||(pRats&&pRats.find(r=>r.image)?.image)||null;
                 return (
                   <div key={p.id} onClick={()=>{
                     if(pRats&&pRats.length>0){setSelProd(p.productCode);setView("detail");}
@@ -1214,15 +1216,15 @@ export default function SnackCheck() {
                   style={{background:P.card,borderRadius:16,overflow:"hidden",border:`1.5px solid ${P.border}`,cursor:"pointer",transition:"all .15s"}}
                   onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.borderColor=P.orange;}}
                   onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.borderColor=P.border;}}>
-                    {p.imageUrl
-                      ?<img src={p.imageUrl.replace(/^http:\/\//,'https://')} alt={p.name}
+                    {cardImage
+                      ?<img src={cardImage.replace(/^http:\/\//,'https://')} alt={p.name}
                           referrerPolicy="no-referrer"
                           style={{width:"100%",height:120,objectFit:"cover",display:"block"}}
                           onError={e=>{e.currentTarget.style.display="none";e.currentTarget.nextElementSibling.style.display="flex";}}
                         />
                       :null
                     }
-                    <div style={{width:"100%",height:120,background:P.orangeLight,alignItems:"center",justifyContent:"center",fontSize:40,display:p.imageUrl?"none":"flex"}}>{CAT_ICONS[catIdx]}</div>
+                    <div style={{width:"100%",height:120,background:P.orangeLight,alignItems:"center",justifyContent:"center",fontSize:40,display:cardImage?"none":"flex"}}>{CAT_ICONS[catIdx]}</div>
                     <div style={{padding:12}}>
                       <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:1,color:P.text}}>{p.brand}</div>
                       <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:1,color:P.text}}>{displayName}</div>
