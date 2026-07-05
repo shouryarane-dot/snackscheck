@@ -1008,7 +1008,7 @@ export default function SnackCheck() {
           <button onClick={()=>setView("home")} style={{background:"none",border:"none",color:P.orange,cursor:"pointer",fontSize:14,fontWeight:700,padding:0,marginBottom:20,display:"flex",alignItems:"center",gap:6}}>{t.back}</button>
           <div style={{background:P.card,borderRadius:16,border:`1.5px solid ${P.border}`,padding:20,marginBottom:20}}>
             <span style={{background:P.orangeLight,color:P.orangeDark,fontSize:11,fontWeight:700,borderRadius:20,padding:"2px 8px"}}>{CAT_ICONS[catIdx]} {t.cats[catIdx]}</span>
-            <h1 style={{fontSize:24,fontWeight:800,margin:"10px 0 4px",color:P.text,lineHeight:1.1}}>{first.brand} {first.name}</h1>
+            <h1 style={{fontSize:24,fontWeight:800,margin:"10px 0 4px",color:P.text,lineHeight:1.1}}>{first.brand} {first.name.toLowerCase().startsWith(first.brand.toLowerCase())?first.name.slice(first.brand.length).trim():first.name}</h1>
             {first.flavor&&<div style={{color:P.muted,fontSize:14,marginBottom:14}}>{first.flavor}</div>}
             <div style={{display:"flex",alignItems:"center",gap:14}}>
               <ScorePill score={parseFloat(a.toFixed(1))} size="lg"/>
