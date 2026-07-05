@@ -325,6 +325,7 @@ export default function SnackCheck() {
   const [minProtein,setMinProtein]=useState(0);
   const [minFibre,setMinFibre]=useState(0);
   const [avoidAllergens,setAvoidAllergens]=useState([]);
+  const [dirPage,setDirPage]=useState(1);
   const [form,setForm]=useState({brand:"",name:"",flavor:"",category:"chips",score:0,pros:"",cons:"",image:null,location:""});
   const [acQuery,setAcQuery]=useState("");
   const [acOpen,setAcOpen]=useState(false);
@@ -392,6 +393,8 @@ export default function SnackCheck() {
   },[form.brand,form.name,form.flavor,view]);
 
   const handleLang = code=>{setLang(code);setShowLangPicker(false);localStorage.setItem(LANG_KEY,code);};
+  const setSearchAndReset = v=>{setSearch(v);setDirPage(1);};
+  const setCatAndReset = v=>{setCat(v);setDirPage(1);};
   const goToRate = ()=>{if(!user){setShowAuthModal(true);}else{setView("rate");}};
   const avg = list=>list.reduce((s,r)=>s+r.score,0)/list.length;
 
@@ -464,7 +467,9 @@ export default function SnackCheck() {
       default:{const tA=rA?Math.max(...rA.map(r=>r.timestamp)):0,tB=rB?Math.max(...rB.map(r=>r.timestamp)):0;return tB-tA||a.brand.localeCompare(b.brand);}
     }
   });
-  const visibleProducts=(search||cat!=="all"||filterCount>0)?dirProducts:dirProducts.slice(0,200);
+  const PAGE_SIZE=50;
+  const totalPages=Math.max(1,Math.ceil(dirProducts.length/PAGE_SIZE));
+  const visibleProducts=dirProducts.slice((dirPage-1)*PAGE_SIZE,dirPage*PAGE_SIZE);
 
   const myRatings = ratings
     .filter(r=>r.userId===user?.id)
@@ -1072,7 +1077,7 @@ export default function SnackCheck() {
       </div>
       <div style={{display:"flex",gap:8,overflowX:"auto",padding:"10px 14px",background:P.card,borderBottom:`1.5px solid ${P.border}`}}>
         {CAT_IDS.map((c,i)=>(
-          <button key={c} onClick={()=>setCat(c)}
+          <button key={c} onClick={()=>setCatAndReset(c)}
             style={{background:cat===c?P.orange:P.bg,color:cat===c?"white":P.muted,border:`1.5px solid ${cat===c?P.orange:P.border}`,borderRadius:20,padding:"5px 13px",fontSize:13,cursor:"pointer",whiteSpace:"nowrap",fontWeight:cat===c?700:400,transition:"all .15s"}}>
             {CAT_ICONS[i]} {t.cats[i]}
           </button>
@@ -1081,7 +1086,7 @@ export default function SnackCheck() {
       <div style={{padding:"10px 14px",background:P.card,borderBottom:`1.5px solid ${P.border}`,display:"flex",gap:8,alignItems:"center"}}>
         <div style={{flex:1,position:"relative"}}>
           <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",fontSize:14,color:P.muted}}>🔍</span>
-          <input style={{...inp,paddingLeft:34}} placeholder={t.search} value={search} onChange={e=>setSearch(e.target.value)}/>
+          <input style={{...inp,paddingLeft:34}} placeholder={t.search} value={search} onChange={e=>setSearchAndReset(e.target.value)}/>
         </div>
         <select value={sortBy} onChange={e=>setSortBy(e.target.value)}
           style={{border:`1.5px solid ${P.border}`,borderRadius:10,padding:"9px 10px",fontSize:13,outline:"none",background:P.bg,cursor:"pointer",color:P.text}}>
@@ -1208,9 +1213,13 @@ export default function SnackCheck() {
                 );
               })}
             </div>
-            {!search&&cat==="all"&&filterCount===0&&dirProducts.length>200&&(
-              <div style={{textAlign:"center",padding:"0 20px 24px",color:P.muted,fontSize:13}}>
-                Showing 200 of {dirProducts.length} products · Search to find more
+            {totalPages>1&&(
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"12px 20px 24px"}}>
+                <button onClick={()=>setDirPage(p=>Math.max(1,p-1))} disabled={dirPage===1}
+                  style={{padding:"7px 16px",borderRadius:10,border:`1.5px solid ${P.border}`,background:dirPage===1?P.bg:"white",color:dirPage===1?P.muted:P.text,cursor:dirPage===1?"not-allowed":"pointer",fontWeight:600,fontSize:13}}>← Prev</button>
+                <span style={{fontSize:13,color:P.muted}}>Page {dirPage} of {totalPages} · {dirProducts.length} products</span>
+                <button onClick={()=>setDirPage(p=>Math.min(totalPages,p+1))} disabled={dirPage===totalPages}
+                  style={{padding:"7px 16px",borderRadius:10,border:`1.5px solid ${P.border}`,background:dirPage===totalPages?P.bg:"white",color:dirPage===totalPages?P.muted:P.text,cursor:dirPage===totalPages?"not-allowed":"pointer",fontWeight:600,fontSize:13}}>Next →</button>
               </div>
             )}
           </>
