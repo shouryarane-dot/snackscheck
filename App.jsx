@@ -1181,6 +1181,11 @@ export default function SnackCheck() {
             {codes.map(code=>{
               const list=grouped[code],first=list[0],a=avg(list),catIdx=CAT_IDS.indexOf(first.category);
               const firstImage=list.find(r=>r.image)?.image||null;
+              // Strip brand from start of name to avoid "Pringles Pringles chips"
+              const brandLower=first.brand.toLowerCase();
+              const displayName=first.name.toLowerCase().startsWith(brandLower)
+                ? first.name.slice(first.brand.length).trim()
+                : first.name;
               return (
                 <div key={code} onClick={()=>{setSelProd(code);setView("detail");}}
                   style={{background:P.card,borderRadius:16,overflow:"hidden",border:`1.5px solid ${P.border}`,cursor:"pointer",transition:"all .15s"}}
@@ -1192,7 +1197,7 @@ export default function SnackCheck() {
                   }
                   <div style={{padding:12}}>
                     <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:1,color:P.text}}>{first.brand}</div>
-                    <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:1,color:P.text}}>{first.name}</div>
+                    <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:1,color:P.text}}>{displayName}</div>
                     <div style={{fontSize:12,color:P.muted,marginBottom:8}}>{first.flavor}</div>
                     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                       <ScorePill score={parseFloat(a.toFixed(1))}/>
