@@ -419,55 +419,52 @@ export default function SnackCheck() {
     setView("landing");
   };
 
-  const filtered = ratings.filter(r=>
-    (cat==="all"||r.category===cat)&&
-    (!search||r.brand.toLowerCase().includes(search.toLowerCase())||r.productCode.toLowerCase().includes(search.toLowerCase())||r.name.toLowerCase().includes(search.toLowerCase()))&&
-    (!filterBrand||r.brand.toLowerCase().includes(filterBrand.toLowerCase()))&&
-    (!filterFlavor||r.flavor.toLowerCase().includes(filterFlavor.toLowerCase()))
-  );
-  const grouped = filtered.reduce((a,r)=>{(a[r.productCode]=a[r.productCode]||[]).push(r);return a;},{});
-  const productNutrient = (list,key)=>{const r=list.find(r=>r.productInfo?.per100g?.[key]!=null);return r?.productInfo?.per100g?.[key];};
-  let codes = Object.keys(grouped)
-    .filter(c=>avg(grouped[c])>=minScore)
-    .filter(c=>!onlyMulti||grouped[c].length>1)
-    .filter(c=>{if(maxCalories===0)return true;const v=productNutrient(grouped[c],"calories");return v!=null&&v<=maxCalories;})
-    .filter(c=>{if(minProtein===0)return true;const v=productNutrient(grouped[c],"protein");return v!=null&&v>=minProtein;})
-    .filter(c=>{if(minFibre===0)return true;const v=productNutrient(grouped[c],"fibre");return v!=null&&v>=minFibre;})
-    .filter(c=>{
-      if(avoidAllergens.length===0) return true;
-      const prod=products.find(p=>p.productCode===c);
-      const storedAllergens=prod?.productInfo?.allergens||[];
-      // Also scan ingredients text directly — works even if backfill didn't store allergens
-      const ingText=(prod?.productInfo?.ingredientsByLang?.en||prod?.productInfo?.ingredients||"").toLowerCase();
-      const ALLERGEN_KEYWORDS={
-        milk:     ["milk","dairy","lactose","whey","casein","butter","cream","cheese"],
-        gluten:   ["wheat","gluten","barley","rye","oats"],
-        eggs:     ["egg","eggs"],
-        nuts:     ["almond","cashew","walnut","hazelnut","pistachio","pecan","macadamia"],
-        peanuts:  ["peanut","groundnut","arachide"],
-        soy:      ["soy","soya","soybean","soja"],
-        fish:     ["fish","cod","salmon","tuna","anchovy"],
-        shellfish:["shellfish","shrimp","prawn","crab","lobster"],
-        sesame:   ["sesame","tahini"],
-      };
-      const detectedAllergens=Object.entries(ALLERGEN_KEYWORDS)
-        .filter(([,kws])=>kws.some(k=>ingText.includes(k)))
-        .map(([allergen])=>allergen);
-      const allergens=[...new Set([...storedAllergens,...detectedAllergens])];
+  const grouped = ratings.reduce((a,r)=>{(a[r.productCode]=a[r.productCode]||[]).push(r);return a;},{});
+
+  const ALLERGEN_KEYWORDS={
+    milk:["milk","dairy","lactose","whey","casein","butter","cream","cheese"],
+    gluten:["wheat","gluten","barley","rye","oats"],
+    eggs:["egg","eggs"],
+    nuts:["almond","cashew","walnut","hazelnut","pistachio","pecan","macadamia"],
+    peanuts:["peanut","groundnut","arachide"],
+    soy:["soy","soya","soybean","soja"],
+    fish:["fish","cod","salmon","tuna","anchovy"],
+    shellfish:["shellfish","shrimp","prawn","crab","lobster"],
+    sesame:["sesame","tahini"],
+  };
+  let dirProducts = products
+    .filter(p=>(cat==="all"||p.category===cat))
+    .filter(p=>!search||p.brand.toLowerCase().includes(search.toLowerCase())||p.name.toLowerCase().includes(search.toLowerCase())||(p.flavor||"").toLowerCase().includes(search.toLowerCase()))
+    .filter(p=>!filterBrand||p.brand.toLowerCase().includes(filterBrand.toLowerCase()))
+    .filter(p=>!filterFlavor||(p.flavor||"").toLowerCase().includes(filterFlavor.toLowerCase()))
+    .filter(p=>{if(maxCalories===0)return true;const v=p.productInfo?.per100g?.calories;return v!=null&&v<=maxCalories;})
+    .filter(p=>{if(minProtein===0)return true;const v=p.productInfo?.per100g?.protein;return v!=null&&v>=minProtein;})
+    .filter(p=>{if(minFibre===0)return true;const v=p.productInfo?.per100g?.fibre;return v!=null&&v>=minFibre;})
+    .filter(p=>{
+      if(avoidAllergens.length===0)return true;
+      const storedAllergens=p.productInfo?.allergens||[];
+      const ingText=(p.productInfo?.ingredientsByLang?.en||p.productInfo?.ingredients||"").toLowerCase();
+      const detected=Object.entries(ALLERGEN_KEYWORDS).filter(([,kws])=>kws.some(k=>ingText.includes(k))).map(([a])=>a);
+      const allergens=[...new Set([...storedAllergens,...detected])];
       return !avoidAllergens.some(avoid=>allergens.some(a=>a.includes(avoid)||avoid.includes(a)));
+    })
+    .filter(p=>{
+      if(minScore===0)return true;
+      const pRats=grouped[p.productCode];
+      return pRats&&avg(pRats)>=minScore;
     });
-  codes.sort((a,b)=>{
-    const la=grouped[a],lb=grouped[b];
+  dirProducts.sort((a,b)=>{
+    const rA=grouped[a.productCode],rB=grouped[b.productCode];
     switch(sortBy){
-      case"recent":     return Math.max(...lb.map(r=>r.timestamp))-Math.max(...la.map(r=>r.timestamp));
-      case"oldest":     return Math.min(...la.map(r=>r.timestamp))-Math.min(...lb.map(r=>r.timestamp));
-      case"score_desc": return avg(lb)-avg(la);
-      case"score_asc":  return avg(la)-avg(lb);
-      case"most_rated": return lb.length-la.length;
-      case"az":         return la[0].brand.localeCompare(lb[0].brand);
-      default: return 0;
+      case"score_desc":{const sA=rA?avg(rA):-1,sB=rB?avg(rB):-1;return sB-sA;}
+      case"score_asc":{const sA=rA?avg(rA):999,sB=rB?avg(rB):999;return sA-sB;}
+      case"most_rated":return(rB?.length||0)-(rA?.length||0);
+      case"az":return a.brand.localeCompare(b.brand);
+      case"oldest":{const tA=rA?Math.min(...rA.map(r=>r.timestamp)):Date.now(),tB=rB?Math.min(...rB.map(r=>r.timestamp)):Date.now();return tA-tB;}
+      default:{const tA=rA?Math.max(...rA.map(r=>r.timestamp)):0,tB=rB?Math.max(...rB.map(r=>r.timestamp)):0;return tB-tA||a.brand.localeCompare(b.brand);}
     }
   });
+  const visibleProducts=(search||cat!=="all"||filterCount>0)?dirProducts:dirProducts.slice(0,200);
 
   const myRatings = ratings
     .filter(r=>r.userId===user?.id)
@@ -1169,45 +1166,54 @@ export default function SnackCheck() {
         </div>
       )}
       <div style={{padding:"6px 16px",fontSize:11,color:P.muted,background:P.bg,letterSpacing:.3}}>
-        {tab==="all"?`${t.products(codes.length)} · ${t.sorts[SORTS_IDS.indexOf(sortBy)]}`:t.myRatingsCount(myRatings.length,userName||"...")}
+        {tab==="all"?`${t.products(dirProducts.length)}`:t.myRatingsCount(myRatings.length,userName||"...")}
       </div>
-      {tab==="all"&&(codes.length===0
+      {tab==="all"&&(dirProducts.length===0
         ? <div style={{textAlign:"center",padding:60,color:P.muted}}>
-            <div style={{fontSize:48,marginBottom:12}}>🍿</div>
-            <div style={{fontWeight:600}}>{t.noRatings}</div>
-            <div style={{fontSize:13,marginTop:6}}>{t.noRatingsSub}</div>
+            <div style={{fontSize:48,marginBottom:12}}>🔍</div>
+            <div style={{fontWeight:600}}>No snacks found</div>
+            <div style={{fontSize:13,marginTop:6}}>Try a different search or filter</div>
           </div>
-        : <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(155px,1fr))",gap:12,padding:14}}>
-            {codes.map(code=>{
-              const list=grouped[code],first=list[0],a=avg(list),catIdx=CAT_IDS.indexOf(first.category);
-              const firstImage=list.find(r=>r.image)?.image||null;
-              // Strip brand from start of name to avoid "Pringles Pringles chips"
-              const brandLower=first.brand.toLowerCase();
-              const displayName=first.name.toLowerCase().startsWith(brandLower)
-                ? first.name.slice(first.brand.length).trim()
-                : first.name;
-              return (
-                <div key={code} onClick={()=>{setSelProd(code);setView("detail");}}
+        : <>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(155px,1fr))",gap:12,padding:14}}>
+              {visibleProducts.map(p=>{
+                const pRats=grouped[p.productCode];
+                const catIdx=CAT_IDS.indexOf(p.category);
+                const brandLower=p.brand.toLowerCase();
+                const displayName=p.name.toLowerCase().startsWith(brandLower)?p.name.slice(p.brand.length).trim():p.name;
+                return (
+                  <div key={p.id} onClick={()=>{
+                    if(pRats&&pRats.length>0){setSelProd(p.productCode);setView("detail");}
+                    else{if(!user){setShowAuthModal(true);return;}setForm(f=>({...f,brand:p.brand,name:p.name,flavor:p.flavor||"",category:p.category}));setView("rate");}
+                  }}
                   style={{background:P.card,borderRadius:16,overflow:"hidden",border:`1.5px solid ${P.border}`,cursor:"pointer",transition:"all .15s"}}
                   onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.borderColor=P.orange;}}
                   onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.borderColor=P.border;}}>
-                  {firstImage
-                    ? <img src={firstImage} alt={first.name} style={{width:"100%",height:100,objectFit:"cover",display:"block"}}/>
-                    : <div style={{width:"100%",height:100,background:P.orangeLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:36}}>{CAT_ICONS[catIdx]}</div>
-                  }
-                  <div style={{padding:12}}>
-                    <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:1,color:P.text}}>{first.brand}</div>
-                    <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:1,color:P.text}}>{displayName}</div>
-                    <div style={{fontSize:12,color:P.muted,marginBottom:8}}>{first.flavor}</div>
-                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                      <ScorePill score={parseFloat(a.toFixed(1))}/>
-                      <span style={{fontSize:11,color:P.muted}}>{list.length}×</span>
+                    {p.imageUrl
+                      ?<img src={p.imageUrl} alt={p.name} style={{width:"100%",height:100,objectFit:"cover",display:"block"}}/>
+                      :<div style={{width:"100%",height:100,background:P.orangeLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:36}}>{CAT_ICONS[catIdx]}</div>
+                    }
+                    <div style={{padding:12}}>
+                      <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:1,color:P.text}}>{p.brand}</div>
+                      <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:1,color:P.text}}>{displayName}</div>
+                      <div style={{fontSize:12,color:P.muted,marginBottom:8}}>{p.flavor}</div>
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                        {pRats
+                          ?<><ScorePill score={parseFloat(avg(pRats).toFixed(1))}/><span style={{fontSize:11,color:P.muted}}>{pRats.length}×</span></>
+                          :<span style={{fontSize:11,color:P.orange,fontWeight:600}}>Rate first →</span>
+                        }
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+            {!search&&cat==="all"&&filterCount===0&&dirProducts.length>200&&(
+              <div style={{textAlign:"center",padding:"0 20px 24px",color:P.muted,fontSize:13}}>
+                Showing 200 of {dirProducts.length} products · Search to find more
+              </div>
+            )}
+          </>
       )}
       {tab==="mine"&&(myRatings.length===0
         ? <div style={{textAlign:"center",padding:60,color:P.muted}}>
