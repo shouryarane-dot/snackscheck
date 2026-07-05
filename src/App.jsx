@@ -1017,63 +1017,90 @@ export default function SnackCheck() {
   // ── Detail view ───────────────────────────────────────────────────────────
   if(view==="detail"&&selProd) {
     const pRatings=ratings.filter(r=>r.productCode===selProd);
-    if(pRatings.length===0){setView("home");return null;}
-    const first=pRatings[0];
-    const a=avg(pRatings);
-    const catIdx=CAT_IDS.indexOf(first.category);
-    const detailInfo=products.find(p=>p.productCode===first.productCode)?.productInfo||pRatings.find(r=>r.productInfo)?.productInfo||null;
+    const selProduct=products.find(p=>p.productCode===selProd);
+    // Derive header info from product table first, fall back to ratings
+    const dBrand=selProduct?.brand||pRatings[0]?.brand||"";
+    const dName=selProduct?.name||pRatings[0]?.name||"";
+    const dFlavor=selProduct?.flavor||pRatings[0]?.flavor||"";
+    const dCat=selProduct?.category||pRatings[0]?.category||"anders";
+    const catIdx=CAT_IDS.indexOf(dCat);
+    const detailInfo=selProduct?.productInfo||pRatings.find(r=>r.productInfo)?.productInfo||null;
+    const detailImage=selProduct?.imageUrl||(pRatings.find(r=>r.image)?.image)||null;
+    const displayName=dName.toLowerCase().startsWith(dBrand.toLowerCase())?dName.slice(dBrand.length).trim():dName;
+    const a=pRatings.length>0?avg(pRatings):0;
+    const ns=detailInfo?.nutriscore;
+    const nsColor={a:"#038141",b:"#85BB2F",c:"#FECB02",d:"#EE8100",e:"#E63E11"};
     return (
       <div style={{minHeight:"100vh",background:P.bg,fontFamily:"system-ui,sans-serif"}}>
-        <Header subtitle={first.brand}/>
+        <Header subtitle={dBrand}/>
         {authModal}
         <div style={{padding:20,maxWidth:520,margin:"0 auto"}}>
           <button onClick={()=>setView("home")} style={{background:"none",border:"none",color:P.orange,cursor:"pointer",fontSize:14,fontWeight:700,padding:0,marginBottom:20,display:"flex",alignItems:"center",gap:6}}>{t.back}</button>
-          <div style={{background:P.card,borderRadius:16,border:`1.5px solid ${P.border}`,padding:20,marginBottom:20}}>
-            <span style={{background:P.orangeLight,color:P.orangeDark,fontSize:11,fontWeight:700,borderRadius:20,padding:"2px 8px"}}>{CAT_ICONS[catIdx]} {t.cats[catIdx]}</span>
-            <h1 style={{fontSize:24,fontWeight:800,margin:"10px 0 4px",color:P.text,lineHeight:1.1}}>{first.brand} {first.name.toLowerCase().startsWith(first.brand.toLowerCase())?first.name.slice(first.brand.length).trim():first.name}</h1>
-            {first.flavor&&<div style={{color:P.muted,fontSize:14,marginBottom:14}}>{first.flavor}</div>}
-            <div style={{display:"flex",alignItems:"center",gap:14}}>
-              <ScorePill score={parseFloat(a.toFixed(1))} size="lg"/>
-              <Stars value={Math.round(a)} size={22}/>
-              <span style={{color:P.muted,fontSize:13}}>{t.ratingsCount(pRatings.length)}</span>
+
+          {/* Product header card */}
+          <div style={{background:P.card,borderRadius:16,border:`1.5px solid ${P.border}`,overflow:"hidden",marginBottom:16}}>
+            {detailImage&&<img src={detailImage.replace(/^http:\/\//,'https://')} alt={dName} referrerPolicy="no-referrer" style={{width:"100%",maxHeight:200,objectFit:"cover",display:"block"}}/>}
+            <div style={{padding:20}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                <span style={{background:P.orangeLight,color:P.orangeDark,fontSize:11,fontWeight:700,borderRadius:20,padding:"2px 8px"}}>{CAT_ICONS[catIdx]} {t.cats[catIdx]}</span>
+                {ns&&<span style={{fontSize:12,fontWeight:800,color:"white",background:nsColor[ns]||"#aaa",borderRadius:6,padding:"2px 8px",textTransform:"uppercase"}}>Nutri-Score {ns}</span>}
+              </div>
+              <h1 style={{fontSize:22,fontWeight:800,margin:"0 0 4px",color:P.text,lineHeight:1.1}}>{dBrand} {displayName}</h1>
+              {dFlavor&&<div style={{color:P.muted,fontSize:14,marginBottom:12}}>{dFlavor}</div>}
+              {pRatings.length>0
+                ?<div style={{display:"flex",alignItems:"center",gap:12}}>
+                    <ScorePill score={parseFloat(a.toFixed(1))} size="lg"/>
+                    <Stars value={Math.round(a)} size={20}/>
+                    <span style={{color:P.muted,fontSize:13}}>{t.ratingsCount(pRatings.length)}</span>
+                  </div>
+                :<div style={{fontSize:13,color:P.muted}}>No community ratings yet — be the first!</div>
+              }
             </div>
           </div>
-          {detailInfo&&<div style={{marginBottom:20}}><ProductInfoCard info={detailInfo} lang={lang}/></div>}
+
+          {/* Nutrition & ingredients */}
+          {detailInfo&&<div style={{marginBottom:16}}><ProductInfoCard info={detailInfo} lang={lang}/></div>}
+
+          {/* Add rating button */}
           <button onClick={()=>{
             if(!user){setShowAuthModal(true);return;}
-            setForm({brand:first.brand,name:first.name,flavor:first.flavor,category:first.category,score:0,pros:"",cons:"",image:null});
+            setForm({brand:dBrand,name:dName,flavor:dFlavor,category:dCat,score:0,pros:"",cons:"",image:null});
             setView("rate");
-          }} style={{width:"100%",background:P.orange,color:"white",border:"none",borderRadius:12,padding:"12px",fontSize:15,fontWeight:700,cursor:"pointer",marginBottom:20}}>
+          }} style={{width:"100%",background:P.orange,color:"white",border:"none",borderRadius:12,padding:"13px",fontSize:15,fontWeight:700,cursor:"pointer",marginBottom:20}}>
             + {t.addRating}
           </button>
-          <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,color:P.muted,marginBottom:12}}>{t.reviews}</div>
-          {pRatings.map(r=>{
-            const isMe=r.userId===user?.id;
-            return (
-              <div key={r.id} style={{background:P.card,borderRadius:14,border:`1.5px solid ${isMe?P.orange:P.border}`,padding:"14px 16px",marginBottom:10}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                  <div style={{display:"flex",alignItems:"center",gap:8}}>
-                    <Avatar name={r.rater} size={28}/>
-                    <span style={{fontSize:13,fontWeight:700,color:isMe?P.orange:P.text}}>{r.rater}{isMe?t.you:""}</span>
-                  </div>
-                  <div style={{display:"flex",alignItems:"center",gap:8}}>
-                    <ScorePill score={r.score}/>
-                    <div style={{textAlign:"right"}}>
-                      <div style={{fontSize:11,color:P.muted}}>{timeAgo(r.timestamp)}</div>
-                      {r.location&&<div style={{fontSize:11,color:P.muted}}>📍 {r.location}</div>}
+
+          {/* Reviews */}
+          {pRatings.length>0&&<>
+            <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,color:P.muted,marginBottom:12}}>{t.reviews}</div>
+            {pRatings.map(r=>{
+              const isMe=r.userId===user?.id;
+              return (
+                <div key={r.id} style={{background:P.card,borderRadius:14,border:`1.5px solid ${isMe?P.orange:P.border}`,padding:"14px 16px",marginBottom:10}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                      <Avatar name={r.rater} size={28}/>
+                      <span style={{fontSize:13,fontWeight:700,color:isMe?P.orange:P.text}}>{r.rater}{isMe?t.you:""}</span>
                     </div>
-                    {isMe&&<button onClick={()=>handleDelete(r.id)} style={{background:P.redLight,color:P.red,border:"none",borderRadius:8,width:28,height:28,cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"}}>🗑</button>}
-                    {!isMe&&<a href={`mailto:privacy@snackscheck.com?subject=Report rating&body=Rating ID: ${r.id}%0ABrand: ${r.brand} ${r.name}%0ARater: ${r.rater}%0AReason: (please describe the issue)`} style={{background:"#FFF5F5",color:P.red,border:"none",borderRadius:8,width:28,height:28,cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center",textDecoration:"none"}} title="Report this rating">🚩</a>}
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                      <ScorePill score={r.score}/>
+                      <div style={{textAlign:"right"}}>
+                        <div style={{fontSize:11,color:P.muted}}>{timeAgo(r.timestamp)}</div>
+                        {r.location&&<div style={{fontSize:11,color:P.muted}}>📍 {r.location}</div>}
+                      </div>
+                      {isMe&&<button onClick={()=>handleDelete(r.id)} style={{background:P.redLight,color:P.red,border:"none",borderRadius:8,width:28,height:28,cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"}}>🗑</button>}
+                      {!isMe&&<a href={`mailto:privacy@snackscheck.com?subject=Report rating&body=Rating ID: ${r.id}%0ABrand: ${r.brand} ${r.name}%0ARater: ${r.rater}%0AReason: (please describe the issue)`} style={{background:"#FFF5F5",color:P.red,border:"none",borderRadius:8,width:28,height:28,cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center",textDecoration:"none"}} title="Report this rating">🚩</a>}
+                    </div>
+                  </div>
+                  {r.image&&<img src={r.image} alt="snack" style={{width:"100%",borderRadius:10,maxHeight:180,objectFit:"cover",marginBottom:8}}/>}
+                  <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                    {r.pros?.map((p,i)=><span key={i} style={{background:P.greenLight,color:P.green,borderRadius:8,padding:"3px 9px",fontSize:12,fontWeight:600}}>✓ {p}</span>)}
+                    {r.cons?.map((c2,i)=><span key={i} style={{background:P.redLight,color:P.red,borderRadius:8,padding:"3px 9px",fontSize:12,fontWeight:600}}>✗ {c2}</span>)}
                   </div>
                 </div>
-                {r.image&&<img src={r.image} alt="snack" style={{width:"100%",borderRadius:10,maxHeight:180,objectFit:"cover",marginBottom:8}}/>}
-                <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
-                  {r.pros?.map((p,i)=><span key={i} style={{background:P.greenLight,color:P.green,borderRadius:8,padding:"3px 9px",fontSize:12,fontWeight:600}}>✓ {p}</span>)}
-                  {r.cons?.map((c2,i)=><span key={i} style={{background:P.redLight,color:P.red,borderRadius:8,padding:"3px 9px",fontSize:12,fontWeight:600}}>✗ {c2}</span>)}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </>}
         </div>
       </div>
     );
@@ -1209,10 +1236,7 @@ export default function SnackCheck() {
                 // Use OFF image, or first user-uploaded rating photo as fallback
                 const cardImage=p.imageUrl||(pRats&&pRats.find(r=>r.image)?.image)||null;
                 return (
-                  <div key={p.id} onClick={()=>{
-                    if(pRats&&pRats.length>0){setSelProd(p.productCode);setView("detail");}
-                    else{if(!user){setShowAuthModal(true);return;}setForm(f=>({...f,brand:p.brand,name:p.name,flavor:p.flavor||"",category:p.category}));setView("rate");}
-                  }}
+                  <div key={p.id} onClick={()=>{setSelProd(p.productCode);setView("detail");}}
                   style={{background:P.card,borderRadius:16,overflow:"hidden",border:`1.5px solid ${P.border}`,cursor:"pointer",transition:"all .15s"}}
                   onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.borderColor=P.orange;}}
                   onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.borderColor=P.border;}}>
@@ -1234,6 +1258,7 @@ export default function SnackCheck() {
                           ?<><ScorePill score={parseFloat(avg(pRats).toFixed(1))}/><span style={{fontSize:11,color:P.muted}}>{pRats.length}×</span></>
                           :<span style={{fontSize:11,color:P.orange,fontWeight:600}}>Rate first →</span>
                         }
+                        {p.productInfo?.nutriscore&&<span style={{fontSize:11,fontWeight:800,color:"white",background:{a:"#038141",b:"#85BB2F",c:"#FECB02",d:"#EE8100",e:"#E63E11"}[p.productInfo.nutriscore]||"#aaa",borderRadius:4,padding:"1px 5px",textTransform:"uppercase"}}>{p.productInfo.nutriscore}</span>}
                       </div>
                     </div>
                   </div>
