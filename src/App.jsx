@@ -322,6 +322,7 @@ export default function SnackCheck() {
   const [search,setSearch]=useState("");
   const [selProd,setSelProd]=useState(null);
   const [detailProduct,setDetailProduct]=useState(null); // full product_info, loaded lazily
+  const [detailLoaded,setDetailLoaded]=useState(false);  // true once fetch completes (even if no info)
   const [sortBy,setSortBy]=useState("score_desc");
   const [showFilter,setShowFilter]=useState(false);
   const [minScore,setMinScore]=useState(0);
@@ -384,9 +385,13 @@ export default function SnackCheck() {
 
   // Lazy-load full product_info when opening detail view
   useEffect(()=>{
-    if(!selProd){setDetailProduct(null);return;}
-    setDetailProduct(null); // clear previous while loading
-    fetchProductDetail(selProd).then(p=>{if(p) setDetailProduct(p);});
+    if(!selProd){setDetailProduct(null);setDetailLoaded(false);return;}
+    setDetailProduct(null);
+    setDetailLoaded(false);
+    fetchProductDetail(selProd).then(p=>{
+      if(p) setDetailProduct(p);
+      setDetailLoaded(true); // mark done even if product has no product_info
+    });
   },[selProd]);
 
   useEffect(()=>{
@@ -1080,7 +1085,9 @@ export default function SnackCheck() {
           {/* Nutrition & ingredients */}
           {detailInfo
             ?<div style={{marginBottom:16}}><ProductInfoCard info={detailInfo} lang={lang}/></div>
-            :<div style={{background:P.card,borderRadius:14,border:`1.5px solid ${P.border}`,padding:"16px",marginBottom:16,color:P.muted,fontSize:13,textAlign:"center"}}>Loading nutrition info…</div>
+            :!detailLoaded
+              ?<div style={{background:P.card,borderRadius:14,border:`1.5px solid ${P.border}`,padding:"16px",marginBottom:16,color:P.muted,fontSize:13,textAlign:"center"}}>Loading nutrition info…</div>
+              :null
           }
 
           {/* Add rating button */}
