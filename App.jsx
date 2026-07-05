@@ -436,8 +436,24 @@ export default function SnackCheck() {
     .filter(c=>{
       if(avoidAllergens.length===0) return true;
       const prod=products.find(p=>p.productCode===c);
-      const allergens=prod?.productInfo?.allergens||[];
-      // Fuzzy match: "milk" matches "milk-and-dairy-products", "gluten" matches "gluten-containing-cereals" etc.
+      const storedAllergens=prod?.productInfo?.allergens||[];
+      // Also scan ingredients text directly — works even if backfill didn't store allergens
+      const ingText=(prod?.productInfo?.ingredientsByLang?.en||prod?.productInfo?.ingredients||"").toLowerCase();
+      const ALLERGEN_KEYWORDS={
+        milk:     ["milk","dairy","lactose","whey","casein","butter","cream","cheese"],
+        gluten:   ["wheat","gluten","barley","rye","oats"],
+        eggs:     ["egg","eggs"],
+        nuts:     ["almond","cashew","walnut","hazelnut","pistachio","pecan","macadamia"],
+        peanuts:  ["peanut","groundnut","arachide"],
+        soy:      ["soy","soya","soybean","soja"],
+        fish:     ["fish","cod","salmon","tuna","anchovy"],
+        shellfish:["shellfish","shrimp","prawn","crab","lobster"],
+        sesame:   ["sesame","tahini"],
+      };
+      const detectedAllergens=Object.entries(ALLERGEN_KEYWORDS)
+        .filter(([,kws])=>kws.some(k=>ingText.includes(k)))
+        .map(([allergen])=>allergen);
+      const allergens=[...new Set([...storedAllergens,...detectedAllergens])];
       return !avoidAllergens.some(avoid=>allergens.some(a=>a.includes(avoid)||avoid.includes(a)));
     });
   codes.sort((a,b)=>{
