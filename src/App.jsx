@@ -971,18 +971,7 @@ export default function SnackCheck() {
         <input style={{...inp,marginBottom:16}} placeholder={t.productPh} value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
         <label style={lbl}>{t.flavor} {t.required}</label>
         <input style={{...inp,marginBottom:16}} placeholder={t.flavorPh} value={form.flavor} onChange={e=>setForm({...form,flavor:e.target.value})}/>
-        {(infoLoading||(productInfo&&form.brand&&form.name&&form.flavor))&&(
-          <div style={{marginBottom:16}}>
-            {infoLoading
-              ? <div style={{background:"#111",borderRadius:12,padding:14,display:"flex",alignItems:"center",gap:8,color:"#888",fontSize:13}}>
-                  <div style={{width:16,height:16,border:"2px solid #444",borderTopColor:P.orange,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
-                  <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-                  Looking up product info...
-                </div>
-              : <ProductInfoCard info={productInfo} lang={lang}/>
-            }
-          </div>
-        )}
+        {/* Product info is fetched silently in background for DB purposes — not shown here */}
         <label style={lbl}>{t.category} {t.required}</label>
         <select style={{...inp,marginBottom:16,cursor:"pointer"}} value={form.category} onChange={e=>setForm({...form,category:e.target.value})}>
           {CAT_IDS.filter(c=>c!=="all").map((c,i)=><option key={c} value={c}>{CAT_ICONS[i+1]} {t.cats[i+1]}</option>)}
@@ -1020,12 +1009,25 @@ export default function SnackCheck() {
               }}/>
             </label>
         }
-        <button onClick={handleSubmit} disabled={!form.brand||!form.name||!form.flavor||!form.category||!form.score}
-          style={{width:"100%",background:(!form.brand||!form.name||!form.flavor||!form.category||!form.score)?P.muted:P.orange,
-            color:"white",border:"none",borderRadius:12,padding:"14px",fontSize:16,fontWeight:800,
-            cursor:(!form.brand||!form.name||!form.flavor||!form.category||!form.score)?"not-allowed":"pointer",transition:"background .15s"}}>
-          {t.save}
-        </button>
+        {(()=>{
+          const missing=[];
+          if(!form.brand) missing.push("brand");
+          if(!form.name) missing.push("product name");
+          if(!form.flavor) missing.push("flavor");
+          if(!form.score) missing.push("star rating");
+          const canSave=missing.length===0;
+          return (<>
+            {!canSave&&<div style={{marginBottom:10,fontSize:13,color:P.red,fontWeight:600,textAlign:"center"}}>
+              Missing: {missing.join(", ")}
+            </div>}
+            <button onClick={canSave?handleSubmit:undefined}
+              style={{width:"100%",background:canSave?P.orange:P.muted,
+                color:"white",border:"none",borderRadius:12,padding:"14px",fontSize:16,fontWeight:800,
+                cursor:canSave?"pointer":"not-allowed",transition:"background .15s"}}>
+              {t.save}
+            </button>
+          </>);
+        })()}
       </div>
     </div>
   );
