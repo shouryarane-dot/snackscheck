@@ -326,6 +326,7 @@ export default function SnackCheck() {
   const [minFibre,setMinFibre]=useState(0);
   const [avoidAllergens,setAvoidAllergens]=useState([]);
   const [dirPage,setDirPage]=useState(1);
+  const [isMobile,setIsMobile]=useState(window.innerWidth<640);
   const [form,setForm]=useState({brand:"",name:"",flavor:"",category:"chips",score:0,pros:"",cons:"",image:null,location:""});
   const [acQuery,setAcQuery]=useState("");
   const [acOpen,setAcOpen]=useState(false);
@@ -368,7 +369,9 @@ export default function SnackCheck() {
       if(saved&&LANGS[saved]) setLang(saved);
       setLoading(false);
     })();
-    return ()=>subscription.unsubscribe();
+    const onResize=()=>setIsMobile(window.innerWidth<640);
+    window.addEventListener('resize',onResize);
+    return ()=>{subscription.unsubscribe();window.removeEventListener('resize',onResize);};
   },[]);
 
   useEffect(()=>{
@@ -456,6 +459,22 @@ export default function SnackCheck() {
       const pRats=grouped[p.productCode];
       return pRats&&avg(pRats)>=minScore;
     });
+  // Deduplicate: same brand+name → keep whichever has ratings, else keep first
+  {
+    const dedupMap = new Map();
+    for (const p of dirProducts) {
+      const key = `${p.brand.toLowerCase().trim()}||${p.name.toLowerCase().trim()}`;
+      const existing = dedupMap.get(key);
+      if (!existing) { dedupMap.set(key, p); }
+      else {
+        const hasNew = !!grouped[p.productCode];
+        const hasOld = !!grouped[existing.productCode];
+        if (hasNew && !hasOld) dedupMap.set(key, p);
+      }
+    }
+    dirProducts = [...dedupMap.values()];
+  }
+
   dirProducts.sort((a,b)=>{
     const rA=grouped[a.productCode],rB=grouped[b.productCode];
     switch(sortBy){
@@ -1180,7 +1199,7 @@ export default function SnackCheck() {
             <div style={{fontSize:13,marginTop:6}}>Try a different search or filter</div>
           </div>
         : <>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(155px,1fr))",gap:12,padding:14}}>
+            <div style={{display:"grid",gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(auto-fill,minmax(200px,1fr))",gap:12,padding:14}}>
               {visibleProducts.map(p=>{
                 const pRats=grouped[p.productCode];
                 const catIdx=CAT_IDS.indexOf(p.category);
@@ -1195,9 +1214,13 @@ export default function SnackCheck() {
                   onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.borderColor=P.orange;}}
                   onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.borderColor=P.border;}}>
                     {p.imageUrl
-                      ?<img src={p.imageUrl} alt={p.name} style={{width:"100%",height:100,objectFit:"cover",display:"block"}}/>
-                      :<div style={{width:"100%",height:100,background:P.orangeLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:36}}>{CAT_ICONS[catIdx]}</div>
+                      ?<img src={p.imageUrl} alt={p.name}
+                          style={{width:"100%",height:120,objectFit:"cover",display:"block"}}
+                          onError={e=>{e.currentTarget.style.display="none";e.currentTarget.nextElementSibling.style.display="flex";}}
+                        />
+                      :null
                     }
+                    <div style={{width:"100%",height:120,background:P.orangeLight,alignItems:"center",justifyContent:"center",fontSize:40,display:p.imageUrl?"none":"flex"}}>{CAT_ICONS[catIdx]}</div>
                     <div style={{padding:12}}>
                       <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:1,color:P.text}}>{p.brand}</div>
                       <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:1,color:P.text}}>{displayName}</div>
