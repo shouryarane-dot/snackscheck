@@ -1214,7 +1214,8 @@ export default function SnackCheck() {
                   onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.borderColor=P.orange;}}
                   onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.borderColor=P.border;}}>
                     {p.imageUrl
-                      ?<img src={p.imageUrl} alt={p.name}
+                      ?<img src={p.imageUrl.replace(/^http:\/\//,'https://')} alt={p.name}
+                          referrerPolicy="no-referrer"
                           style={{width:"100%",height:120,objectFit:"cover",display:"block"}}
                           onError={e=>{e.currentTarget.style.display="none";e.currentTarget.nextElementSibling.style.display="flex";}}
                         />
