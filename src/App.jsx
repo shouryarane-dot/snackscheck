@@ -90,9 +90,11 @@ async function fetchProductInfo(brand, name, flavor) {
     };
   };
   const search = async (q) => {
-    const res = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=1&fields=product_name,brands,nutriments,ingredients_text,ingredients_text_en,ingredients_text_nl,ingredients_text_fr,ingredients_text_de,ingredients_text_es,ingredients_text_it,serving_size,allergens_tags`);
+    const res = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=5&lc=en&fields=product_name,brands,nutriments,ingredients_text,ingredients_text_en,ingredients_text_nl,ingredients_text_fr,ingredients_text_de,ingredients_text_es,ingredients_text_it,serving_size,allergens_tags`);
     const d = await res.json();
-    return d.products?.[0] || null;
+    const prods = d.products || [];
+    // Prefer a result that has English ingredients text
+    return prods.find(p=>p.ingredients_text_en) || prods[0] || null;
   };
   try {
     // Deduplicate: remove brand words that already appear in name
@@ -372,8 +374,8 @@ export default function SnackCheck() {
 
   const handleBackfill = async () => {
     setBackfillBusy(true);
-    // Re-fetch if productInfo is missing OR if ingredientsByLang is missing (old records)
-    const missing = products.filter(p=>!p.productInfo || !p.productInfo.ingredientsByLang);
+    // Always re-fetch all — ensures stale/wrong-language data gets corrected
+    const missing = products;
     for(const p of missing) {
       const info = await fetchProductInfo(p.brand, p.name, p.flavor);
       if(info) await updateProductInfo(p.productCode, info);
