@@ -52,10 +52,14 @@ export const mapProduct = (row) => ({
   flavor: row.flavor,
   category: row.category,
   productInfo: row.product_info || null,
+  imageUrl: row.image_url || null,
+  countryOfOrigin: row.country_of_origin || null,
+  barcode: row.barcode || null,
+  source: row.source || null,
 })
 
 // Upsert a product and return it (creates if new, updates info if exists)
-export const upsertProduct = async (brand, name, flavor, category, productCode, productInfo) => {
+export const upsertProduct = async (brand, name, flavor, category, productCode, productInfo, extra={}) => {
   const { data, error } = await supabase
     .from('products')
     .upsert({
@@ -65,6 +69,10 @@ export const upsertProduct = async (brand, name, flavor, category, productCode, 
       flavor,
       category,
       product_info: productInfo || null,
+      image_url: extra.imageUrl || null,
+      country_of_origin: extra.countryOfOrigin || null,
+      barcode: extra.barcode || null,
+      source: extra.source || null,
     }, { onConflict: 'product_code' })
     .select()
     .single()
@@ -72,14 +80,23 @@ export const upsertProduct = async (brand, name, flavor, category, productCode, 
   return data
 }
 
-// Fetch all products (for autocomplete)
+// Fetch all products (paginated to bypass Supabase 1000-row default limit)
 export const fetchProducts = async () => {
-  const { data, error } = await supabase
-    .from('products')
-    .select('*')
-    .order('brand', { ascending: true })
-  if (error) { console.error('fetchProducts error:', error); return [] }
-  return (data || []).map(mapProduct)
+  const PAGE = 1000;
+  let all = [], from = 0;
+  while (true) {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('brand', { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) { console.error('fetchProducts error:', error); break; }
+    if (!data || data.length === 0) break;
+    all = [...all, ...data];
+    if (data.length < PAGE) break;
+    from += PAGE;
+  }
+  return all.map(mapProduct);
 }
 
 // Update nutritional info for a product

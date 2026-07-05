@@ -470,6 +470,7 @@ export default function SnackCheck() {
         const hasNew = !!grouped[p.productCode];
         const hasOld = !!grouped[existing.productCode];
         if (hasNew && !hasOld) dedupMap.set(key, p);
+        else if (!hasOld && p.imageUrl && !existing.imageUrl) dedupMap.set(key, p);
       }
     }
     dirProducts = [...dedupMap.values()];
