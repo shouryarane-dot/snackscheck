@@ -84,7 +84,30 @@ async function fetchProductInfo(brand, name, flavor) {
         es: p.ingredients_text_es||p.ingredients_text_en||p.ingredients_text||"",
         it: p.ingredients_text_it||p.ingredients_text_en||p.ingredients_text||"",
       },
-      allergens: (p.allergens_tags||[]).map(a=>a.replace(/^en:/,"")),
+      allergens: (()=>{
+        // Use allergens_tags if available
+        let list = (p.allergens_tags||[]).map(a=>a.replace(/^[a-z]+:/,"").toLowerCase());
+        // Also extract from _highlighted_ allergen markers in ingredients text
+        const ingRaw = p.ingredients_text_en||p.ingredients_text||"";
+        const highlighted = [...ingRaw.matchAll(/_([^_]+)_/g)].map(m=>m[1].toLowerCase());
+        // Fallback: scan ingredients for known allergen keywords
+        const ingLower = ingRaw.toLowerCase();
+        const ALLERGEN_KEYWORDS = {
+          milk:     ["milk","dairy","lactose","whey","casein","butter","cream","cheese","lait","lacto"],
+          gluten:   ["wheat","gluten","barley","rye","oats","flour","tarwe","blé"],
+          eggs:     ["egg","eggs","oeuf"],
+          nuts:     ["almond","cashew","walnut","hazelnut","pistachio","pecan","macadamia","tree nut","noten","noisette"],
+          peanuts:  ["peanut","groundnut","arachide","erdnuss"],
+          soy:      ["soy","soya","soybean","soja"],
+          fish:     ["fish","cod","salmon","tuna","anchovy","poisson"],
+          shellfish:["shellfish","shrimp","prawn","crab","lobster","crevette"],
+          sesame:   ["sesame","tahini","sésame"],
+        };
+        const detected = Object.entries(ALLERGEN_KEYWORDS)
+          .filter(([,keywords])=>keywords.some(k=>ingLower.includes(k)||highlighted.some(h=>h.includes(k))))
+          .map(([allergen])=>allergen);
+        return [...new Set([...list,...detected])];
+      })(),
       confidence: "high",
       source: "Open Food Facts",
     };
