@@ -175,7 +175,13 @@ function Avatar({name, size=32}) {
 function ProductInfoCard({info, lang="en"}) {
   const [infoTab, setInfoTab] = useState("nutrition");
   if(!info) return null;
-  const ingText = info.ingredientsByLang?.[lang] || info.ingredientsByLang?.en || info.ingredients || "";
+  // Find ingredients in current language, then any other language, note which one we're showing
+  const byLang = info.ingredientsByLang || {};
+  const LANG_NAMES = {en:"English",nl:"Dutch",fr:"French",de:"German",es:"Spanish",it:"Italian"};
+  const ingInLang = byLang[lang] || "";
+  const fallbackLang = ingInLang ? lang : Object.keys(byLang).find(k=>byLang[k]) || null;
+  const ingText = ingInLang || (fallbackLang ? byLang[fallbackLang] : "") || info.ingredients || "";
+  const ingLangNote = ingText && fallbackLang && fallbackLang !== lang ? `(${LANG_NAMES[fallbackLang]||fallbackLang})` : "";
   const ingList = ingText ? ingText.split(",") : [];
   return (
     <div style={{background:"#111",borderRadius:12,padding:14}}>
@@ -192,7 +198,7 @@ function ProductInfoCard({info, lang="en"}) {
           <button key={tb} onClick={()=>setInfoTab(tb)}
             style={{flex:1,padding:"6px",border:"none",borderRadius:6,cursor:"pointer",fontSize:12,fontWeight:600,
               background:infoTab===tb?P.orange:"transparent",color:infoTab===tb?"white":"#666",transition:"all .15s"}}>
-            {tb==="nutrition"?"Nutrition":"Ingredients"}
+            {tb==="nutrition"?"Nutrition":`Ingredients${ingLangNote?" "+ingLangNote:""}`}
           </button>
         ))}
       </div>
