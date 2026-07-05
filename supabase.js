@@ -44,6 +44,8 @@ export const mapToRow = (r) => ({
 })
 
 // Map products table row → app object
+// Handles both slim rows (nutriscore extracted as top-level field)
+// and full rows (product_info is the full JSONB object)
 export const mapProduct = (row) => ({
   id: row.id,
   productCode: row.product_code,
@@ -51,7 +53,11 @@ export const mapProduct = (row) => ({
   name: row.name,
   flavor: row.flavor,
   category: row.category,
-  productInfo: row.product_info || null,
+  // Full fetch: product_info is the full object
+  // Slim fetch: product_info is null but nutriscore is a top-level field
+  productInfo: row.product_info
+    ? row.product_info
+    : (row.nutriscore ? { nutriscore: row.nutriscore } : null),
   imageUrl: row.image_url || null,
   countryOfOrigin: row.country_of_origin || null,
   barcode: row.barcode || null,
@@ -80,23 +86,46 @@ export const upsertProduct = async (brand, name, flavor, category, productCode, 
   return data
 }
 
-// Fetch all products (paginated to bypass Supabase 1000-row default limit)
+// Slim columns for list view (no full product_info — saves ~80% of payload)
+const LIST_SELECT = 'id, product_code, brand, name, flavor, category, image_url, country_of_origin, barcode, source, product_info->>nutriscore'
+
+// Fetch all products in parallel pages (slim payload — no full product_info)
 export const fetchProducts = async () => {
   const PAGE = 1000;
-  let all = [], from = 0;
-  while (true) {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('brand', { ascending: true })
-      .range(from, from + PAGE - 1);
-    if (error) { console.error('fetchProducts error:', error); break; }
-    if (!data || data.length === 0) break;
-    all = [...all, ...data];
-    if (data.length < PAGE) break;
-    from += PAGE;
+
+  // Step 1: get total count (single lightweight HEAD request)
+  const { count, error: countErr } = await supabase
+    .from('products')
+    .select('*', { count: 'exact', head: true });
+  if (countErr || !count) {
+    console.error('fetchProducts count error:', countErr);
+    return [];
   }
+
+  // Step 2: fetch all pages in parallel
+  const pages = Math.ceil(count / PAGE);
+  const promises = Array.from({ length: pages }, (_, i) =>
+    supabase
+      .from('products')
+      .select(LIST_SELECT)
+      .order('brand', { ascending: true })
+      .range(i * PAGE, (i + 1) * PAGE - 1)
+  );
+
+  const results = await Promise.all(promises);
+  const all = results.flatMap(({ data }) => data || []);
   return all.map(mapProduct);
+}
+
+// Fetch a single product with full product_info (for detail view)
+export const fetchProductDetail = async (productCode) => {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('product_code', productCode)
+    .single();
+  if (error) { console.error('fetchProductDetail error:', error); return null; }
+  return mapProduct(data);
 }
 
 // Update nutritional info for a product

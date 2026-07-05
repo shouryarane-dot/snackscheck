@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { supabase, mapRow, mapToRow, mapProduct, upsertProduct, fetchProducts, updateProductInfo } from './supabase.js';
+import { supabase, mapRow, mapToRow, mapProduct, upsertProduct, fetchProducts, fetchProductDetail, updateProductInfo } from './supabase.js';
 
 const LANG_KEY = "snackcheck-lang";
 
@@ -321,6 +321,7 @@ export default function SnackCheck() {
   const [cat,setCat]=useState("all");
   const [search,setSearch]=useState("");
   const [selProd,setSelProd]=useState(null);
+  const [detailProduct,setDetailProduct]=useState(null); // full product_info, loaded lazily
   const [sortBy,setSortBy]=useState("score_desc");
   const [showFilter,setShowFilter]=useState(false);
   const [minScore,setMinScore]=useState(0);
@@ -380,6 +381,13 @@ export default function SnackCheck() {
     window.addEventListener('resize',onResize);
     return ()=>{subscription.unsubscribe();window.removeEventListener('resize',onResize);};
   },[]);
+
+  // Lazy-load full product_info when opening detail view
+  useEffect(()=>{
+    if(!selProd){setDetailProduct(null);return;}
+    setDetailProduct(null); // clear previous while loading
+    fetchProductDetail(selProd).then(p=>{if(p) setDetailProduct(p);});
+  },[selProd]);
 
   useEffect(()=>{
     if(view!=="rate") return;
@@ -1032,7 +1040,8 @@ export default function SnackCheck() {
     const dFlavor=selProduct?.flavor||pRatings[0]?.flavor||"";
     const dCat=selProduct?.category||pRatings[0]?.category||"anders";
     const catIdx=CAT_IDS.indexOf(dCat);
-    const detailInfo=selProduct?.productInfo||pRatings.find(r=>r.productInfo)?.productInfo||null;
+    // detailProduct has the full product_info (lazy-loaded); fall back to slim productInfo or rating productInfo
+    const detailInfo=detailProduct?.productInfo||selProduct?.productInfo||pRatings.find(r=>r.productInfo)?.productInfo||null;
     const detailImage=selProduct?.imageUrl||(pRatings.find(r=>r.image)?.image)||null;
     const displayName=dName.toLowerCase().startsWith(dBrand.toLowerCase())?dName.slice(dBrand.length).trim():dName;
     const a=pRatings.length>0?avg(pRatings):0;
@@ -1067,7 +1076,10 @@ export default function SnackCheck() {
           </div>
 
           {/* Nutrition & ingredients */}
-          {detailInfo&&<div style={{marginBottom:16}}><ProductInfoCard info={detailInfo} lang={lang}/></div>}
+          {detailInfo
+            ?<div style={{marginBottom:16}}><ProductInfoCard info={detailInfo} lang={lang}/></div>
+            :<div style={{background:P.card,borderRadius:14,border:`1.5px solid ${P.border}`,padding:"16px",marginBottom:16,color:P.muted,fontSize:13,textAlign:"center"}}>Loading nutrition info…</div>
+          }
 
           {/* Add rating button */}
           <button onClick={()=>{
