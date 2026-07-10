@@ -1377,11 +1377,14 @@ export default function SnackCheck() {
                   style={{background:P.card,borderRadius:16,overflow:"hidden",border:`1.5px solid ${P.border}`,cursor:"pointer",transition:"all .15s"}}
                   onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.borderColor=P.orange;}}
                   onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.borderColor=P.border;}}>
-                    {cardImage&&<img src={cardImage.replace(/^http:\/\//,'https://')} alt={p.name}
-                        referrerPolicy="no-referrer"
-                        style={{width:"100%",height:120,objectFit:"cover",display:"block"}}
-                        onError={e=>e.currentTarget.style.display="none"}
-                      />}
+                    <div style={{position:"relative",width:"100%",height:120,background:P.orangeLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:40}}>
+                      {CAT_ICONS[catIdx]||"🍿"}
+                      {cardImage&&<img src={cardImage.replace(/^http:\/\//,'https://')} alt={p.name}
+                          referrerPolicy="no-referrer"
+                          style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}
+                          onError={e=>e.currentTarget.style.display="none"}
+                        />}
+                    </div>
                     <div style={{padding:12}}>
                       <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:1,color:P.text}}>{p.brand}</div>
                       <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:1,color:P.text}}>{displayName}</div>
