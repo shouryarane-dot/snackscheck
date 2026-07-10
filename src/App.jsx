@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { supabase, mapRow, mapToRow, mapProduct, upsertProduct, fetchProducts, fetchProductDetail, updateProductInfo } from './supabase.js';
+import { supabase, mapRow, mapToRow, mapProduct, upsertProduct, fetchProducts, fetchProductsPage, fetchProductsByCodes, fetchProductDetail, updateProductInfo, PAGE_SIZE } from './supabase.js';
 
 const LANG_KEY = "snackcheck-lang";
 
@@ -342,6 +342,8 @@ export default function SnackCheck() {
   const [avoidAllergens,setAvoidAllergens]=useState([]);
   const [nutriscoreMax,setNutriscoreMax]=useState("");
   const [dirPage,setDirPage]=useState(1);
+  const [productCount,setProductCount]=useState(0);
+  const [productsLoading,setProductsLoading]=useState(false);
   const [isMobile,setIsMobile]=useState(window.innerWidth<640);
   const [form,setForm]=useState({brand:"",name:"",flavor:"",category:"chips",score:0,pros:"",cons:"",image:null,location:""});
   const [acQuery,setAcQuery]=useState("");
@@ -379,12 +381,11 @@ export default function SnackCheck() {
       if(event==="PASSWORD_RECOVERY") setView("resetPassword");
     });
     (async()=>{
-      const {data,error}=await supabase.from('ratings').select('*').order('timestamp',{ascending:false});
-      if(!error&&data) setRatings(data.map(mapRow));
-      const prods=await fetchProducts();
-      setProducts(prods);
       const saved=localStorage.getItem(LANG_KEY);
       if(saved&&LANGS[saved]) setLang(saved);
+      const RATINGS_SELECT='id,user_id,product_code,brand,name,flavor,category,score,pros,cons,image,timestamp,rater,location';
+      const ratingsRes = await supabase.from('ratings').select(RATINGS_SELECT).order('timestamp',{ascending:false});
+      if(!ratingsRes.error&&ratingsRes.data) setRatings(ratingsRes.data.map(mapRow));
       setLoading(false);
     })();
     const onResize=()=>setIsMobile(window.innerWidth<640);
@@ -481,6 +482,48 @@ export default function SnackCheck() {
   const handleLang = code=>{setLang(code);setShowLangPicker(false);localStorage.setItem(LANG_KEY,code);};
   const setSearchAndReset = v=>{setSearch(v);setDirPage(1);};
   const setCatAndReset = v=>{setCat(v);setDirPage(1);};
+
+  // Server-side product loading: re-fetch whenever page/search/category/nutriscore changes
+  // Score-based sorts use rated product codes from ratings (already in memory)
+  useEffect(()=>{
+    if(view!=="list"&&view!=="landing") return;
+    let cancelled=false;
+    setProductsLoading(true);
+    const isScoreSort=['score_desc','score_asc','most_rated','recent','oldest'].includes(sortBy);
+    if(isScoreSort){
+      // Build sorted list of product codes from ratings, then fetch those products
+      const grp=ratings.reduce((a,r)=>{(a[r.productCode]=a[r.productCode]||[]).push(r);return a;},{});
+      const avgFn=list=>list.reduce((s,r)=>s+r.score,0)/list.length;
+      let codes=Object.keys(grp);
+      if(sortBy==="score_desc") codes=codes.sort((a,b)=>avgFn(grp[b])-avgFn(grp[a]));
+      else if(sortBy==="score_asc") codes=codes.sort((a,b)=>avgFn(grp[a])-avgFn(grp[b]));
+      else if(sortBy==="most_rated") codes=codes.sort((a,b)=>grp[b].length-grp[a].length);
+      else if(sortBy==="recent") codes=codes.sort((a,b)=>Math.max(...grp[b].map(r=>r.timestamp))-Math.max(...grp[a].map(r=>r.timestamp)));
+      else if(sortBy==="oldest") codes=codes.sort((a,b)=>Math.min(...grp[a].map(r=>r.timestamp))-Math.min(...grp[b].map(r=>r.timestamp)));
+      // Apply category/search filter on codes
+      fetchProductsByCodes(codes).then(prods=>{
+        if(cancelled) return;
+        let filtered=prods;
+        if(cat!=="all") filtered=filtered.filter(p=>p.category===cat);
+        if(search) filtered=filtered.filter(p=>[p.brand,p.name,p.flavor||""].join(" ").toLowerCase().includes(search.toLowerCase()));
+        if(nutriscoreMax) filtered=filtered.filter(p=>{const ns=p.productInfo?.nutriscore;return ns&&ns.charCodeAt(0)<=nutriscoreMax.charCodeAt(0);});
+        // Re-sort after fetch (maintain order from codes)
+        const order=new Map(codes.map((c,i)=>[c,i]));
+        filtered.sort((a,b)=>(order.get(a.productCode)??999)-(order.get(b.productCode)??999));
+        setProducts(filtered);
+        setProductCount(filtered.length);
+        setProductsLoading(false);
+      });
+    } else {
+      fetchProductsPage({page:dirPage-1,search,category:cat,nutriscoreMax}).then(({products:prods,count})=>{
+        if(cancelled) return;
+        setProducts(prods);
+        setProductCount(count);
+        setProductsLoading(false);
+      });
+    }
+    return()=>{cancelled=true;};
+  },[dirPage,search,sortBy,cat,nutriscoreMax,view,ratings.length]);
   const goToRate = ()=>{if(!user){setShowAuthModal(true);}else{setView("rate");}};
   const avg = list=>list.reduce((s,r)=>s+r.score,0)/list.length;
 
@@ -522,15 +565,14 @@ export default function SnackCheck() {
     shellfish:["shellfish","shrimp","prawn","crab","lobster"],
     sesame:["sesame","tahini"],
   };
+  // Server handles: search, category, nutriscore, sort, pagination
+  // Client post-filters only: advanced nutrition filters & allergens (need productInfo)
   let dirProducts = products
-    .filter(p=>(cat==="all"||p.category===cat))
-    .filter(p=>!search||p.brand.toLowerCase().includes(search.toLowerCase())||p.name.toLowerCase().includes(search.toLowerCase())||(p.flavor||"").toLowerCase().includes(search.toLowerCase()))
     .filter(p=>!filterBrand||p.brand.toLowerCase().includes(filterBrand.toLowerCase()))
     .filter(p=>!filterFlavor||(p.flavor||"").toLowerCase().includes(filterFlavor.toLowerCase()))
     .filter(p=>{if(maxCalories===0)return true;const v=p.productInfo?.per100g?.calories;return v!=null&&v<=maxCalories;})
     .filter(p=>{if(minProtein===0)return true;const v=p.productInfo?.per100g?.protein;return v!=null&&v>=minProtein;})
     .filter(p=>{if(minFibre===0)return true;const v=p.productInfo?.per100g?.fibre;return v!=null&&v>=minFibre;})
-    .filter(p=>{if(!nutriscoreMax)return true;const ns=p.productInfo?.nutriscore;if(!ns)return false;return ns.charCodeAt(0)<=nutriscoreMax.charCodeAt(0);})
     .filter(p=>{
       if(avoidAllergens.length===0)return true;
       const storedAllergens=p.productInfo?.allergens||[];
@@ -544,37 +586,9 @@ export default function SnackCheck() {
       const pRats=grouped[p.productCode];
       return pRats&&avg(pRats)>=minScore;
     });
-  // Deduplicate: same brand+name → keep whichever has ratings, else keep first
-  {
-    const dedupMap = new Map();
-    for (const p of dirProducts) {
-      const key = `${p.brand.toLowerCase().trim()}||${p.name.toLowerCase().trim()}`;
-      const existing = dedupMap.get(key);
-      if (!existing) { dedupMap.set(key, p); }
-      else {
-        const hasNew = !!grouped[p.productCode];
-        const hasOld = !!grouped[existing.productCode];
-        if (hasNew && !hasOld) dedupMap.set(key, p);
-        else if (!hasOld && p.imageUrl && !existing.imageUrl) dedupMap.set(key, p);
-      }
-    }
-    dirProducts = [...dedupMap.values()];
-  }
-
-  dirProducts.sort((a,b)=>{
-    const rA=grouped[a.productCode],rB=grouped[b.productCode];
-    switch(sortBy){
-      case"score_desc":{const sA=rA?avg(rA):-1,sB=rB?avg(rB):-1;return sB-sA;}
-      case"score_asc":{const sA=rA?avg(rA):999,sB=rB?avg(rB):999;return sA-sB;}
-      case"most_rated":return(rB?.length||0)-(rA?.length||0);
-      case"az":return a.brand.localeCompare(b.brand);
-      case"oldest":{const tA=rA?Math.min(...rA.map(r=>r.timestamp)):Date.now(),tB=rB?Math.min(...rB.map(r=>r.timestamp)):Date.now();return tA-tB;}
-      default:{const tA=rA?Math.max(...rA.map(r=>r.timestamp)):0,tB=rB?Math.max(...rB.map(r=>r.timestamp)):0;return tB-tA||a.brand.localeCompare(b.brand);}
-    }
-  });
-  const PAGE_SIZE=50;
-  const totalPages=Math.max(1,Math.ceil(dirProducts.length/PAGE_SIZE));
-  const visibleProducts=dirProducts.slice((dirPage-1)*PAGE_SIZE,dirPage*PAGE_SIZE);
+  const isScoreSort=['score_desc','score_asc','most_rated','recent','oldest'].includes(sortBy);
+  const totalPages=isScoreSort?1:Math.max(1,Math.ceil(productCount/PAGE_SIZE));
+  const visibleProducts=isScoreSort?dirProducts:products;
 
   const myRatings = ratings
     .filter(r=>r.userId===user?.id)
@@ -1145,7 +1159,7 @@ export default function SnackCheck() {
     const catIdx=CAT_IDS.indexOf(dCat);
     // detailProduct has the full product_info (lazy-loaded); fall back to slim productInfo or rating productInfo
     const detailInfo=detailProduct?.productInfo||selProduct?.productInfo||pRatings.find(r=>r.productInfo)?.productInfo||null;
-    const detailImage=selProduct?.imageUrl||(pRatings.find(r=>r.image)?.image)||null;
+    const detailImage=(pRatings.find(r=>r.image)?.image)||selProduct?.imageUrl||null;
     const displayName=dName.toLowerCase().startsWith(dBrand.toLowerCase())?dName.slice(dBrand.length).trim():dName;
     const a=pRatings.length>0?avg(pRatings):0;
     const ns=detailInfo?.nutriscore;
@@ -1260,7 +1274,7 @@ export default function SnackCheck() {
           <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",fontSize:14,color:P.muted}}>🔍</span>
           <input style={{...inp,paddingLeft:34}} placeholder={t.search} value={search} onChange={e=>setSearchAndReset(e.target.value)}/>
         </div>
-        <select value={sortBy} onChange={e=>setSortBy(e.target.value)}
+        <select value={sortBy} onChange={e=>{setSortBy(e.target.value);setDirPage(1);}}
           style={{border:`1.5px solid ${P.border}`,borderRadius:10,padding:"9px 10px",fontSize:13,outline:"none",background:P.bg,cursor:"pointer",color:P.text}}>
           {SORTS_IDS.map((id,i)=><option key={id} value={id}>{t.sorts[i]}</option>)}
         </select>
@@ -1328,7 +1342,7 @@ export default function SnackCheck() {
                 const colors={a:"#038141",b:"#85BB2F",c:"#FECB02",d:"#EE8100",e:"#E63E11"};
                 const active=nutriscoreMax===ns;
                 return (
-                  <button key={ns} onClick={()=>setNutriscoreMax(ns)}
+                  <button key={ns} onClick={()=>{setNutriscoreMax(ns);setDirPage(1);}}
                     style={{minWidth:32,height:32,borderRadius:8,border:`1.5px solid ${active?(colors[ns]||P.orange):P.border}`,background:active?(colors[ns]||P.orange):P.bg,color:active?"white":P.muted,fontWeight:700,cursor:"pointer",fontSize:13,padding:"0 8px",textTransform:"uppercase"}}>
                     {ns||"★"}
                   </button>
@@ -1349,7 +1363,7 @@ export default function SnackCheck() {
           </div>
           {filterCount>0&&(
             <div style={{display:"flex",alignItems:"flex-end"}}>
-              <button onClick={()=>{setMinScore(0);setFilterBrand("");setFilterFlavor("");setMaxCalories(0);setMinProtein(0);setMinFibre(0);setAvoidAllergens([]);setNutriscoreMax("");}}
+              <button onClick={()=>{setMinScore(0);setFilterBrand("");setFilterFlavor("");setMaxCalories(0);setMinProtein(0);setMinFibre(0);setAvoidAllergens([]);setNutriscoreMax("");setDirPage(1);}}
                 style={{padding:"7px 12px",borderRadius:10,border:`1.5px solid ${P.border}`,background:P.bg,color:P.muted,cursor:"pointer",fontSize:13}}>
                 {t.reset}
               </button>
@@ -1360,7 +1374,11 @@ export default function SnackCheck() {
       <div style={{padding:"6px 16px",fontSize:11,color:P.muted,background:P.bg,letterSpacing:.3}}>
         {tab==="all"?`${t.products(dirProducts.length)}`:t.myRatingsCount(myRatings.length,userName||"...")}
       </div>
-      {tab==="all"&&(dirProducts.length===0
+      {tab==="all"&&(productsLoading
+        ? <div style={{textAlign:"center",padding:60,color:P.muted}}>
+            <div style={{fontSize:13}}>Loading…</div>
+          </div>
+        : visibleProducts.length===0
         ? <div style={{textAlign:"center",padding:60,color:P.muted}}>
             <div style={{fontSize:48,marginBottom:12}}>🔍</div>
             <div style={{fontWeight:600}}>No snacks found</div>
@@ -1373,22 +1391,19 @@ export default function SnackCheck() {
                 const catIdx=CAT_IDS.indexOf(p.category);
                 const brandLower=p.brand.toLowerCase();
                 const displayName=p.name.toLowerCase().startsWith(brandLower)?p.name.slice(p.brand.length).trim():p.name;
-                // Use OFF image, or first user-uploaded rating photo as fallback
-                const cardImage=p.imageUrl||(pRats&&pRats.find(r=>r.image)?.image)||null;
+                // Prefer user-uploaded photo, fall back to OFF image, else no image
+                const userImg=pRats?.find(r=>r.image)?.image||null;
+                const cardImage=userImg||p.imageUrl||null;
                 return (
                   <div key={p.id} onClick={()=>{setSelProd(p.productCode);setView("detail");}}
                   style={{background:P.card,borderRadius:16,overflow:"hidden",border:`1.5px solid ${P.border}`,cursor:"pointer",transition:"all .15s"}}
                   onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.borderColor=P.orange;}}
                   onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.borderColor=P.border;}}>
-                    {cardImage
-                      ?<img src={cardImage.replace(/^http:\/\//,'https://')} alt={p.name}
-                          referrerPolicy="no-referrer"
-                          style={{width:"100%",height:120,objectFit:"cover",display:"block"}}
-                          onError={e=>{e.currentTarget.style.display="none";e.currentTarget.nextElementSibling.style.display="flex";}}
-                        />
-                      :null
-                    }
-                    <div style={{width:"100%",height:120,background:P.orangeLight,alignItems:"center",justifyContent:"center",fontSize:40,display:cardImage?"none":"flex"}}>{CAT_ICONS[catIdx]}</div>
+                    {cardImage&&<img src={cardImage.replace(/^http:\/\//,'https://')} alt={p.name}
+                        referrerPolicy="no-referrer"
+                        style={{width:"100%",height:120,objectFit:"cover",display:"block"}}
+                        onError={e=>e.currentTarget.style.display="none"}
+                      />}
                     <div style={{padding:12}}>
                       <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:1,color:P.text}}>{p.brand}</div>
                       <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:1,color:P.text}}>{displayName}</div>
@@ -1409,7 +1424,7 @@ export default function SnackCheck() {
               <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"12px 20px 24px"}}>
                 <button onClick={()=>setDirPage(p=>Math.max(1,p-1))} disabled={dirPage===1}
                   style={{padding:"7px 16px",borderRadius:10,border:`1.5px solid ${P.border}`,background:dirPage===1?P.bg:"white",color:dirPage===1?P.muted:P.text,cursor:dirPage===1?"not-allowed":"pointer",fontWeight:600,fontSize:13}}>← Prev</button>
-                <span style={{fontSize:13,color:P.muted}}>Page {dirPage} of {totalPages} · {dirProducts.length} products</span>
+                <span style={{fontSize:13,color:P.muted}}>Page {dirPage} of {totalPages} · {productCount} products</span>
                 <button onClick={()=>setDirPage(p=>Math.min(totalPages,p+1))} disabled={dirPage===totalPages}
                   style={{padding:"7px 16px",borderRadius:10,border:`1.5px solid ${P.border}`,background:dirPage===totalPages?P.bg:"white",color:dirPage===totalPages?P.muted:P.text,cursor:dirPage===totalPages?"not-allowed":"pointer",fontWeight:600,fontSize:13}}>Next →</button>
               </div>

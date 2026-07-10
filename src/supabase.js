@@ -128,6 +128,36 @@ export const fetchProductDetail = async (productCode) => {
   return mapProduct(data);
 }
 
+export const PAGE_SIZE = 30;
+
+// Fetch one page of products with server-side search/category/nutriscore/sort
+export const fetchProductsPage = async ({ page=0, search='', category='', nutriscoreMax='' }={}) => {
+  let query = supabase.from('products').select(LIST_SELECT, { count: 'exact' });
+  if (search) query = query.or(`brand.ilike.%${search}%,name.ilike.%${search}%,flavor.ilike.%${search}%`);
+  if (category && category !== 'all') query = query.eq('category', category);
+  if (nutriscoreMax) {
+    query = query.not('product_info', 'is', null)
+      .lte('product_info->>nutriscore', nutriscoreMax.toLowerCase())
+      .gte('product_info->>nutriscore', 'a');
+  }
+  query = query.order('brand', { ascending: true }).order('name', { ascending: true });
+  query = query.range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+  const { data, error, count } = await query;
+  if (error) { console.error('fetchProductsPage:', error); return { products: [], count: 0 }; }
+  return { products: (data || []).map(mapProduct), count: count || 0 };
+};
+
+// Fetch specific products by product_code (for score-based sorts using rated codes)
+export const fetchProductsByCodes = async (codes) => {
+  if (!codes.length) return [];
+  const BATCH = 150;
+  const batches = Array.from({ length: Math.ceil(codes.length / BATCH) }, (_, i) =>
+    supabase.from('products').select(LIST_SELECT).in('product_code', codes.slice(i * BATCH, (i + 1) * BATCH))
+  );
+  const results = await Promise.all(batches);
+  return results.flatMap(({ data }) => (data || []).map(mapProduct));
+};
+
 // Update nutritional info for a product
 export const updateProductInfo = async (productCode, productInfo) => {
   const { error } = await supabase
