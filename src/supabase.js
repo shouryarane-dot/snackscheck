@@ -53,11 +53,13 @@ export const mapProduct = (row) => ({
   name: row.name,
   flavor: row.flavor,
   category: row.category,
-  // Full fetch: product_info is the full object
-  // Slim fetch: product_info is null but nutriscore is a top-level field
+  // Full fetch (PAGE_SELECT): product_info is the complete object
+  // Slim fetch (LIST_SELECT): product_info is null; individual fields extracted separately
   productInfo: row.product_info
     ? row.product_info
-    : (row.nutriscore ? { nutriscore: row.nutriscore } : null),
+    : (row.nutriscore || row.per100g || row.allergens)
+      ? { nutriscore: row.nutriscore || null, per100g: row.per100g || null, allergens: row.allergens || null }
+      : null,
   imageUrl: row.image_url || null,
   countryOfOrigin: row.country_of_origin || null,
   barcode: row.barcode || null,
@@ -86,8 +88,12 @@ export const upsertProduct = async (brand, name, flavor, category, productCode, 
   return data
 }
 
-// Slim columns for list view (no full product_info — saves ~80% of payload)
-const LIST_SELECT = 'id, product_code, brand, name, flavor, category, image_url, country_of_origin, barcode, source, product_info->>nutriscore'
+// Columns for list/bulk fetches — slim but includes the sub-fields the filters need.
+// Avoids fetching full product_info (which includes large ingredientsByLang strings).
+const LIST_SELECT = 'id, product_code, brand, name, flavor, category, image_url, country_of_origin, barcode, source, product_info->>nutriscore, product_info->per100g, product_info->allergens'
+
+// Full columns — used for paginated page fetches when we need everything.
+const PAGE_SELECT = 'id, product_code, brand, name, flavor, category, image_url, country_of_origin, barcode, source, product_info'
 
 // Fetch all products in parallel pages (slim payload — no full product_info)
 export const fetchProducts = async () => {
@@ -132,7 +138,7 @@ export const PAGE_SIZE = 30;
 
 // Fetch one page of products with server-side search/category/nutriscore/sort
 export const fetchProductsPage = async ({ page=0, search='', category='', nutriscoreMax='' }={}) => {
-  let query = supabase.from('products').select(LIST_SELECT, { count: 'exact' });
+  let query = supabase.from('products').select(PAGE_SELECT, { count: 'exact' });
   if (search) query = query.or(`brand.ilike.%${search}%,name.ilike.%${search}%,flavor.ilike.%${search}%`);
   if (category && category !== 'all') query = query.eq('category', category);
   if (nutriscoreMax) {

@@ -385,8 +385,14 @@ export default function SnackCheck() {
       const saved=localStorage.getItem(LANG_KEY);
       if(saved&&LANGS[saved]) setLang(saved);
       const RATINGS_SELECT='id,user_id,product_code,brand,name,flavor,category,score,pros,cons,image,timestamp,rater,location';
-      const ratingsRes = await supabase.from('ratings').select(RATINGS_SELECT).order('timestamp',{ascending:false});
+      setProductsLoading(true);
+      const [ratingsRes, allProducts] = await Promise.all([
+        supabase.from('ratings').select(RATINGS_SELECT).order('timestamp',{ascending:false}),
+        fetchProducts()
+      ]);
       if(!ratingsRes.error&&ratingsRes.data) setRatings(ratingsRes.data.map(mapRow));
+      setProducts(allProducts);
+      setProductsLoading(false);
       setLoading(false);
     })();
     const onResize=()=>setIsMobile(window.innerWidth<640);
@@ -484,47 +490,8 @@ export default function SnackCheck() {
   const setSearchAndReset = v=>{setSearch(v);setDirPage(1);};
   const setCatAndReset = v=>{setCat(v);setDirPage(1);};
 
-  // Server-side product loading: re-fetch whenever page/search/category/nutriscore changes
-  // Score-based sorts use rated product codes from ratings (already in memory)
-  useEffect(()=>{
-    if(view!=="home") return;
-    let cancelled=false;
-    setProductsLoading(true);
-    const isScoreSort=['score_desc','score_asc','most_rated','recent','oldest'].includes(sortBy);
-    if(isScoreSort){
-      // Build sorted list of product codes from ratings, then fetch those products
-      const grp=ratings.reduce((a,r)=>{(a[r.productCode]=a[r.productCode]||[]).push(r);return a;},{});
-      const avgFn=list=>list.reduce((s,r)=>s+r.score,0)/list.length;
-      let codes=Object.keys(grp);
-      if(sortBy==="score_desc") codes=codes.sort((a,b)=>avgFn(grp[b])-avgFn(grp[a]));
-      else if(sortBy==="score_asc") codes=codes.sort((a,b)=>avgFn(grp[a])-avgFn(grp[b]));
-      else if(sortBy==="most_rated") codes=codes.sort((a,b)=>grp[b].length-grp[a].length);
-      else if(sortBy==="recent") codes=codes.sort((a,b)=>Math.max(...grp[b].map(r=>r.timestamp))-Math.max(...grp[a].map(r=>r.timestamp)));
-      else if(sortBy==="oldest") codes=codes.sort((a,b)=>Math.min(...grp[a].map(r=>r.timestamp))-Math.min(...grp[b].map(r=>r.timestamp)));
-      // Apply category/search filter on codes
-      fetchProductsByCodes(codes).then(prods=>{
-        if(cancelled) return;
-        let filtered=prods;
-        if(cat!=="all") filtered=filtered.filter(p=>p.category===cat);
-        if(search) filtered=filtered.filter(p=>[p.brand,p.name,p.flavor||""].join(" ").toLowerCase().includes(search.toLowerCase()));
-        if(nutriscoreMax) filtered=filtered.filter(p=>{const ns=p.productInfo?.nutriscore;return ns&&ns.charCodeAt(0)<=nutriscoreMax.charCodeAt(0);});
-        // Re-sort after fetch (maintain order from codes)
-        const order=new Map(codes.map((c,i)=>[c,i]));
-        filtered.sort((a,b)=>(order.get(a.productCode)??999)-(order.get(b.productCode)??999));
-        setProducts(filtered);
-        setProductCount(filtered.length);
-        setProductsLoading(false);
-      });
-    } else {
-      fetchProductsPage({page:dirPage-1,search,category:cat,nutriscoreMax}).then(({products:prods,count})=>{
-        if(cancelled) return;
-        setProducts(prods);
-        setProductCount(count);
-        setProductsLoading(false);
-      });
-    }
-    return()=>{cancelled=true;};
-  },[dirPage,search,sortBy,cat,nutriscoreMax,view]);
+  // Reset to page 1 whenever any filter/sort changes
+  useEffect(()=>{setDirPage(1);},[search,cat,nutriscoreMax,sortBy,filterBrand,filterFlavor,maxCalories,minProtein,minFibre,minScore]);
 
   // Rate form autocomplete: server-side search (debounced 300ms)
   useEffect(()=>{
@@ -576,9 +543,11 @@ export default function SnackCheck() {
     shellfish:["shellfish","shrimp","prawn","crab","lobster"],
     sesame:["sesame","tahini"],
   };
-  // Server handles: search, category, nutriscore, sort, pagination
-  // Client post-filters only: advanced nutrition filters & allergens (need productInfo)
+  // All filtering + sorting done client-side on the full in-memory products list
   let dirProducts = products
+    .filter(p=>cat==="all"||p.category===cat)
+    .filter(p=>!search||[p.brand,p.name,p.flavor||""].join(" ").toLowerCase().includes(search.toLowerCase()))
+    .filter(p=>{if(!nutriscoreMax)return true;const ns=p.productInfo?.nutriscore;return ns&&ns>='a'&&ns<=nutriscoreMax.toLowerCase();})
     .filter(p=>!filterBrand||p.brand.toLowerCase().includes(filterBrand.toLowerCase()))
     .filter(p=>!filterFlavor||(p.flavor||"").toLowerCase().includes(filterFlavor.toLowerCase()))
     .filter(p=>{if(maxCalories===0)return true;const v=p.productInfo?.per100g?.calories;return v!=null&&v<=maxCalories;})
@@ -589,17 +558,24 @@ export default function SnackCheck() {
       const storedAllergens=p.productInfo?.allergens||[];
       const ingText=(p.productInfo?.ingredientsByLang?.en||p.productInfo?.ingredients||"").toLowerCase();
       const detected=Object.entries(ALLERGEN_KEYWORDS).filter(([,kws])=>kws.some(k=>ingText.includes(k))).map(([a])=>a);
-      const allergens=[...new Set([...storedAllergens,...detected])];
-      return !avoidAllergens.some(avoid=>allergens.some(a=>a.includes(avoid)||avoid.includes(a)));
+      const allAllergens=[...new Set([...storedAllergens,...detected])];
+      return !avoidAllergens.some(avoid=>allAllergens.some(a=>a.includes(avoid)||avoid.includes(a)));
     })
     .filter(p=>{
       if(minScore===0)return true;
       const pRats=grouped[p.productCode];
       return pRats&&avg(pRats)>=minScore;
     });
-  const isScoreSort=['score_desc','score_asc','most_rated','recent','oldest'].includes(sortBy);
-  const totalPages=isScoreSort?1:Math.max(1,Math.ceil(productCount/PAGE_SIZE));
-  const visibleProducts=dirProducts;
+  // Client-side sort on full filtered list (correct global order)
+  if(sortBy==="score_desc") dirProducts=[...dirProducts].sort((a,b)=>{const rA=grouped[a.productCode],rB=grouped[b.productCode];return(rB?avg(rB):-1)-(rA?avg(rA):-1);});
+  else if(sortBy==="score_asc") dirProducts=[...dirProducts].sort((a,b)=>{const rA=grouped[a.productCode],rB=grouped[b.productCode];return(rA?avg(rA):999)-(rB?avg(rB):999);});
+  else if(sortBy==="most_rated") dirProducts=[...dirProducts].sort((a,b)=>(grouped[b.productCode]?.length||0)-(grouped[a.productCode]?.length||0));
+  else if(sortBy==="recent") dirProducts=[...dirProducts].sort((a,b)=>{const rA=grouped[a.productCode],rB=grouped[b.productCode];return(rB?Math.max(...rB.map(r=>r.timestamp)):0)-(rA?Math.max(...rA.map(r=>r.timestamp)):0);});
+  else if(sortBy==="oldest") dirProducts=[...dirProducts].sort((a,b)=>{const rA=grouped[a.productCode],rB=grouped[b.productCode];return(rA?Math.min(...rA.map(r=>r.timestamp)):Date.now())-(rB?Math.min(...rB.map(r=>r.timestamp)):Date.now());});
+  else dirProducts=[...dirProducts].sort((a,b)=>a.brand.localeCompare(b.brand)||a.name.localeCompare(b.name)); // az
+  // Client-side pagination
+  const totalPages=Math.max(1,Math.ceil(dirProducts.length/PAGE_SIZE));
+  const visibleProducts=dirProducts.slice((dirPage-1)*PAGE_SIZE,dirPage*PAGE_SIZE);
 
   const myRatings = ratings
     .filter(r=>r.userId===user?.id)
@@ -1011,6 +987,7 @@ export default function SnackCheck() {
           <span style={{color:P.border}}>·</span>
           <button onClick={()=>setView("tos")} style={{background:"none",border:"none",color:P.orange,cursor:"pointer",fontSize:13,fontWeight:600}}>Terms of Service</button>
         </div>
+        <p style={{fontSize:12,color:P.muted,marginTop:8}}>Contact us at <a href="mailto:hello@snackscheck.com" style={{color:P.orange,fontWeight:600,textDecoration:"none"}}>hello@snackscheck.com</a></p>
       </div>
     </div>
   );
@@ -1425,7 +1402,7 @@ export default function SnackCheck() {
               <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"12px 20px 24px"}}>
                 <button onClick={()=>setDirPage(p=>Math.max(1,p-1))} disabled={dirPage===1}
                   style={{padding:"7px 16px",borderRadius:10,border:`1.5px solid ${P.border}`,background:dirPage===1?P.bg:"white",color:dirPage===1?P.muted:P.text,cursor:dirPage===1?"not-allowed":"pointer",fontWeight:600,fontSize:13}}>← Prev</button>
-                <span style={{fontSize:13,color:P.muted}}>Page {dirPage} of {totalPages} · {productCount} products</span>
+                <span style={{fontSize:13,color:P.muted}}>Page {dirPage} of {totalPages} · {dirProducts.length} products</span>
                 <button onClick={()=>setDirPage(p=>Math.min(totalPages,p+1))} disabled={dirPage===totalPages}
                   style={{padding:"7px 16px",borderRadius:10,border:`1.5px solid ${P.border}`,background:dirPage===totalPages?P.bg:"white",color:dirPage===totalPages?P.muted:P.text,cursor:dirPage===totalPages?"not-allowed":"pointer",fontWeight:600,fontSize:13}}>Next →</button>
               </div>
