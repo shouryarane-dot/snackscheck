@@ -924,63 +924,74 @@ export default function SnackCheck() {
           <Avatar name={userName} size={32}/>
           <div style={{fontSize:13,fontWeight:700,color:P.text}}>{userName}</div>
         </div>
-        {/* Autocomplete search */}
-        {(()=>{
-          const acResults = acQuery.length >= 2
-            ? products.filter(p =>
-                p.brand.toLowerCase().includes(acQuery.toLowerCase()) ||
-                p.name.toLowerCase().includes(acQuery.toLowerCase()) ||
-                p.flavor?.toLowerCase().includes(acQuery.toLowerCase())
-              ).slice(0, 6)
-            : [];
-          const pick = r => {
-            setForm(f=>({...f, brand:r.brand, name:r.name, flavor:r.flavor, category:r.category}));
-            setAcQuery("");
-            setAcOpen(false);
-          };
-          return (
-            <div style={{marginBottom:20,position:"relative"}}>
-              <label style={lbl}>🔍 Search existing snacks (optional)</label>
-              <input style={{...inp}} placeholder="e.g. Lays, Haribo, Pringles..."
-                value={acQuery}
-                onChange={e=>{setAcQuery(e.target.value);setAcOpen(true);}}
-                onFocus={()=>setAcOpen(true)}
-                onBlur={()=>setTimeout(()=>setAcOpen(false),150)}
-              />
-              {acOpen&&acResults.length>0&&(
-                <div style={{position:"absolute",top:"100%",left:0,right:0,background:P.card,border:`1.5px solid ${P.orange}`,borderRadius:12,zIndex:50,overflow:"hidden",boxShadow:"0 4px 20px rgba(0,0,0,0.1)",marginTop:4}}>
-                  {acResults.map(r=>(
-                    <div key={r.id} onMouseDown={()=>pick(r)}
-                      style={{padding:"10px 14px",cursor:"pointer",borderBottom:`1px solid ${P.border}`,display:"flex",alignItems:"center",justifyContent:"space-between"}}
-                      onMouseEnter={e=>e.currentTarget.style.background=P.orangeLight}
-                      onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                      <div>
-                        <div style={{fontSize:13,fontWeight:700,color:P.text}}>{r.brand} {r.name}</div>
-                        <div style={{fontSize:12,color:P.muted}}>{r.flavor}</div>
-                      </div>
-                      <ScorePill score={r.score}/>
-                    </div>
-                  ))}
-                  <div style={{padding:"8px 14px",fontSize:11,color:P.muted,background:P.bg}}>Select to auto-fill the form below</div>
-                </div>
-              )}
-              {acQuery.length>=2&&acResults.length===0&&(
-                <div style={{fontSize:12,color:P.muted,marginTop:6}}>No match found — fill in the form below to add it.</div>
-              )}
+        {form.isExisting
+          /* ── Existing product: show product header only, hide all fields ── */
+          ?<div style={{background:P.card,borderRadius:14,border:`1.5px solid ${P.border}`,padding:"14px 16px",marginBottom:20}}>
+              <div style={{fontSize:12,color:P.muted,marginBottom:2}}>{CAT_ICONS[CAT_IDS.indexOf(form.category)]||"📦"} {form.category}</div>
+              <div style={{fontSize:17,fontWeight:800,color:P.text}}>{form.brand} {form.name}</div>
+              {form.flavor&&<div style={{fontSize:13,color:P.muted,marginTop:2}}>{form.flavor}</div>}
+              <button onClick={()=>setForm(f=>({...f,isExisting:false}))} style={{marginTop:10,background:"none",border:"none",color:P.orange,fontSize:12,fontWeight:700,cursor:"pointer",padding:0}}>Not the right product? Change →</button>
             </div>
-          );
-        })()}
-        <label style={lbl}>{t.brand} {t.required}</label>
-        <input style={{...inp,marginBottom:16}} placeholder={t.brandPh} value={form.brand} onChange={e=>setForm({...form,brand:e.target.value})}/>
-        <label style={lbl}>{t.product} {t.required}</label>
-        <input style={{...inp,marginBottom:16}} placeholder={t.productPh} value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
-        <label style={lbl}>{t.flavor} {t.required}</label>
-        <input style={{...inp,marginBottom:16}} placeholder={t.flavorPh} value={form.flavor} onChange={e=>setForm({...form,flavor:e.target.value})}/>
-        {/* Product info is fetched silently in background for DB purposes — not shown here */}
-        <label style={lbl}>{t.category} {t.required}</label>
-        <select style={{...inp,marginBottom:16,cursor:"pointer"}} value={form.category} onChange={e=>setForm({...form,category:e.target.value})}>
-          {CAT_IDS.filter(c=>c!=="all").map((c,i)=><option key={c} value={c}>{CAT_ICONS[i+1]} {t.cats[i+1]}</option>)}
-        </select>
+          /* ── New product: show search + all fields ── */
+          :<>
+            {(()=>{
+              const acResults = acQuery.length >= 2
+                ? products.filter(p =>
+                    p.brand.toLowerCase().includes(acQuery.toLowerCase()) ||
+                    p.name.toLowerCase().includes(acQuery.toLowerCase()) ||
+                    p.flavor?.toLowerCase().includes(acQuery.toLowerCase())
+                  ).slice(0, 6)
+                : [];
+              const pick = r => {
+                setForm(f=>({...f, brand:r.brand, name:r.name, flavor:r.flavor, category:r.category, isExisting:true}));
+                setAcQuery("");
+                setAcOpen(false);
+              };
+              return (
+                <div style={{marginBottom:20,position:"relative"}}>
+                  <label style={lbl}>🔍 Search existing snacks (optional)</label>
+                  <input style={{...inp}} placeholder="e.g. Lays, Haribo, Pringles..."
+                    value={acQuery}
+                    onChange={e=>{setAcQuery(e.target.value);setAcOpen(true);}}
+                    onFocus={()=>setAcOpen(true)}
+                    onBlur={()=>setTimeout(()=>setAcOpen(false),150)}
+                  />
+                  {acOpen&&acResults.length>0&&(
+                    <div style={{position:"absolute",top:"100%",left:0,right:0,background:P.card,border:`1.5px solid ${P.orange}`,borderRadius:12,zIndex:50,overflow:"hidden",boxShadow:"0 4px 20px rgba(0,0,0,0.1)",marginTop:4}}>
+                      {acResults.map(r=>(
+                        <div key={r.id} onMouseDown={()=>pick(r)}
+                          style={{padding:"10px 14px",cursor:"pointer",borderBottom:`1px solid ${P.border}`,display:"flex",alignItems:"center",justifyContent:"space-between"}}
+                          onMouseEnter={e=>e.currentTarget.style.background=P.orangeLight}
+                          onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                          <div>
+                            <div style={{fontSize:13,fontWeight:700,color:P.text}}>{r.brand} {r.name}</div>
+                            <div style={{fontSize:12,color:P.muted}}>{r.flavor}</div>
+                          </div>
+                          <ScorePill score={r.score}/>
+                        </div>
+                      ))}
+                      <div style={{padding:"8px 14px",fontSize:11,color:P.muted,background:P.bg}}>Select to auto-fill the form below</div>
+                    </div>
+                  )}
+                  {acQuery.length>=2&&acResults.length===0&&(
+                    <div style={{fontSize:12,color:P.muted,marginTop:6}}>No match found — fill in the form below to add it.</div>
+                  )}
+                </div>
+              );
+            })()}
+            <label style={lbl}>{t.brand} {t.required}</label>
+            <input style={{...inp,marginBottom:16}} placeholder={t.brandPh} value={form.brand} onChange={e=>setForm({...form,brand:e.target.value})}/>
+            <label style={lbl}>{t.product} {t.required}</label>
+            <input style={{...inp,marginBottom:16}} placeholder={t.productPh} value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
+            <label style={lbl}>{t.flavor} {t.required}</label>
+            <input style={{...inp,marginBottom:16}} placeholder={t.flavorPh} value={form.flavor} onChange={e=>setForm({...form,flavor:e.target.value})}/>
+            {/* Product info is fetched silently in background for DB purposes — not shown here */}
+            <label style={lbl}>{t.category} {t.required}</label>
+            <select style={{...inp,marginBottom:16,cursor:"pointer"}} value={form.category} onChange={e=>setForm({...form,category:e.target.value})}>
+              {CAT_IDS.filter(c=>c!=="all").map((c,i)=><option key={c} value={c}>{CAT_ICONS[i+1]} {t.cats[i+1]}</option>)}
+            </select>
+          </>
+        }
         <label style={lbl}>{t.rating} {t.required}</label>
         <div style={{marginBottom:6}}><Stars value={form.score} onChange={v=>setForm({...form,score:v})} size={44}/></div>
         {form.score>0&&<div style={{fontSize:14,color:scoreColor(form.score),fontWeight:600,marginBottom:16}}>{t.scoreLabels[form.score]}</div>}
@@ -1093,7 +1104,7 @@ export default function SnackCheck() {
           {/* Add rating button */}
           <button onClick={()=>{
             if(!user){setShowAuthModal(true);return;}
-            setForm({brand:dBrand,name:dName,flavor:dFlavor,category:dCat,score:0,pros:"",cons:"",image:null});
+            setForm({brand:dBrand,name:dName,flavor:dFlavor,category:dCat,score:0,pros:"",cons:"",image:null,isExisting:true});
             setView("rate");
           }} style={{width:"100%",background:P.orange,color:"white",border:"none",borderRadius:12,padding:"13px",fontSize:15,fontWeight:700,cursor:"pointer",marginBottom:20}}>
             + {t.addRating}
