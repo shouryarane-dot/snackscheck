@@ -346,6 +346,7 @@ export default function SnackCheck() {
   const [pwErr,setPwErr]=useState("");
   const [productInfo,setProductInfo]=useState(null);
   const [infoLoading,setInfoLoading]=useState(false);
+  const [locDetecting,setLocDetecting]=useState(false);
   const [submitted,setSubmitted]=useState(false);
   const [showAuthModal,setShowAuthModal]=useState(false);
   const [deleteConfirmed,setDeleteConfirmed]=useState(false);
@@ -382,6 +383,28 @@ export default function SnackCheck() {
     window.addEventListener('resize',onResize);
     return ()=>{subscription.unsubscribe();window.removeEventListener('resize',onResize);};
   },[]);
+
+  // Auto-detect location when rate form opens
+  useEffect(()=>{
+    if(view!=="rate"||form.location||!navigator.geolocation) return;
+    setLocDetecting(true);
+    navigator.geolocation.getCurrentPosition(
+      async pos=>{
+        try{
+          const {latitude,longitude}=pos.coords;
+          const res=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+          const d=await res.json();
+          const city=d.city||d.locality||d.principalSubdivision||"";
+          const country=d.countryName||"";
+          const loc=[city,country].filter(Boolean).join(", ");
+          if(loc) setForm(f=>({...f,location:f.location||loc}));
+        }catch(e){/* silent fail */}
+        setLocDetecting(false);
+      },
+      ()=>setLocDetecting(false), // user denied — silent
+      {timeout:6000}
+    );
+  },[view]);
 
   // Lazy-load full product_info when opening detail view
   useEffect(()=>{
@@ -1000,7 +1023,10 @@ export default function SnackCheck() {
         <label style={lbl}>{t.cons} <span style={{textTransform:"none",fontWeight:400,letterSpacing:0}}>{t.comma}</span></label>
         <input style={{...inp,marginBottom:16}} placeholder={t.consPh} value={form.cons} onChange={e=>setForm({...form,cons:e.target.value})}/>
         <label style={lbl}>📍 City / Country <span style={{textTransform:"none",fontWeight:400,letterSpacing:0}}>(optional)</span></label>
-        <input style={{...inp,marginBottom:16}} placeholder="e.g. Amsterdam, Netherlands" value={form.location} onChange={e=>setForm({...form,location:e.target.value})}/>
+        <div style={{position:"relative",marginBottom:16}}>
+          <input style={{...inp,paddingRight:locDetecting?36:undefined}} placeholder={locDetecting?"Detecting location…":"e.g. Amsterdam, Netherlands"} value={form.location} onChange={e=>setForm({...form,location:e.target.value})}/>
+          {locDetecting&&<div style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",width:14,height:14,border:"2px solid #ddd",borderTopColor:P.orange,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>}
+        </div>
         <label style={lbl}>{t.photo} <span style={{textTransform:"none",fontWeight:400,letterSpacing:0}}>{t.photoOptional}</span></label>
         {form.image
           ? <div style={{position:"relative",marginBottom:24}}>
@@ -1029,7 +1055,7 @@ export default function SnackCheck() {
           const missing=[];
           if(!form.brand) missing.push("brand");
           if(!form.name) missing.push("product name");
-          if(!form.flavor) missing.push("flavor");
+          if(!form.flavor&&!form.isExisting) missing.push("flavor");
           if(!form.score) missing.push("star rating");
           const canSave=missing.length===0;
           return (<>
