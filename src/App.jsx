@@ -172,16 +172,13 @@ function Avatar({name, size=32}) {
     </div>
   );
 }
-function ProductInfoCard({info, lang="en"}) {
+function ProductInfoCard({info, lang="en", translatingIng=false}) {
   const [infoTab, setInfoTab] = useState("nutrition");
   if(!info) return null;
   // Find ingredients in current language, then any other language, note which one we're showing
   const byLang = info.ingredientsByLang || {};
-  const LANG_NAMES = {en:"English",nl:"Dutch",fr:"French",de:"German",es:"Spanish",it:"Italian"};
-  const ingInLang = byLang[lang] || "";
-  const fallbackLang = ingInLang ? lang : Object.keys(byLang).find(k=>byLang[k]) || null;
-  const ingText = ingInLang || (fallbackLang ? byLang[fallbackLang] : "") || info.ingredients || "";
-  const ingLangNote = ingText && fallbackLang && fallbackLang !== lang ? `(${LANG_NAMES[fallbackLang]||fallbackLang})` : "";
+  // Only show ingredients in the selected language — no cross-language fallback
+  const ingText = byLang[lang] || "";
   const ingList = ingText ? ingText.split(",") : [];
   return (
     <div style={{background:"#111",borderRadius:12,padding:14}}>
@@ -198,7 +195,7 @@ function ProductInfoCard({info, lang="en"}) {
           <button key={tb} onClick={()=>setInfoTab(tb)}
             style={{flex:1,padding:"6px",border:"none",borderRadius:6,cursor:"pointer",fontSize:12,fontWeight:600,
               background:infoTab===tb?P.orange:"transparent",color:infoTab===tb?"white":"#666",transition:"all .15s"}}>
-            {tb==="nutrition"?"Nutrition":`Ingredients${ingLangNote?" "+ingLangNote:""}`}
+            {tb==="nutrition"?"Nutrition":"Ingredients"}
           </button>
         ))}
       </div>
@@ -229,7 +226,13 @@ function ProductInfoCard({info, lang="en"}) {
                 {i<ingList.length-1&&<span style={{color:"#444"}}>, </span>}
               </span>
             );
-          }):<span style={{color:"#555",fontStyle:"italic"}}>No ingredients data available.</span>}
+          }):translatingIng
+            ?<div style={{display:"flex",alignItems:"center",gap:8,color:"#666",fontSize:13}}>
+                <div style={{width:13,height:13,border:"2px solid #333",borderTopColor:P.orange,borderRadius:"50%",animation:"spin 0.8s linear infinite",flexShrink:0}}/>
+                Translating ingredients…
+              </div>
+            :<span style={{color:"#555",fontStyle:"italic"}}>Ingredients not available in this language.</span>
+          }
         </div>
       )}
       <div style={{fontSize:10,color:"#444",marginTop:10}}>* Source: Open Food Facts (openfoodfacts.org). May not reflect exact packaging values.</div>
@@ -347,6 +350,7 @@ export default function SnackCheck() {
   const [productInfo,setProductInfo]=useState(null);
   const [infoLoading,setInfoLoading]=useState(false);
   const [locDetecting,setLocDetecting]=useState(false);
+  const [translatingIng,setTranslatingIng]=useState(false);
   const [submitted,setSubmitted]=useState(false);
   const [showAuthModal,setShowAuthModal]=useState(false);
   const [deleteConfirmed,setDeleteConfirmed]=useState(false);
@@ -416,6 +420,38 @@ export default function SnackCheck() {
       setDetailLoaded(true); // mark done even if product has no product_info
     });
   },[selProd]);
+
+  // Auto-translate ingredients when selected language has no translation
+  useEffect(()=>{
+    if(!detailLoaded||!detailProduct) return;
+    const info=detailProduct.productInfo;
+    if(!info?.ingredientsByLang) return;
+    const byLang=info.ingredientsByLang;
+    if(byLang[lang]) return; // already have it in this language
+    // Find any non-empty source language
+    const srcLang=Object.keys(byLang).find(k=>byLang[k]&&byLang[k].length>10);
+    if(!srcLang) return;
+    const srcText=byLang[srcLang];
+    setTranslatingIng(true);
+    (async()=>{
+      try{
+        // MyMemory free API: 5000 chars/day, no key needed
+        const chunk=srcText.slice(0,4900);
+        const url=`https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=${srcLang}|${lang}`;
+        const res=await fetch(url);
+        const d=await res.json();
+        if(d.responseStatus===200&&d.responseData?.translatedText){
+          const translated=d.responseData.translatedText;
+          const newInfo={...info,ingredientsByLang:{...byLang,[lang]:translated}};
+          // Update local state so it shows immediately
+          setDetailProduct(p=>({...p,productInfo:newInfo}));
+          // Persist to DB so next user gets it for free
+          await updateProductInfo(detailProduct.productCode,newInfo);
+        }
+      }catch(e){/* silent fail */}
+      setTranslatingIng(false);
+    })();
+  },[detailLoaded,detailProduct?.productCode,lang]);
 
   useEffect(()=>{
     if(view!=="rate") return;
@@ -1121,7 +1157,7 @@ export default function SnackCheck() {
 
           {/* Nutrition & ingredients */}
           {detailInfo
-            ?<div style={{marginBottom:16}}><ProductInfoCard info={detailInfo} lang={lang}/></div>
+            ?<div style={{marginBottom:16}}><ProductInfoCard info={detailInfo} lang={lang} translatingIng={translatingIng}/></div>
             :!detailLoaded
               ?<div style={{background:P.card,borderRadius:14,border:`1.5px solid ${P.border}`,padding:"16px",marginBottom:16,color:P.muted,fontSize:13,textAlign:"center"}}>Loading nutrition info…</div>
               :null
