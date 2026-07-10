@@ -587,7 +587,7 @@ export default function SnackCheck() {
   };
 
   const handleSubmit = async ()=>{
-    if(!form.brand||!form.name||!form.flavor||!form.category||!form.score) return;
+    if(!form.brand||!form.name||(!form.flavor&&!form.isExisting)||!form.category||!form.score) return;
     const prodCode=toCode(form.brand,form.name,form.flavor);
 
     // Upsert product — fetch nutritional info if not already known
