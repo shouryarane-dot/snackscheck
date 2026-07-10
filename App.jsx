@@ -330,7 +330,7 @@ export default function SnackCheck() {
   const [selProd,setSelProd]=useState(null);
   const [detailProduct,setDetailProduct]=useState(null); // full product_info, loaded lazily
   const [detailLoaded,setDetailLoaded]=useState(false);  // true once fetch completes (even if no info)
-  const [sortBy,setSortBy]=useState("score_desc");
+  const [sortBy,setSortBy]=useState("az");
   const [showFilter,setShowFilter]=useState(false);
   const [minScore,setMinScore]=useState(0);
   const [onlyMulti,setOnlyMulti]=useState(false); // kept for legacy, UI removed
@@ -348,6 +348,7 @@ export default function SnackCheck() {
   const [form,setForm]=useState({brand:"",name:"",flavor:"",category:"chips",score:0,pros:"",cons:"",image:null,location:""});
   const [acQuery,setAcQuery]=useState("");
   const [acOpen,setAcOpen]=useState(false);
+  const [acResults,setAcResults]=useState([]);
   const [products,setProducts]=useState([]);
   const [newPw,setNewPw]=useState("");
   const [pwBusy,setPwBusy]=useState(false);
@@ -486,7 +487,7 @@ export default function SnackCheck() {
   // Server-side product loading: re-fetch whenever page/search/category/nutriscore changes
   // Score-based sorts use rated product codes from ratings (already in memory)
   useEffect(()=>{
-    if(view!=="list"&&view!=="landing") return;
+    if(view!=="list") return;
     let cancelled=false;
     setProductsLoading(true);
     const isScoreSort=['score_desc','score_asc','most_rated','recent','oldest'].includes(sortBy);
@@ -524,6 +525,16 @@ export default function SnackCheck() {
     }
     return()=>{cancelled=true;};
   },[dirPage,search,sortBy,cat,nutriscoreMax,view,ratings.length]);
+
+  // Rate form autocomplete: server-side search (debounced 300ms)
+  useEffect(()=>{
+    if(acQuery.length<2){setAcResults([]);return;}
+    const t=setTimeout(()=>{
+      fetchProductsPage({page:0,search:acQuery}).then(({products:p})=>setAcResults(p.slice(0,6)));
+    },300);
+    return()=>clearTimeout(t);
+  },[acQuery]);
+
   const goToRate = ()=>{if(!user){setShowAuthModal(true);}else{setView("rate");}};
   const avg = list=>list.reduce((s,r)=>s+r.score,0)/list.length;
 
@@ -588,7 +599,7 @@ export default function SnackCheck() {
     });
   const isScoreSort=['score_desc','score_asc','most_rated','recent','oldest'].includes(sortBy);
   const totalPages=isScoreSort?1:Math.max(1,Math.ceil(productCount/PAGE_SIZE));
-  const visibleProducts=isScoreSort?dirProducts:products;
+  const visibleProducts=dirProducts;
 
   const myRatings = ratings
     .filter(r=>r.userId===user?.id)
@@ -610,7 +621,8 @@ export default function SnackCheck() {
     const prodCode=toCode(form.brand,form.name,form.flavor);
 
     // Upsert product — fetch nutritional info if not already known
-    const existingProd = products.find(p=>p.productCode===prodCode);
+    // Use fetchProductDetail to look up existing product (works across all pages, not just current page)
+    const existingProd = await fetchProductDetail(prodCode);
     let info = existingProd?.productInfo || null;
     let imageUrl = existingProd?.imageUrl || null;
     if(!info) {
@@ -619,9 +631,6 @@ export default function SnackCheck() {
       imageUrl = imageUrl || result.imageUrl;
     }
     await upsertProduct(form.brand, form.name, form.flavor, form.category, prodCode, info, {imageUrl});
-    // Refresh products list
-    const prods = await fetchProducts();
-    setProducts(prods);
 
     const r={id:Date.now(),userId:user.id,productCode:prodCode,brand:form.brand,name:form.name,
       flavor:form.flavor,category:form.category,score:form.score,
@@ -940,12 +949,11 @@ export default function SnackCheck() {
               <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.5,color:P.orange,marginBottom:10}}>{l.example}</div>
               <h2 style={{fontSize:22,fontWeight:800,color:P.text,marginBottom:20}}>{l.exampleTitle}</h2>
               <div style={{background:"white",borderRadius:16,overflow:"hidden",border:`1px solid ${P.border}`,textAlign:"left"}}>
-                <img src="/lays-paprika.jpg" alt="Lays Paprika"
+                <img src="https://images.openfoodfacts.org/images/products/871/039/851/8767/front_en.3.400.jpg"
+                    alt="Lays Paprika"
                     style={{width:"100%",height:200,objectFit:"cover",display:"block"}}
-                    onError={e=>{e.currentTarget.style.display="none";e.currentTarget.nextElementSibling.style.display="flex";}}/>
-                <div style={{width:"100%",height:200,background:"linear-gradient(135deg,#FFE4B5,#F5A623)",display:"none",alignItems:"center",justifyContent:"center",fontSize:60}}>
-                  🥔
-                </div>
+                    onError={e=>e.currentTarget.style.display="none"}/>
+
                 <div style={{padding:16}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
                     <div>
@@ -1031,13 +1039,7 @@ export default function SnackCheck() {
           /* ── New product: show search + all fields ── */
           :<>
             {(()=>{
-              const acResults = acQuery.length >= 2
-                ? products.filter(p =>
-                    p.brand.toLowerCase().includes(acQuery.toLowerCase()) ||
-                    p.name.toLowerCase().includes(acQuery.toLowerCase()) ||
-                    p.flavor?.toLowerCase().includes(acQuery.toLowerCase())
-                  ).slice(0, 6)
-                : [];
+              // acResults populated by server-side debounced search (see useEffect above)
               const pick = r => {
                 setForm(f=>({...f, brand:r.brand, name:r.name, flavor:r.flavor, category:r.category, isExisting:true}));
                 setAcQuery("");
