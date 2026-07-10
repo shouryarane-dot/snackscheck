@@ -63,7 +63,7 @@ const avatarColor = name => { const cols=[P.orange,"#6C3FD4","#0AADA6","#E8336B"
 async function fetchProductInfo(brand, name, flavor) {
   const parseResult = (p, brand, name, flavor) => {
     const n = p.nutriments || {};
-    return {
+    const info = {
       description: `${p.brands||brand} ${p.product_name||name}. ${flavor} variant.`,
       per100g: {
         calories: Math.round(n["energy-kcal_100g"]||n["energy_100g"]/4.184||0),
@@ -75,22 +75,20 @@ async function fetchProductInfo(brand, name, flavor) {
         fibre:    Math.round((n.fiber_100g||0)*10)/10,
       },
       servingSize: parseInt(p.serving_size)||null,
-      ingredients: p.ingredients_text_en||p.ingredients_text||"",
+      ingredients: p.ingredients_text_en||"",
+      // Only store a language's own translation — no cross-pollination
       ingredientsByLang: {
-        en: p.ingredients_text_en||p.ingredients_text||"",
-        nl: p.ingredients_text_nl||p.ingredients_text_en||p.ingredients_text||"",
-        fr: p.ingredients_text_fr||p.ingredients_text_en||p.ingredients_text||"",
-        de: p.ingredients_text_de||p.ingredients_text_en||p.ingredients_text||"",
-        es: p.ingredients_text_es||p.ingredients_text_en||p.ingredients_text||"",
-        it: p.ingredients_text_it||p.ingredients_text_en||p.ingredients_text||"",
+        en: p.ingredients_text_en||"",
+        nl: p.ingredients_text_nl||"",
+        fr: p.ingredients_text_fr||"",
+        de: p.ingredients_text_de||"",
+        es: p.ingredients_text_es||"",
+        it: p.ingredients_text_it||"",
       },
       allergens: (()=>{
-        // Use allergens_tags if available
         let list = (p.allergens_tags||[]).map(a=>a.replace(/^[a-z]+:/,"").toLowerCase());
-        // Also extract from _highlighted_ allergen markers in ingredients text
-        const ingRaw = p.ingredients_text_en||p.ingredients_text||"";
+        const ingRaw = p.ingredients_text_en||"";
         const highlighted = [...ingRaw.matchAll(/_([^_]+)_/g)].map(m=>m[1].toLowerCase());
-        // Fallback: scan ingredients for known allergen keywords
         const ingLower = ingRaw.toLowerCase();
         const ALLERGEN_KEYWORDS = {
           milk:     ["milk","dairy","lactose","whey","casein","butter","cream","cheese","lait","lacto"],
@@ -108,35 +106,36 @@ async function fetchProductInfo(brand, name, flavor) {
           .map(([allergen])=>allergen);
         return [...new Set([...list,...detected])];
       })(),
+      nutriscore: ['a','b','c','d','e'].includes((p.nutriscore_grade||p.nutrition_grade_fr||'').toLowerCase())
+        ? (p.nutriscore_grade||p.nutrition_grade_fr).toLowerCase() : null,
       confidence: "high",
       source: "Open Food Facts",
     };
+    const imageUrl = p.image_front_url ? p.image_front_url.replace(/^http:\/\//,'https://') : null;
+    return { info, imageUrl };
   };
   const search = async (q) => {
-    const res = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=5&lc=en&fields=product_name,brands,nutriments,ingredients_text,ingredients_text_en,ingredients_text_nl,ingredients_text_fr,ingredients_text_de,ingredients_text_es,ingredients_text_it,serving_size,allergens_tags`);
+    const fields = 'product_name,brands,nutriments,ingredients_text_en,ingredients_text_nl,ingredients_text_fr,ingredients_text_de,ingredients_text_es,ingredients_text_it,serving_size,allergens_tags,image_front_url,nutriscore_grade,nutrition_grade_fr';
+    const res = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=5&lc=en&fields=${fields}`);
     const d = await res.json();
     const prods = d.products || [];
-    // Prefer a result that has English ingredients text
     return prods.find(p=>p.ingredients_text_en) || prods[0] || null;
   };
   try {
-    // Deduplicate: remove brand words that already appear in name
     const brandWords = brand.toLowerCase().split(/\s+/);
     const cleanName = name.split(/\s+/).filter(w=>!brandWords.includes(w.toLowerCase())).join(" ").trim() || name;
-
-    // Try progressively simpler queries
     const queries = [
-      `${brand} ${cleanName} ${flavor}`,   // brand + deduplicated name + flavor
-      `${brand} ${flavor}`,                  // brand + flavor only
-      `${brand} ${cleanName}`,               // brand + deduplicated name
-      brand,                                 // brand only
+      `${brand} ${cleanName} ${flavor}`,
+      `${brand} ${flavor}`,
+      `${brand} ${cleanName}`,
+      brand,
     ];
     for (const q of queries) {
       const p = await search(q);
       if (p && p.nutriments && Object.keys(p.nutriments).length > 0) return parseResult(p, brand, name, flavor);
     }
-    return null;
-  } catch { return null; }
+    return { info: null, imageUrl: null };
+  } catch { return { info: null, imageUrl: null }; }
 }
 
 // ── Shared UI ────────────────────────────────────────────────────────────────
@@ -468,7 +467,7 @@ export default function SnackCheck() {
         return;
       }
       // 2. Fall back to Open Food Facts
-      const info=await fetchProductInfo(form.brand,form.name,form.flavor);
+      const {info}=await fetchProductInfo(form.brand,form.name,form.flavor);
       setProductInfo(info);
       setInfoLoading(false);
     },900);
@@ -482,11 +481,12 @@ export default function SnackCheck() {
 
   const handleBackfill = async () => {
     setBackfillBusy(true);
-    // Always re-fetch all — ensures stale/wrong-language data gets corrected
-    const missing = products;
-    for(const p of missing) {
-      const info = await fetchProductInfo(p.brand, p.name, p.flavor);
+    for(const p of products) {
+      const {info, imageUrl} = await fetchProductInfo(p.brand, p.name, p.flavor);
       if(info) await updateProductInfo(p.productCode, info);
+      if(imageUrl && !p.imageUrl) {
+        await supabase.from('products').update({image_url: imageUrl}).eq('product_code', p.productCode);
+      }
     }
     const prods = await fetchProducts();
     setProducts(prods);
@@ -593,10 +593,13 @@ export default function SnackCheck() {
     // Upsert product — fetch nutritional info if not already known
     const existingProd = products.find(p=>p.productCode===prodCode);
     let info = existingProd?.productInfo || null;
+    let imageUrl = existingProd?.imageUrl || null;
     if(!info) {
-      info = await fetchProductInfo(form.brand, form.name, form.flavor);
+      const result = await fetchProductInfo(form.brand, form.name, form.flavor);
+      info = result.info;
+      imageUrl = imageUrl || result.imageUrl;
     }
-    await upsertProduct(form.brand, form.name, form.flavor, form.category, prodCode, info);
+    await upsertProduct(form.brand, form.name, form.flavor, form.category, prodCode, info, {imageUrl});
     // Refresh products list
     const prods = await fetchProducts();
     setProducts(prods);
