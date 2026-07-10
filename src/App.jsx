@@ -913,56 +913,44 @@ export default function SnackCheck() {
 
       {/* Example card — shows a real top-rated product */}
       {(()=>{
-        // Pick the most-rated product that has an image
-        const featuredCode = Object.entries(grouped)
-          .sort((a,b)=>b[1].length-a[1].length)
-          .map(([code])=>code)
-          .find(code=>products.find(p=>p.productCode===code&&p.imageUrl));
-        const fp = featuredCode ? products.find(p=>p.productCode===featuredCode) : null;
-        const fpRats = featuredCode ? grouped[featuredCode] : [];
-        const fpScore = fpRats.length ? avg(fpRats) : 0;
-        const fpPros = [...new Set(fpRats.flatMap(r=>r.pros||[]))].slice(0,2);
-        const fpCons = [...new Set(fpRats.flatMap(r=>r.cons||[]))].slice(0,1);
-        const fpCals = fp?.productInfo?.per100g?.calories;
-        const fpCatIdx = CAT_IDS.indexOf(fp?.category||"chips");
-        const fpName = fp ? (fp.name.toLowerCase().startsWith(fp.brand.toLowerCase()) ? fp.name.slice(fp.brand.length).trim() : fp.name) : "Ovenbaked";
+        // Static demo product — always Lays Paprika, no DB dependency
+        const fpName = "Potato Chips";
+        const fpScore = 4.2;
+        const fpPros = [l.exPro1, l.exPro2];
+        const fpCons = [l.exCon1];
+        const fpCatIdx = 1; // Chips
+        const fpCals = 536;
         return (
           <div style={{background:P.orangeLight,padding:"40px 24px",borderTop:`1px solid ${P.border}`,borderBottom:`1px solid ${P.border}`}}>
             <div style={{maxWidth:360,margin:"0 auto",textAlign:"center"}}>
               <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.5,color:P.orange,marginBottom:10}}>{l.example}</div>
               <h2 style={{fontSize:22,fontWeight:800,color:P.text,marginBottom:20}}>{l.exampleTitle}</h2>
-              <div style={{background:"white",borderRadius:16,overflow:"hidden",border:`1px solid ${P.border}`,textAlign:"left",cursor:"pointer"}}
-                onClick={()=>{if(fp){setSelProd(fp.productCode);setView("detail");}}}>
-                {/* Product image */}
-                {fp?.imageUrl
-                  ?<img src={fp.imageUrl.replace(/^http:\/\//,'https://')} alt={fp.name} referrerPolicy="no-referrer"
-                      style={{width:"100%",height:160,objectFit:"cover",display:"block"}}
-                      onError={e=>{e.currentTarget.style.display="none";e.currentTarget.nextElementSibling.style.display="flex";}}/>
-                  :null
-                }
-                <div style={{width:"100%",height:160,background:"linear-gradient(135deg,#FFE4B5,#F5A623)",display:fp?.imageUrl?"none":"flex",alignItems:"center",justifyContent:"center",fontSize:60}}>
-                  {CAT_ICONS[fpCatIdx]||"🍿"}
+              <div style={{background:"white",borderRadius:16,overflow:"hidden",border:`1px solid ${P.border}`,textAlign:"left"}}>
+                <img src="/lays-paprika.jpg" alt="Lays Paprika"
+                    style={{width:"100%",height:200,objectFit:"cover",display:"block"}}
+                    onError={e=>{e.currentTarget.style.display="none";e.currentTarget.nextElementSibling.style.display="flex";}}/>
+                <div style={{width:"100%",height:200,background:"linear-gradient(135deg,#FFE4B5,#F5A623)",display:"none",alignItems:"center",justifyContent:"center",fontSize:60}}>
+                  🥔
                 </div>
                 <div style={{padding:16}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
                     <div>
-                      <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,color:P.orange}}>{fp?.brand||"Lays"}</div>
+                      <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,color:P.orange}}>Lays</div>
                       <div style={{fontSize:16,fontWeight:700,color:P.text}}>{fpName}</div>
-                      {fp?.flavor&&<div style={{fontSize:13,color:P.muted}}>{fp.flavor}</div>}
+                      <div style={{fontSize:13,color:P.muted}}>Paprika</div>
                     </div>
-                    <ScorePill score={parseFloat((fpScore||4.2).toFixed(1))}/>
+                    <ScorePill score={fpScore}/>
                   </div>
-                  {(fpPros.length>0||fpCons.length>0)&&(
-                    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
-                      {fpPros.map((p,i)=><span key={i} style={{background:P.greenLight,color:P.green,borderRadius:6,padding:"2px 8px",fontSize:12,fontWeight:600}}>✓ {p}</span>)}
-                      {fpCons.map((c,i)=><span key={i} style={{background:P.redLight,color:P.red,borderRadius:6,padding:"2px 8px",fontSize:12,fontWeight:600}}>✗ {c}</span>)}
-                    </div>
-                  )}
+                  <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
+                    {fpPros.map((p,i)=><span key={i} style={{background:P.greenLight,color:P.green,borderRadius:6,padding:"2px 8px",fontSize:12,fontWeight:600}}>✓ {p}</span>)}
+                    {fpCons.map((c,i)=><span key={i} style={{background:P.redLight,color:P.red,borderRadius:6,padding:"2px 8px",fontSize:12,fontWeight:600}}>✗ {c}</span>)}
+                  </div>
                   <div style={{marginTop:10,fontSize:12,color:P.muted,display:"flex",gap:8,flexWrap:"wrap"}}>
-                    <span>{t.ratingsCount(fpRats.length||3)}</span>
+                    <span>{t.ratingsCount(47)}</span>
                     <span>·</span>
-                    <span>{t.cats[fpCatIdx]||t.cats[1]}</span>
-                    {fpCals?<><span>·</span><span>{fpCals} kcal/100g</span></>:null}
+                    <span>{t.cats[1]}</span>
+                    <span>·</span>
+                    <span>536 kcal/100g</span>
                   </div>
                 </div>
               </div>
