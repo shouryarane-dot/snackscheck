@@ -487,7 +487,7 @@ export default function SnackCheck() {
   // Server-side product loading: re-fetch whenever page/search/category/nutriscore changes
   // Score-based sorts use rated product codes from ratings (already in memory)
   useEffect(()=>{
-    if(view!=="list") return;
+    if(view!=="home") return;
     let cancelled=false;
     setProductsLoading(true);
     const isScoreSort=['score_desc','score_asc','most_rated','recent','oldest'].includes(sortBy);
@@ -524,7 +524,7 @@ export default function SnackCheck() {
       });
     }
     return()=>{cancelled=true;};
-  },[dirPage,search,sortBy,cat,nutriscoreMax,view,ratings.length]);
+  },[dirPage,search,sortBy,cat,nutriscoreMax,view]);
 
   // Rate form autocomplete: server-side search (debounced 300ms)
   useEffect(()=>{
@@ -949,8 +949,7 @@ export default function SnackCheck() {
               <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.5,color:P.orange,marginBottom:10}}>{l.example}</div>
               <h2 style={{fontSize:22,fontWeight:800,color:P.text,marginBottom:20}}>{l.exampleTitle}</h2>
               <div style={{background:"white",borderRadius:16,overflow:"hidden",border:`1px solid ${P.border}`,textAlign:"left"}}>
-                <img src="https://images.openfoodfacts.org/images/products/871/039/851/8767/front_en.3.400.jpg"
-                    alt="Lays Paprika"
+                <img src="/lays-paprika.jpg" alt="Lays Paprika"
                     style={{width:"100%",height:200,objectFit:"cover",display:"block"}}
                     onError={e=>e.currentTarget.style.display="none"}/>
 
