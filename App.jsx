@@ -100,6 +100,7 @@ const P = {
   green:"#22C55E", greenLight:"#EDFFF4", red:"#EF4444", redLight:"#FFF0F0",
   yellow:"#FFB800", yellowLight:"#FFF8E0",
 };
+const LOADING_MSGS=["🍬 Unwrapping 10,000+ snacks...","🤤 Rating the whole shelf...","🔍 Finding the good stuff...","🍿 Almost ready..."];
 const BADGES=[
   {name:"Snack Scout",     icon:"🔭",min:0  },
   {name:"Snack Head",      icon:"🤤",min:20 },
@@ -415,6 +416,8 @@ export default function SnackCheck() {
   const [backfillDone,setBackfillDone]=useState(false);
   const [showLeaderboard,setShowLeaderboard]=useState(false);
   const [shareRating,setShareRating]=useState(null);
+  const [loadingIdx,setLoadingIdx]=useState(0);
+  useEffect(()=>{const iv=setInterval(()=>setLoadingIdx(i=>(i+1)%LOADING_MSGS.length),1200);return()=>clearInterval(iv);},[]);
   const infoDebRef=useRef();
   const t = LANGS[lang];
   const l = t.landing;
@@ -803,7 +806,12 @@ export default function SnackCheck() {
     );
   }
 
-  if(loading) return <div style={{minHeight:"100vh",background:P.bg,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"system-ui,sans-serif",color:P.muted,fontSize:14}}>Loading...</div>;
+  if(loading) return (
+    <div style={{minHeight:"100vh",background:P.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontFamily:"system-ui,sans-serif",gap:10}}>
+      <div style={{fontSize:48}}>🍿</div>
+      <div style={{fontSize:15,fontWeight:700,color:P.orange,textAlign:"center",minWidth:260}}>{LOADING_MSGS[loadingIdx]}</div>
+    </div>
+  );
 
   if(submitted) return (
     <div style={{minHeight:"100vh",background:P.bg,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16,fontFamily:"system-ui,sans-serif"}}>
