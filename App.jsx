@@ -88,7 +88,9 @@ const LANG_FLAGS = { nl:"🇳🇱", en:"🇬🇧", fr:"🇫🇷", es:"🇪🇸",
 // Flag images for desktop (Windows doesn't render flag emojis)
 const LANG_FLAG_IMGS = { en:"gb", nl:"nl", fr:"fr", es:"es", de:"de", it:"it" };
 function FlagImg({code,size=18}) {
-  return <img src={`https://flagcdn.com/${size}x${Math.round(size*0.75)}/${LANG_FLAG_IMGS[code]||code}.png`} alt={code} style={{width:size,height:Math.round(size*0.75),display:"inline-block",verticalAlign:"middle",borderRadius:2}}/>;
+  // Use flagcdn's width endpoint (always valid) at 2x for a crisp, non-blurry image;
+  // the arbitrary NxN size format 404s for non-standard sizes (e.g. 18x14) → broken icons.
+  return <img src={`https://flagcdn.com/w40/${LANG_FLAG_IMGS[code]||code}.png`} alt={code} style={{width:size,height:Math.round(size*0.75),objectFit:"cover",display:"inline-block",verticalAlign:"middle",borderRadius:2}}/>;
 }
 const CAT_ICONS = ["🛒","🥔","🍪","🥜","🍬","🍫","🍿","🌾","📦"];
 const CAT_IDS   = ["all","chips","koek","noten","snoep","chocolade","popcorn","repen","anders"];
