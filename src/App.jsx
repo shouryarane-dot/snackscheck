@@ -409,6 +409,7 @@ export default function SnackCheck() {
   const [locDetecting,setLocDetecting]=useState(false);
   const [translatingIng,setTranslatingIng]=useState(false);
   const [submitted,setSubmitted]=useState(false);
+  const [saveErr,setSaveErr]=useState(null);
   const [showAuthModal,setShowAuthModal]=useState(false);
   const [deleteConfirmed,setDeleteConfirmed]=useState(false);
   const [deleteBusy,setDeleteBusy]=useState(false);
@@ -654,30 +655,40 @@ export default function SnackCheck() {
 
   const handleSubmit = async ()=>{
     if(!form.brand||!form.name||(!form.flavor&&!form.isExisting)||!form.category||!form.score) return;
-    const prodCode=toCode(form.brand,form.name,form.flavor);
+    setSaveErr(null);
+    try {
+      const prodCode=toCode(form.brand,form.name,form.flavor);
 
-    // Upsert product — fetch nutritional info if not already known
-    // Use fetchProductDetail to look up existing product (works across all pages, not just current page)
-    const existingProd = await fetchProductDetail(prodCode);
-    let info = existingProd?.productInfo || null;
-    let imageUrl = existingProd?.imageUrl || null;
-    if(!info) {
-      const result = await fetchProductInfo(form.brand, form.name, form.flavor);
-      info = result.info;
-      imageUrl = imageUrl || result.imageUrl;
+      // Upsert product — fetch nutritional info if not already known
+      // Use fetchProductDetail to look up existing product (works across all pages, not just current page)
+      const existingProd = await fetchProductDetail(prodCode);
+      let info = existingProd?.productInfo || null;
+      let imageUrl = existingProd?.imageUrl || null;
+      if(!info) {
+        const result = await fetchProductInfo(form.brand, form.name, form.flavor);
+        info = result.info;
+        imageUrl = imageUrl || result.imageUrl;
+      }
+      await upsertProduct(form.brand, form.name, form.flavor, form.category, prodCode, info, {imageUrl});
+
+      const r={id:Date.now(),userId:user.id,productCode:prodCode,brand:form.brand,name:form.name,
+        flavor:form.flavor||"",category:form.category,score:form.score,
+        pros:form.pros.split(",").map(s=>s.trim()).filter(Boolean),
+        cons:form.cons.split(",").map(s=>s.trim()).filter(Boolean),
+        image:form.image||null,productInfo:null,timestamp:Date.now(),rater:userName,location:form.location.trim()||null};
+      const {error}=await supabase.from('ratings').insert([mapToRow(r)]);
+      if(error){
+        console.error(error);
+        setSaveErr(error.message||"Could not save your rating. Please try again.");
+        return;
+      }
+      setRatings(prev=>[...prev,r]);
+      setSubmitted(true);
+      setTimeout(()=>{setSubmitted(false);setView("home");setForm({brand:"",name:"",flavor:"",category:"chips",score:0,pros:"",cons:"",image:null,location:""});setProductInfo(null);setAcQuery("");setAcOpen(false);},2000);
+    } catch(e){
+      console.error(e);
+      setSaveErr(e?.message||"Something went wrong while saving. Please try again.");
     }
-    await upsertProduct(form.brand, form.name, form.flavor, form.category, prodCode, info, {imageUrl});
-
-    const r={id:Date.now(),userId:user.id,productCode:prodCode,brand:form.brand,name:form.name,
-      flavor:form.flavor,category:form.category,score:form.score,
-      pros:form.pros.split(",").map(s=>s.trim()).filter(Boolean),
-      cons:form.cons.split(",").map(s=>s.trim()).filter(Boolean),
-      image:form.image||null,productInfo:null,timestamp:Date.now(),rater:userName,location:form.location.trim()||null};
-    const {error}=await supabase.from('ratings').insert([mapToRow(r)]);
-    if(error){console.error(error);return;}
-    setRatings(prev=>[...prev,r]);
-    setSubmitted(true);
-    setTimeout(()=>{setSubmitted(false);setView("home");setForm({brand:"",name:"",flavor:"",category:"chips",score:0,pros:"",cons:"",image:null,location:""});setProductInfo(null);setAcQuery("");setAcOpen(false);},2000);
   };
 
   const authModal = showAuthModal&&(
@@ -1178,7 +1189,7 @@ export default function SnackCheck() {
             {(()=>{
               // acResults populated by server-side debounced search (see useEffect above)
               const pick = r => {
-                setForm(f=>({...f, brand:r.brand, name:r.name, flavor:r.flavor, category:r.category, isExisting:true}));
+                setForm(f=>({...f, brand:r.brand, name:r.name, flavor:r.flavor||"", category:r.category, isExisting:true}));
                 setAcQuery("");
                 setAcOpen(false);
               };
@@ -1273,6 +1284,9 @@ export default function SnackCheck() {
           return (<>
             {!canSave&&<div style={{marginBottom:10,fontSize:13,color:P.red,fontWeight:600,textAlign:"center"}}>
               Missing: {missing.join(", ")}
+            </div>}
+            {saveErr&&<div style={{marginBottom:10,fontSize:13,color:P.red,fontWeight:600,textAlign:"center",background:P.redLight,borderRadius:10,padding:"10px 12px"}}>
+              ⚠️ {saveErr}
             </div>}
             <button onClick={canSave?handleSubmit:undefined}
               style={{width:"100%",background:canSave?P.orange:P.muted,

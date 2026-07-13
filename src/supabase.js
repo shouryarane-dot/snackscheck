@@ -31,7 +31,9 @@ export const mapToRow = (r) => ({
   product_code: r.productCode,
   brand: r.brand,
   name: r.name,
-  flavor: r.flavor,
+  // flavor is NOT NULL in the DB — some products (e.g. popcorn) have no flavor,
+  // so coalesce to '' here to guard every save path against a null/undefined value.
+  flavor: r.flavor || '',
   category: r.category,
   score: r.score,
   pros: r.pros,
