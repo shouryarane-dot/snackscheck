@@ -687,9 +687,9 @@ export default function SnackCheck() {
 
       const r={id:Date.now(),userId:user.id,productCode:prodCode,brand:form.brand,name:form.name,
         flavor:form.flavor||"",category:form.category,score:form.score,
-        pros:form.pros.split(",").map(s=>s.trim()).filter(Boolean),
-        cons:form.cons.split(",").map(s=>s.trim()).filter(Boolean),
-        image:form.image||null,productInfo:null,timestamp:Date.now(),rater:userName,location:form.location.trim()||null};
+        pros:(form.pros||"").split(",").map(s=>s.trim()).filter(Boolean),
+        cons:(form.cons||"").split(",").map(s=>s.trim()).filter(Boolean),
+        image:form.image||null,productInfo:null,timestamp:Date.now(),rater:userName,location:(form.location||"").trim()||null};
       const {error}=await supabase.from('ratings').insert([mapToRow(r)]);
       if(error){
         console.error(error);
@@ -1370,7 +1370,7 @@ export default function SnackCheck() {
           {/* Add rating button */}
           <button onClick={()=>{
             if(!user){setShowAuthModal(true);return;}
-            setForm({brand:dBrand,name:dName,flavor:dFlavor,category:dCat,score:0,pros:"",cons:"",image:null,isExisting:true});
+            setForm({brand:dBrand,name:dName,flavor:dFlavor,category:dCat,score:0,pros:"",cons:"",image:null,location:"",isExisting:true});
             setView("rate");
           }} style={{width:"100%",background:P.orange,color:"white",border:"none",borderRadius:12,padding:"13px",fontSize:15,fontWeight:700,cursor:"pointer",marginBottom:20}}>
             + {t.addRating}
