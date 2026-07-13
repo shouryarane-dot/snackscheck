@@ -1174,6 +1174,9 @@ export default function SnackCheck() {
           <button onClick={()=>setView("tos")} style={{background:"none",border:"none",color:P.orange,cursor:"pointer",fontSize:13,fontWeight:600}}>Terms of Service</button>
         </div>
         <p style={{fontSize:12,color:P.muted,marginTop:8}}>Contact us at <a href="mailto:hello@snackscheck.com" style={{color:P.orange,fontWeight:600,textDecoration:"none"}}>hello@snackscheck.com</a></p>
+        <p style={{fontSize:11,color:P.muted,marginTop:14,lineHeight:1.6,maxWidth:420,marginLeft:"auto",marginRight:"auto"}}>
+          Product data from <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener noreferrer" style={{color:P.orange,fontWeight:600,textDecoration:"none"}}>Open Food Facts</a>, available under the <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noopener noreferrer" style={{color:P.orange,fontWeight:600,textDecoration:"none"}}>Open Database License (ODbL)</a>.
+        </p>
       </div>
     </div>
   );
