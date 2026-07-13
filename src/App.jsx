@@ -312,8 +312,18 @@ function AuthModal({ onClose, t, onOpenTos }) {
     if(!canSubmit||busy) return;
     setBusy(true); setError('');
     if(mode==='signup') {
-      const {error:err}=await supabase.auth.signUp({email,password,options:{data:{display_name:name.trim()}}});
-      if(err){setError(err.message);setBusy(false);}else onClose();
+      const wanted=name.trim();
+      // Pre-check for a friendly message. The DB unique index on profiles is the real enforcer.
+      const esc=wanted.replace(/[%_\\]/g,m=>'\\'+m);
+      const {data:taken,error:checkErr}=await supabase.from('profiles').select('id').ilike('display_name',esc).limit(1);
+      if(checkErr){setError('Could not check that name right now — please try again.');setBusy(false);return;}
+      if(taken&&taken.length>0){setError('That name is already taken — please choose another.');setBusy(false);return;}
+      const {error:err}=await supabase.auth.signUp({email,password,options:{data:{display_name:wanted}}});
+      if(err){
+        const dup=/duplicate|unique|already|profiles|database error/i.test(err.message||'');
+        setError(dup?'That name is already taken — please choose another.':err.message);
+        setBusy(false);
+      } else onClose();
     } else {
       const {error:err}=await supabase.auth.signInWithPassword({email,password});
       if(err){setError(err.message);setBusy(false);}else onClose();
@@ -640,8 +650,10 @@ export default function SnackCheck() {
 
   const myPoints=user?ratings.filter(r=>r.userId===user.id).reduce((s,r)=>s+calcRatingPts(r),0):0;
   const myBadge=getBadge(myPoints);
-  const leaderboardData=Object.entries(ratings.reduce((acc,r)=>{const k=r.rater||'?';acc[k]=(acc[k]||0)+calcRatingPts(r);return acc;},{})).sort(([,a],[,b])=>b-a);
-  const myRank=userName?leaderboardData.findIndex(([n])=>n===userName)+1:0;
+  // Aggregate by account (userId) so points always match a person's own ratings.
+  // Name is kept only for display; most-recent rating's name wins (ratings load newest-first).
+  const leaderboardData=Object.values(ratings.reduce((acc,r)=>{const k=r.userId||r.rater||'?';if(!acc[k])acc[k]={userId:r.userId,name:r.rater||'?',pts:0};acc[k].pts+=calcRatingPts(r);return acc;},{})).sort((a,b)=>b.pts-a.pts);
+  const myRank=user?leaderboardData.findIndex(e=>e.userId===user.id)+1:0;
 
   const filterCount=(minScore>0?1:0)+(filterBrand?1:0)+(filterFlavor?1:0)+(maxCalories>0?1:0)+(minProtein>0?1:0)+(minFibre>0?1:0)+(avoidAllergens.length>0?1:0)+(nutriscoreMax?1:0);
 
@@ -705,15 +717,15 @@ export default function SnackCheck() {
           <div><div style={{fontSize:18,fontWeight:800,color:P.text}}>🏆 Global Leaderboard</div><div style={{fontSize:12,color:P.muted,marginTop:2}}>Top snack reviewers worldwide</div></div>
           <button onClick={()=>setShowLeaderboard(false)} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:P.muted,padding:4}}>✕</button>
         </div>
-        {leaderboardData.slice(0,10).map(([rater,pts],i)=>{
+        {leaderboardData.slice(0,10).map(({userId,name,pts},i)=>{
           const badge=getBadge(pts);
-          const isMe=rater===userName;
+          const isMe=userId===user?.id;
           return (
-            <div key={rater} style={{display:"flex",alignItems:"center",gap:12,padding:isMe?"10px 0 10px 10px":"10px 0",borderBottom:`1px solid ${P.border}`,borderLeft:isMe?`3px solid ${P.orange}`:"3px solid transparent"}}>
+            <div key={userId||name} style={{display:"flex",alignItems:"center",gap:12,padding:isMe?"10px 0 10px 10px":"10px 0",borderBottom:`1px solid ${P.border}`,borderLeft:isMe?`3px solid ${P.orange}`:"3px solid transparent"}}>
               <span style={{width:24,fontWeight:800,color:P.muted,fontSize:13,textAlign:"center",flexShrink:0}}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`}</span>
-              <Avatar name={rater} size={32}/>
+              <Avatar name={name} size={32}/>
               <div style={{flex:1,minWidth:0}}>
-                <div style={{fontWeight:700,color:isMe?P.orange:P.text,fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{rater}{isMe?" (you)":""}</div>
+                <div style={{fontWeight:700,color:isMe?P.orange:P.text,fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{name}{isMe?" (you)":""}</div>
                 <div style={{fontSize:11,color:P.muted}}>{badge.icon} {badge.name}</div>
               </div>
               <div style={{textAlign:"right",flexShrink:0}}><div style={{fontWeight:800,color:P.orange,fontSize:14}}>{pts}</div><div style={{fontSize:10,color:P.muted}}>pts</div></div>
