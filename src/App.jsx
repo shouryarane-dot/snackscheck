@@ -176,7 +176,15 @@ async function fetchProductInfo(brand, name, flavor) {
     const res = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=5&lc=en&fields=${fields}`);
     const d = await res.json();
     const prods = d.products || [];
-    return prods.find(p=>p.ingredients_text_en) || prods[0] || null;
+    // Only trust a result whose brand actually matches what we searched. OFF's
+    // full-text search often returns unrelated products, and blindly taking the
+    // first one attaches the wrong brand's image AND nutrition (e.g. a "Paysanne"
+    // pack showing up on a Lays product). Fall back to the old behaviour only if
+    // the brand is too short to match on reliably.
+    const bw = brand.toLowerCase().split(/\s+/).filter(w=>w.length>2);
+    const brandOk = p => { const pb=(p.brands||'').toLowerCase(); return bw.length===0 || bw.some(w=>pb.includes(w)); };
+    const matches = prods.filter(brandOk);
+    return matches.find(p=>p.ingredients_text_en) || matches[0] || null;
   };
   try {
     const brandWords = brand.toLowerCase().split(/\s+/);
