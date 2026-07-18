@@ -388,7 +388,7 @@ function AuthModal({ onClose, t, onOpenTos }) {
 
 // ── Main app ──────────────────────────────────────────────────────────────────
 export default function SnackCheck() {
-  const [lang,setLang]=useState("nl");
+  const [lang,setLang]=useState("en");
   const [showLangPicker,setShowLangPicker]=useState(false);
   const [user,setUser]=useState(null);
   const [loading,setLoading]=useState(true);
