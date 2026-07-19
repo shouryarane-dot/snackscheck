@@ -390,6 +390,7 @@ function AuthModal({ onClose, t, onOpenTos }) {
 export default function SnackCheck() {
   const [lang,setLang]=useState("en");
   const [showLangPicker,setShowLangPicker]=useState(false);
+  const [showProfileMenu,setShowProfileMenu]=useState(false);
   const [user,setUser]=useState(null);
   const [loading,setLoading]=useState(true);
   const [view,setView]=useState("landing");
@@ -408,6 +409,7 @@ export default function SnackCheck() {
   const [filterFlavor,setFilterFlavor]=useState("");
   const [maxCalories,setMaxCalories]=useState(0);
   const [minProtein,setMinProtein]=useState(0);
+  const [minProteinRatio,setMinProteinRatio]=useState(0); // grams protein per 100 kcal
   const [minFibre,setMinFibre]=useState(0);
   const [avoidAllergens,setAvoidAllergens]=useState([]);
   const [nutriscoreMax,setNutriscoreMax]=useState("");
@@ -567,7 +569,7 @@ export default function SnackCheck() {
   const setCatAndReset = v=>{setCat(v);setDirPage(1);};
 
   // Reset to page 1 whenever any filter/sort changes
-  useEffect(()=>{setDirPage(1);},[search,cat,nutriscoreMax,sortBy,filterBrand,filterFlavor,maxCalories,minProtein,minFibre,minScore]);
+  useEffect(()=>{setDirPage(1);},[search,cat,nutriscoreMax,sortBy,filterBrand,filterFlavor,maxCalories,minProtein,minProteinRatio,minFibre,minScore]);
 
   // Rate form autocomplete: server-side search (debounced 300ms)
   useEffect(()=>{
@@ -628,6 +630,7 @@ export default function SnackCheck() {
     .filter(p=>!filterFlavor||(p.flavor||"").toLowerCase().includes(filterFlavor.toLowerCase()))
     .filter(p=>{if(maxCalories===0)return true;const v=p.productInfo?.per100g?.calories;return v!=null&&v<=maxCalories;})
     .filter(p=>{if(minProtein===0)return true;const v=p.productInfo?.per100g?.protein;return v!=null&&v>=minProtein;})
+    .filter(p=>{if(minProteinRatio===0)return true;const pr=p.productInfo?.per100g?.protein,cal=p.productInfo?.per100g?.calories;if(pr==null||!cal)return false;return (pr/cal*100)>=minProteinRatio;})
     .filter(p=>{if(minFibre===0)return true;const v=p.productInfo?.per100g?.fibre;return v!=null&&v>=minFibre;})
     .filter(p=>{
       if(avoidAllergens.length===0)return true;
@@ -665,7 +668,7 @@ export default function SnackCheck() {
   const leaderboardData=Object.values(ratings.reduce((acc,r)=>{const k=r.userId||r.rater||'?';if(!acc[k])acc[k]={userId:r.userId,name:r.rater||'?',pts:0};acc[k].pts+=calcRatingPts(r);return acc;},{})).sort((a,b)=>b.pts-a.pts);
   const myRank=user?leaderboardData.findIndex(e=>e.userId===user.id)+1:0;
 
-  const filterCount=(minScore>0?1:0)+(filterBrand?1:0)+(filterFlavor?1:0)+(maxCalories>0?1:0)+(minProtein>0?1:0)+(minFibre>0?1:0)+(avoidAllergens.length>0?1:0)+(nutriscoreMax?1:0);
+  const filterCount=(minScore>0?1:0)+(filterBrand?1:0)+(filterFlavor?1:0)+(maxCalories>0?1:0)+(minProtein>0?1:0)+(minProteinRatio>0?1:0)+(minFibre>0?1:0)+(avoidAllergens.length>0?1:0)+(nutriscoreMax?1:0);
 
   const handleDelete = async id=>{
     const {error}=await supabase.from('ratings').delete().eq('id',id);
@@ -828,12 +831,17 @@ export default function SnackCheck() {
         </div>
         {action||<div style={{display:"flex",alignItems:"center",gap:8}}>
           {user
-            ? <><div style={{cursor:"pointer"}} onClick={()=>setView("account")}><Avatar name={userName} size={30}/></div>
-                <button onClick={()=>supabase.auth.signOut()}
-                  style={{background:"rgba(255,255,255,0.2)",color:"white",border:"none",borderRadius:16,padding:"5px 10px",cursor:"pointer",fontSize:13,fontWeight:600}}>
-                  {pa.logOut}
-                </button>
-              </>
+            ? <div style={{position:"relative"}}>
+                <div style={{cursor:"pointer",background:"white",borderRadius:"50%",padding:2,display:"flex",boxShadow:"0 1px 5px rgba(0,0,0,0.22)"}} onClick={()=>setShowProfileMenu(v=>!v)}><Avatar name={userName} size={30}/></div>
+                {showProfileMenu&&<>
+                  <div onClick={()=>setShowProfileMenu(false)} style={{position:"fixed",inset:0,zIndex:150}}/>
+                  <div style={{position:"absolute",right:0,top:44,background:P.card,borderRadius:12,border:`1.5px solid ${P.border}`,overflow:"hidden",zIndex:200,minWidth:170,boxShadow:"0 6px 24px rgba(0,0,0,0.18)"}}>
+                    <div style={{padding:"10px 14px",borderBottom:`1px solid ${P.border}`,fontSize:13,fontWeight:700,color:P.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{userName}</div>
+                    <button onClick={()=>{setShowProfileMenu(false);setView("account");}} style={{display:"block",width:"100%",textAlign:"left",padding:"11px 14px",border:"none",background:"white",cursor:"pointer",fontSize:13,fontWeight:600,color:P.text}}>👤 {pa.title}</button>
+                    <button onClick={()=>{setShowProfileMenu(false);supabase.auth.signOut();}} style={{display:"block",width:"100%",textAlign:"left",padding:"11px 14px",border:"none",borderTop:`1px solid ${P.border}`,background:"white",cursor:"pointer",fontSize:13,fontWeight:600,color:P.red}}>↩ {pa.logOut}</button>
+                  </div>
+                </>}
+              </div>
             : <button onClick={()=>setShowAuthModal(true)}
                 style={{background:"rgba(255,255,255,0.2)",color:"white",border:"none",borderRadius:16,padding:"5px 10px",cursor:"pointer",fontSize:13,fontWeight:600}}>
                 Log in
@@ -1034,7 +1042,7 @@ export default function SnackCheck() {
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           {user
-            ? <button onClick={()=>setView("home")} style={{background:"rgba(255,255,255,0.2)",color:"white",border:"none",borderRadius:16,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:600}}>Open app →</button>
+            ? <button onClick={()=>setView("home")} style={{background:"rgba(255,255,255,0.2)",color:"white",border:"none",borderRadius:16,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:600}}>Rate Now →</button>
             : <button onClick={()=>setShowAuthModal(true)} style={{background:"rgba(255,255,255,0.2)",color:"white",border:"none",borderRadius:16,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:600}}>Log in</button>
           }
           <LangPicker light/>
@@ -1491,6 +1499,13 @@ export default function SnackCheck() {
             </div>
           </div>
           <div style={{width:"100%"}}>
+            <div style={{...lbl,marginBottom:6}}>Protein density <span style={{textTransform:"none",fontWeight:400,color:P.muted}}>· protein per 100 kcal (rewards high protein, low calorie)</span></div>
+            <select value={minProteinRatio} onChange={e=>setMinProteinRatio(parseFloat(e.target.value))}
+              style={{width:"100%",border:`1.5px solid ${minProteinRatio>0?P.orange:P.border}`,borderRadius:10,padding:"7px 10px",fontSize:13,outline:"none",background:minProteinRatio>0?P.orangeLight:P.bg,cursor:"pointer",color:minProteinRatio>0?P.orange:P.text,fontWeight:minProteinRatio>0?700:400}}>
+              <option value={0}>Any</option><option value={5}>≥ 5g / 100 kcal (good)</option><option value={7}>≥ 7g / 100 kcal (high)</option><option value={10}>≥ 10g / 100 kcal (very high)</option>
+            </select>
+          </div>
+          <div style={{width:"100%"}}>
             <div style={{...lbl,marginBottom:4}}>Hide if contains</div>
             <div style={{fontSize:11,color:P.muted,marginBottom:8}}>Selected allergens → product hidden from results</div>
             <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
@@ -1543,7 +1558,7 @@ export default function SnackCheck() {
           </div>
           {filterCount>0&&(
             <div style={{display:"flex",alignItems:"flex-end"}}>
-              <button onClick={()=>{setMinScore(0);setFilterBrand("");setFilterFlavor("");setMaxCalories(0);setMinProtein(0);setMinFibre(0);setAvoidAllergens([]);setNutriscoreMax("");setDirPage(1);}}
+              <button onClick={()=>{setMinScore(0);setFilterBrand("");setFilterFlavor("");setMaxCalories(0);setMinProtein(0);setMinProteinRatio(0);setMinFibre(0);setAvoidAllergens([]);setNutriscoreMax("");setDirPage(1);}}
                 style={{padding:"7px 12px",borderRadius:10,border:`1.5px solid ${P.border}`,background:P.bg,color:P.muted,cursor:"pointer",fontSize:13}}>
                 {t.reset}
               </button>
@@ -1604,7 +1619,7 @@ export default function SnackCheck() {
               })}
             </div>
             {totalPages>1&&(
-              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"12px 20px 24px"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"12px 20px 96px"}}>
                 <button onClick={()=>setDirPage(p=>Math.max(1,p-1))} disabled={dirPage===1}
                   style={{padding:"7px 16px",borderRadius:10,border:`1.5px solid ${P.border}`,background:dirPage===1?P.bg:"white",color:dirPage===1?P.muted:P.text,cursor:dirPage===1?"not-allowed":"pointer",fontWeight:600,fontSize:13}}>← Prev</button>
                 <span style={{fontSize:13,color:P.muted}}>Page {dirPage} of {totalPages} · {dirProducts.length} products</span>
