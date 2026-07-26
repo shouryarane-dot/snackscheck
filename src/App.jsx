@@ -439,6 +439,7 @@ export default function SnackCheck() {
   const [backfillDone,setBackfillDone]=useState(false);
   const [showLeaderboard,setShowLeaderboard]=useState(false);
   const [shareRating,setShareRating]=useState(null);
+  const [profileUser,setProfileUser]=useState(null); // {userId,name} — public rating profile popup
   const [shareStep,setShareStep]=useState('prep');
   const [loadingIdx,setLoadingIdx]=useState(0);
   useEffect(()=>{const iv=setInterval(()=>setLoadingIdx(i=>(i+1)%LOADING_MSGS.length),1200);return()=>clearInterval(iv);},[]);
@@ -741,7 +742,8 @@ export default function SnackCheck() {
           const badge=getBadge(pts);
           const isMe=userId===user?.id;
           return (
-            <div key={userId||name} style={{display:"flex",alignItems:"center",gap:12,padding:isMe?"10px 0 10px 10px":"10px 0",borderBottom:`1px solid ${P.border}`,borderLeft:isMe?`3px solid ${P.orange}`:"3px solid transparent"}}>
+            <div key={userId||name} onClick={()=>openProfile(userId,name)} title="View profile"
+              style={{display:"flex",alignItems:"center",gap:12,padding:isMe?"10px 0 10px 10px":"10px 0",borderBottom:`1px solid ${P.border}`,borderLeft:isMe?`3px solid ${P.orange}`:"3px solid transparent",cursor:"pointer"}}>
               <span style={{width:24,fontWeight:800,color:P.muted,fontSize:13,textAlign:"center",flexShrink:0}}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`}</span>
               <Avatar name={name} size={32}/>
               <div style={{flex:1,minWidth:0}}>
@@ -763,6 +765,62 @@ export default function SnackCheck() {
       </div>
     </div>
   );
+
+  // Public rating profile — opened by clicking a name on the leaderboard or a review
+  const openProfile=(userId,name)=>{setShowLeaderboard(false);setProfileUser({userId:userId||null,name:name||"?"});};
+
+  const profileModal=profileUser&&(()=>{
+    // Match by account id when we have one; fall back to display name for old ratings
+    const pr=ratings.filter(r=>profileUser.userId
+      ?(r.userId===profileUser.userId||(!r.userId&&r.rater===profileUser.name))
+      :r.rater===profileUser.name);
+    const pts=pr.reduce((s,r)=>s+calcRatingPts(r),0);
+    const badge=getBadge(pts);
+    const isMe=!!profileUser.userId&&profileUser.userId===user?.id;
+    return (
+      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:210,display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={e=>e.target===e.currentTarget&&setProfileUser(null)}>
+        <div style={{background:P.card,borderRadius:20,padding:24,maxWidth:420,width:"100%",maxHeight:"85vh",overflowY:"auto"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
+              <Avatar name={profileUser.name} size={48}/>
+              <div>
+                <div style={{fontSize:17,fontWeight:800,color:P.text}}>{profileUser.name}{isMe?" (you)":""}</div>
+                <div style={{fontSize:12,color:P.muted,marginTop:2}}>{badge.icon} {badge.name}</div>
+              </div>
+            </div>
+            <button onClick={()=>setProfileUser(null)} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:P.muted,padding:4}}>✕</button>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:16}}>
+            {[{label:"points",val:pts},{label:"ratings",val:pr.length},{label:"avg score",val:pr.length?avg(pr).toFixed(1)+" ★":"—"}].map((s,i)=>(
+              <div key={i} style={{background:P.bg,border:`1.5px solid ${P.border}`,borderRadius:12,padding:"10px 8px",textAlign:"center"}}>
+                <div style={{fontSize:i===2?15:18,fontWeight:800,color:P.orange}}>{s.val}</div>
+                <div style={{fontSize:10,color:P.muted,marginTop:2,letterSpacing:.5,textTransform:"uppercase"}}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+          {pr.length===0
+            ?<div style={{textAlign:"center",color:P.muted,fontSize:13,padding:"18px 0"}}>No ratings yet.</div>
+            :pr.map(r=>{
+              const catIdx=CAT_IDS.indexOf(r.category);
+              return (
+                <div key={r.id} onClick={()=>{setProfileUser(null);setSelProd(r.productCode);setView("detail");}}
+                  style={{display:"flex",gap:10,alignItems:"center",padding:"11px 4px",borderBottom:`1px solid ${P.border}`,cursor:"pointer"}}>
+                  <div style={{width:38,height:38,borderRadius:10,background:P.orangeLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,flexShrink:0}}>{CAT_ICONS[catIdx]||"🍿"}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:.8,color:P.orange}}>{r.brand}</div>
+                    <div style={{fontSize:13,fontWeight:700,color:P.text,lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.name}{r.flavor?` — ${r.flavor}`:""}</div>
+                  </div>
+                  <div style={{textAlign:"right",flexShrink:0,display:"flex",flexDirection:"column",alignItems:"flex-end",gap:3}}>
+                    <ScorePill score={r.score}/>
+                    <div style={{fontSize:10,color:P.muted}}>{timeAgo(r.timestamp)}</div>
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+      </div>
+    );
+  })();
 
   const shareModal=shareRating&&(()=>{
     const r=shareRating;
@@ -1378,6 +1436,7 @@ export default function SnackCheck() {
       <div style={{minHeight:"100vh",background:P.bg,fontFamily:"system-ui,sans-serif"}}>
         <Header subtitle={dBrand}/>
         {authModal}
+        {profileModal}
         <div style={{padding:20,maxWidth:520,margin:"0 auto"}}>
           <button onClick={()=>setView("home")} style={{background:"none",border:"none",color:P.orange,cursor:"pointer",fontSize:14,fontWeight:700,padding:0,marginBottom:20,display:"flex",alignItems:"center",gap:6}}>{t.back}</button>
 
@@ -1427,9 +1486,9 @@ export default function SnackCheck() {
               return (
                 <div key={r.id} style={{background:P.card,borderRadius:14,border:`1.5px solid ${isMe?P.orange:P.border}`,padding:"14px 16px",marginBottom:10}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <div onClick={()=>openProfile(r.userId,r.rater)} title="View profile" style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer"}}>
                       <Avatar name={r.rater} size={28}/>
-                      <span style={{fontSize:13,fontWeight:700,color:isMe?P.orange:P.text}}>{r.rater}{isMe?t.you:""}</span>
+                      <span style={{fontSize:13,fontWeight:700,color:isMe?P.orange:P.text,textDecoration:"underline",textDecorationColor:"rgba(0,0,0,0.15)",textUnderlineOffset:3}}>{r.rater}{isMe?t.you:""}</span>
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:8}}>
                       <ScorePill score={r.score}/>
@@ -1461,6 +1520,7 @@ export default function SnackCheck() {
       <Header/>
       {authModal}
       {leaderboardModal}
+      {profileModal}
       {shareModal}
       <div style={{display:"flex",background:P.card,borderBottom:`1.5px solid ${P.border}`}}>
         {[{id:"all",icon:"🌍",label:t.allSnacks},{id:"mine",icon:"👤",label:t.myRatings}].map(tb=>(
