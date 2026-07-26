@@ -478,6 +478,16 @@ export default function SnackCheck() {
     const hash = window.location.hash;
     if(hash.includes("type=recovery")) setView("resetPassword");
 
+    // SEO deep links: /p/<product_code> opens that product directly
+    const pm=window.location.pathname.match(/^\/p\/([^/]+)/);
+    if(pm&&!hash.includes("type=recovery")){setSelProd(decodeURIComponent(pm[1]));setView("detail");}
+    const onPop=()=>{
+      const m=window.location.pathname.match(/^\/p\/([^/]+)/);
+      if(m){setSelProd(decodeURIComponent(m[1]));setView("detail");}
+      else setView(v=>v==="detail"?"home":v);
+    };
+    window.addEventListener('popstate',onPop);
+
     supabase.auth.getSession().then(({data:{session}})=>setUser(session?.user??null));
     const {data:{subscription}}=supabase.auth.onAuthStateChange((event,session)=>{
       setUser(session?.user??null);
@@ -513,8 +523,42 @@ export default function SnackCheck() {
     })();
     const onResize=()=>setIsMobile(window.innerWidth<640);
     window.addEventListener('resize',onResize);
-    return ()=>{subscription.unsubscribe();window.removeEventListener('resize',onResize);};
+    return ()=>{subscription.unsubscribe();window.removeEventListener('resize',onResize);window.removeEventListener('popstate',onPop);};
   },[]);
+
+  // Keep the address bar in sync — every product gets its own shareable URL
+  useEffect(()=>{
+    const path=(view==="detail"&&selProd)?`/p/${encodeURIComponent(selProd)}`:"/";
+    if(window.location.pathname!==path) window.history.pushState({},"",path);
+  },[view,selProd]);
+
+  // Per-product page title, description, canonical link and structured data
+  useEffect(()=>{
+    const setMeta=(sel,attr,val)=>{const el=document.querySelector(sel);if(el)el.setAttribute(attr,val);};
+    if(view==="detail"&&selProd){
+      const sp=products.find(p=>p.productCode===selProd)||ratings.find(r=>r.productCode===selProd);
+      if(!sp) return;
+      const nm=sp.name.toLowerCase().startsWith(sp.brand.toLowerCase())?sp.name:`${sp.brand} ${sp.name}`;
+      const full=nm+(sp.flavor?` ${sp.flavor}`:"");
+      const pr=ratings.filter(r=>r.productCode===selProd);
+      const a=pr.length?pr.reduce((s,r)=>s+r.score,0)/pr.length:null;
+      const pageUrl=`https://snackscheck.com/p/${encodeURIComponent(selProd)}`;
+      document.title=`${full} — Reviews & Nutri-Score | SnacksCheck`;
+      setMeta('meta[name="description"]','content',`${full}: ${pr.length?`rated ${a.toFixed(1)}/5 by the SnacksCheck community. `:""}Snack check with reviews, Nutri-Score, allergens and nutrition facts.`);
+      setMeta('link[rel="canonical"]','href',pageUrl);
+      let ld=document.getElementById('product-ld');
+      if(!ld){ld=document.createElement('script');ld.type='application/ld+json';ld.id='product-ld';document.head.appendChild(ld);}
+      const obj={"@context":"https://schema.org","@type":"Product","name":full,"brand":{"@type":"Brand","name":sp.brand},"url":pageUrl};
+      if(pr.length) obj.aggregateRating={"@type":"AggregateRating","ratingValue":a.toFixed(1),"bestRating":"5","ratingCount":pr.length};
+      ld.textContent=JSON.stringify(obj);
+    } else {
+      document.title="SnacksCheck – Snack Check & Ratings | Nutri-Score & Allergen Filters";
+      setMeta('meta[name="description"]','content',"Do a quick snack check before you buy: community snack ratings with Nutri-Score grades, allergen filters and full nutrition data across 10,000+ products.");
+      setMeta('link[rel="canonical"]','href',"https://snackscheck.com");
+      const ld=document.getElementById('product-ld');
+      if(ld) ld.remove();
+    }
+  },[view,selProd,products,ratings]);
 
   // Auto-detect location when rate form opens
   useEffect(()=>{
