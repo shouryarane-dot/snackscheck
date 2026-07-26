@@ -552,7 +552,7 @@ export default function SnackCheck() {
       if(pr.length) obj.aggregateRating={"@type":"AggregateRating","ratingValue":a.toFixed(1),"bestRating":"5","ratingCount":pr.length};
       ld.textContent=JSON.stringify(obj);
     } else {
-      document.title="SnacksCheck – Snack Check & Ratings | Nutri-Score & Allergen Filters";
+      document.title="SnacksCheck – Rate Snacks & Find the Good Stuff";
       setMeta('meta[name="description"]','content',"Do a quick snack check before you buy: community snack ratings with Nutri-Score grades, allergen filters and full nutrition data across 10,000+ products.");
       setMeta('link[rel="canonical"]','href',"https://snackscheck.com");
       const ld=document.getElementById('product-ld');
