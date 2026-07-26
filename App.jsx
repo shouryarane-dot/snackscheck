@@ -462,16 +462,23 @@ export default function SnackCheck() {
     (async()=>{
       const saved=localStorage.getItem(LANG_KEY);
       if(saved&&LANGS[saved]) setLang(saved);
-      const RATINGS_SELECT='id,user_id,product_code,brand,name,flavor,category,score,pros,cons,image,timestamp,rater,location';
+      // PERF: first load fetches ratings WITHOUT images (base64 photos can be
+      // megabytes each) so the page appears fast; photos stream in right after.
+      const RATINGS_SELECT='id,user_id,product_code,brand,name,flavor,category,score,pros,cons,timestamp,rater,location';
       setProductsLoading(true);
-      const [ratingsRes, allProducts] = await Promise.all([
-        supabase.from('ratings').select(RATINGS_SELECT).order('timestamp',{ascending:false}),
-        fetchProducts()
-      ]);
+      // Products (10k+ rows) load in the background — the directory tab
+      // already shows its own spinner while productsLoading is true.
+      fetchProducts().then(prods=>{setProducts(prods);setProductsLoading(false);}).catch(()=>setProductsLoading(false));
+      const ratingsRes=await supabase.from('ratings').select(RATINGS_SELECT).order('timestamp',{ascending:false});
       if(!ratingsRes.error&&ratingsRes.data) setRatings(ratingsRes.data.map(mapRow));
-      setProducts(allProducts);
-      setProductsLoading(false);
       setLoading(false);
+      // Now fetch rating photos in the background and merge them in.
+      supabase.from('ratings').select('id,image').not('image','is',null).then(({data})=>{
+        if(!data||!data.length) return;
+        const imgById={};
+        data.forEach(d=>{imgById[d.id]=d.image;});
+        setRatings(rs=>rs.map(r=>imgById[r.id]?{...r,image:imgById[r.id]}:r));
+      });
     })();
     const onResize=()=>setIsMobile(window.innerWidth<640);
     window.addEventListener('resize',onResize);
@@ -1300,9 +1307,26 @@ export default function SnackCheck() {
                 const file=e.target.files[0]; if(!file) return;
                 const allowed=["image/jpeg","image/png","image/webp"];
                 if(!allowed.includes(file.type)){alert("Only JPEG, PNG, or WebP images are allowed.");e.target.value="";return;}
-                if(file.size>5*1024*1024){alert("Image must be under 5 MB.");e.target.value="";return;}
+                if(file.size>10*1024*1024){alert("Image must be under 10 MB.");e.target.value="";return;}
+                // PERF: shrink photo before saving — big base64 photos in the DB
+                // were making the whole site slow to load for everyone.
                 const reader=new FileReader();
-                reader.onload=ev=>setForm(f=>({...f,image:ev.target.result}));
+                reader.onload=ev=>{
+                  const img=new Image();
+                  img.onload=()=>{
+                    const MAX=1024;
+                    let w=img.width,h=img.height;
+                    if(w>MAX||h>MAX){const s=MAX/Math.max(w,h);w=Math.round(w*s);h=Math.round(h*s);}
+                    const canvas=document.createElement('canvas');
+                    canvas.width=w;canvas.height=h;
+                    const ctx=canvas.getContext('2d');
+                    ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h); // white bg for transparent PNGs
+                    ctx.drawImage(img,0,0,w,h);
+                    setForm(f=>({...f,image:canvas.toDataURL('image/jpeg',0.75)}));
+                  };
+                  img.onerror=()=>setForm(f=>({...f,image:ev.target.result}));
+                  img.src=ev.target.result;
+                };
                 reader.readAsDataURL(file);
               }}/>
             </label>
