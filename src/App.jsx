@@ -401,7 +401,7 @@ export default function SnackCheck() {
   const [selProd,setSelProd]=useState(null);
   const [detailProduct,setDetailProduct]=useState(null); // full product_info, loaded lazily
   const [detailLoaded,setDetailLoaded]=useState(false);  // true once fetch completes (even if no info)
-  const [sortBy,setSortBy]=useState("az");
+  const [sortBy,setSortBy]=useState("most_rated");
   const [showFilter,setShowFilter]=useState(false);
   const [minScore,setMinScore]=useState(0);
   const [onlyMulti,setOnlyMulti]=useState(false); // kept for legacy, UI removed
