@@ -110,10 +110,33 @@ const BADGES=[
   {name:"Snack Expert",     icon:"🏆",min:200,desc:"The community looks up to you."},
   {name:"Snack Connoisseur",icon:"👑",min:500,desc:"The ultimate snack authority."},
 ];
-const calcRatingPts=r=>{const hp=r.pros?.length>0,hc=r.cons?.length>0;let p=1;if(hp&&hc)p+=2;else if(hp||hc)p+=1;if(r.image)p+=2;return p;};
+const calcRatingPts=r=>{const hp=r.pros?.length>0,hc=r.cons?.length>0;let p=1;if(hp&&hc)p+=2;else if(hp||hc)p+=1;if(r.image||r.hasImage)p+=2;return p;};
 const getBadge=pts=>[...BADGES].reverse().find(b=>pts>=b.min)||BADGES[0];
 const scoreColor = s => s>=4?P.green:s===3?P.yellow:P.red;
 const timeAgo = ts => { const d=Date.now()-ts,m=Math.floor(d/6e4); return m<60?`${m}m`:m<1440?`${Math.floor(m/60)}u`:`${Math.floor(m/1440)}d`; };
+
+// Compress a photo (data URL) and upload it to Supabase Storage; returns a public URL.
+// Storing photos as files keeps the database small and the site fast.
+const uploadRatingPhoto = async (dataUrl, userId) => {
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = dataUrl; });
+    const MAX = 1024;
+    let w = img.width, h = img.height;
+    if (w > MAX || h > MAX) { const s = MAX / Math.max(w, h); w = Math.round(w * s); h = Math.round(h * s); }
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.78));
+    if (!blob) return null;
+    const path = `${userId || 'anon'}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+    const { error } = await supabase.storage.from('rating-photos').upload(path, blob, { contentType: 'image/jpeg' });
+    if (error) { console.error('photo upload:', error); return null; }
+    const { data } = supabase.storage.from('rating-photos').getPublicUrl(path);
+    return data?.publicUrl || null;
+  } catch (e) { console.error('photo upload:', e); return null; }
+};
 const initials = name => (name||"?").split(/[\s_]+/).map(w=>w[0]).join("").toUpperCase().slice(0,2)||"?";
 const avatarColor = name => { const cols=[P.orange,"#6C3FD4","#0AADA6","#E8336B","#3B82F6"]; let h=0; for(const c of (name||"?")) h=(h*31+c.charCodeAt(0))%cols.length; return cols[h]; };
 
@@ -473,8 +496,15 @@ export default function SnackCheck() {
       const ratingsRes=await supabase.from('ratings').select(RATINGS_SELECT).order('timestamp',{ascending:false});
       if(!ratingsRes.error&&ratingsRes.data) setRatings(ratingsRes.data.map(mapRow));
       setLoading(false);
-      // Now fetch rating photos in the background and merge them in.
-      supabase.from('ratings').select('id,image').not('image','is',null).then(({data})=>{
+      // Mark which ratings have a photo (ids only — a few KB) so points stay
+      // correct. Legacy inline photos load on demand: product page + share card.
+      supabase.from('ratings').select('id').not('image','is',null).then(({data})=>{
+        if(!data||!data.length) return;
+        const has=new Set(data.map(d=>d.id));
+        setRatings(rs=>rs.map(r=>has.has(r.id)?{...r,hasImage:true}:r));
+      });
+      // Photos stored as Storage URLs are tiny — merge them right away so cards show photos
+      supabase.from('ratings').select('id,image').like('image','http%').then(({data})=>{
         if(!data||!data.length) return;
         const imgById={};
         data.forEach(d=>{imgById[d.id]=d.image;});
@@ -517,7 +547,40 @@ export default function SnackCheck() {
       if(p) setDetailProduct(p);
       setDetailLoaded(true); // mark done even if product has no product_info
     });
+    // Load this product's rating photos on demand (photos are skipped on first load)
+    supabase.from('ratings').select('id,image').eq('product_code',selProd).not('image','is',null).then(({data})=>{
+      if(!data||!data.length) return;
+      const imgById={};
+      data.forEach(d=>{imgById[d.id]=d.image;});
+      setRatings(rs=>rs.map(r=>imgById[r.id]?{...r,image:imgById[r.id]}:r));
+    });
   },[selProd]);
+
+  // One-time self-migration: quietly move this user's old inline photos to
+  // Storage. Shrinks the database and speeds up the site for everyone.
+  useEffect(()=>{
+    if(!user?.id) return;
+    (async()=>{
+      const {data}=await supabase.from('ratings').select('id,image').eq('user_id',user.id).like('image','data:%');
+      if(!data||!data.length) return;
+      for(const row of data){
+        const url=await uploadRatingPhoto(row.image,user.id);
+        if(!url) continue; // bucket not set up yet — try again next visit
+        const {error}=await supabase.from('ratings').update({image:url}).eq('id',row.id);
+        if(!error) setRatings(rs=>rs.map(r=>r.id===row.id?{...r,image:url}:r));
+      }
+    })();
+  },[user?.id]);
+
+  // Load the photo for a share card on demand
+  useEffect(()=>{
+    if(!shareRating||shareRating.image||!shareRating.hasImage) return;
+    supabase.from('ratings').select('image').eq('id',shareRating.id).single().then(({data})=>{
+      if(!data?.image) return;
+      setShareRating(s=>s&&s.id===shareRating.id?{...s,image:data.image}:s);
+      setRatings(rs=>rs.map(r=>r.id===shareRating.id?{...r,image:data.image}:r));
+    });
+  },[shareRating?.id]);
 
   // Auto-translate ingredients when selected language has no translation
   useEffect(()=>{
@@ -704,11 +767,18 @@ export default function SnackCheck() {
       }
       await upsertProduct(form.brand, form.name, form.flavor, form.category, prodCode, info, {imageUrl});
 
+      // Photo → Supabase Storage (tiny link in the DB instead of a huge blob).
+      // Falls back to inline storage if the upload fails, so ratings never get lost.
+      let photo=form.image||null;
+      if(photo&&photo.startsWith('data:')){
+        const url=await uploadRatingPhoto(photo,user.id);
+        if(url) photo=url;
+      }
       const r={id:Date.now(),userId:user.id,productCode:prodCode,brand:form.brand,name:form.name,
         flavor:form.flavor||"",category:form.category,score:form.score,
         pros:(form.pros||"").split(",").map(s=>s.trim()).filter(Boolean),
         cons:(form.cons||"").split(",").map(s=>s.trim()).filter(Boolean),
-        image:form.image||null,productInfo:null,timestamp:Date.now(),rater:userName,location:(form.location||"").trim()||null};
+        image:photo,productInfo:null,timestamp:Date.now(),rater:userName,location:(form.location||"").trim()||null};
       const {error}=await supabase.from('ratings').insert([mapToRow(r)]);
       if(error){
         console.error(error);
@@ -1500,7 +1570,7 @@ export default function SnackCheck() {
                       {!isMe&&<a href={`mailto:privacy@snackscheck.com?subject=Report rating&body=Rating ID: ${r.id}%0ABrand: ${r.brand} ${r.name}%0ARater: ${r.rater}%0AReason: (please describe the issue)`} style={{background:"#FFF5F5",color:P.red,border:"none",borderRadius:8,width:28,height:28,cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center",textDecoration:"none"}} title="Report this rating">🚩</a>}
                     </div>
                   </div>
-                  {r.image&&<img src={r.image} alt="snack" style={{width:"100%",borderRadius:10,maxHeight:180,objectFit:"cover",marginBottom:8}}/>}
+                  {r.image&&<img src={r.image} alt="snack" loading="lazy" style={{width:"100%",borderRadius:10,maxHeight:180,objectFit:"cover",marginBottom:8}}/>}
                   <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
                     {r.pros?.map((p,i)=><span key={i} style={{background:P.greenLight,color:P.green,borderRadius:8,padding:"3px 9px",fontSize:12,fontWeight:600}}>✓ {p}</span>)}
                     {r.cons?.map((c2,i)=><span key={i} style={{background:P.redLight,color:P.red,borderRadius:8,padding:"3px 9px",fontSize:12,fontWeight:600}}>✗ {c2}</span>)}
@@ -1681,7 +1751,7 @@ export default function SnackCheck() {
                     <div style={{position:"relative",width:"100%",height:120,background:P.orangeLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:40}}>
                       {CAT_ICONS[catIdx]||"🍿"}
                       {cardImage&&<img src={cardImage.replace(/^http:\/\//,'https://')} alt={p.name}
-                          referrerPolicy="no-referrer"
+                          loading="lazy" referrerPolicy="no-referrer"
                           style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}
                           onError={e=>e.currentTarget.style.display="none"}
                         />}
