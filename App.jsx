@@ -739,6 +739,26 @@ export default function SnackCheck() {
   const leaderboardData=Object.values(ratings.reduce((acc,r)=>{const k=r.userId||r.rater||'?';if(!acc[k])acc[k]={userId:r.userId,name:r.rater||'?',pts:0};acc[k].pts+=calcRatingPts(r);return acc;},{})).sort((a,b)=>b.pts-a.pts);
   const myRank=user?leaderboardData.findIndex(e=>e.userId===user.id)+1:0;
 
+  // Landing strip: the 5 most-rated real products, spread across categories.
+  const landingStrip=(()=>{
+    const byCode={};
+    ratings.forEach(r=>{
+      if(!byCode[r.productCode]) byCode[r.productCode]={code:r.productCode,brand:r.brand,name:r.name,category:r.category,n:0,sum:0};
+      byCode[r.productCode].n++;byCode[r.productCode].sum+=r.score;
+    });
+    const sorted=Object.values(byCode).sort((a,b)=>b.n-a.n||(b.sum/b.n)-(a.sum/a.n));
+    // First pass: one product per category (max variety); second pass: fill up to 5
+    const picked=[],usedCats=new Set();
+    for(const p of sorted){if(!usedCats.has(p.category)){picked.push(p);usedCats.add(p.category);if(picked.length===5)break;}}
+    for(const p of sorted){if(picked.length>=5)break;if(!picked.includes(p))picked.push(p);}
+    return picked.map(p=>({
+      icon:CAT_ICONS[CAT_IDS.indexOf(p.category)]||"🍿",
+      name:p.name.toLowerCase().startsWith(p.brand.toLowerCase())?p.name:`${p.brand} ${p.name}`,
+      score:(p.sum/p.n).toFixed(1),
+      code:p.code,
+    }));
+  })();
+
   const filterCount=(minScore>0?1:0)+(filterBrand?1:0)+(filterFlavor?1:0)+(maxCalories>0?1:0)+(minProtein>0?1:0)+(minProteinRatio>0?1:0)+(minFibre>0?1:0)+(avoidAllergens.length>0?1:0)+(nutriscoreMax?1:0);
 
   const handleDelete = async id=>{
@@ -1196,9 +1216,13 @@ export default function SnackCheck() {
 
       {/* Snack strip */}
       <div style={{display:"flex",gap:8,overflowX:"auto",padding:"14px 16px",background:P.orangeLight,borderBottom:`1px solid ${P.border}`}}>
-        {[["🥔","Lays Paprika","4.2"],["🍫","Tony's Pretzel","4.8"],["🥜","AH Borrelnoten","3.9"],["🍬","Haribo Goldbären","4.6"],["🍿","Popcorn Zeezout","4.1"],["🍪","Oreo Original","4.4"],["🥔","Pringles Original","4.0"]].map(([icon,name,score],i)=>(
-          <div key={i} style={{background:"white",border:`1px solid ${P.border}`,borderRadius:20,padding:"6px 14px",fontSize:13,color:P.muted,display:"flex",alignItems:"center",gap:6,whiteSpace:"nowrap",flexShrink:0}}>
-            <span>{icon}</span><span style={{color:P.text,fontWeight:500}}>{name}</span><span style={{color:P.orange,fontWeight:700}}>★ {score}</span>
+        {(landingStrip.length
+          ?landingStrip
+          :[["🥔","Lays Paprika","4.2"],["🍫","Tony's Pretzel","4.8"],["🥜","AH Borrelnoten","3.9"],["🍬","Haribo Goldbären","4.6"],["🍿","Popcorn Zeezout","4.1"]].map(([icon,name,score])=>({icon,name,score,code:null}))
+        ).map((s,i)=>(
+          <div key={i} onClick={s.code?()=>{setSelProd(s.code);setView("detail");}:undefined}
+            style={{background:"white",border:`1px solid ${P.border}`,borderRadius:20,padding:"6px 14px",fontSize:13,color:P.muted,display:"flex",alignItems:"center",gap:6,whiteSpace:"nowrap",flexShrink:0,cursor:s.code?"pointer":"default"}}>
+            <span>{s.icon}</span><span style={{color:P.text,fontWeight:500}}>{s.name}</span><span style={{color:P.orange,fontWeight:700}}>★ {s.score}</span>
           </div>
         ))}
       </div>
