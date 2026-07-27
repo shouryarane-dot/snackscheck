@@ -546,11 +546,14 @@ export default function SnackCheck() {
       document.title=`${full} — Reviews & Nutri-Score | SnacksCheck`;
       setMeta('meta[name="description"]','content',`${full}: ${pr.length?`rated ${a.toFixed(1)}/5 by the SnacksCheck community. `:""}Snack check with reviews, Nutri-Score, allergens and nutrition facts.`);
       setMeta('link[rel="canonical"]','href',pageUrl);
+      // Google requires a rating/review/offer on Product markup — so only add
+      // it for products that actually have ratings.
       let ld=document.getElementById('product-ld');
-      if(!ld){ld=document.createElement('script');ld.type='application/ld+json';ld.id='product-ld';document.head.appendChild(ld);}
-      const obj={"@context":"https://schema.org","@type":"Product","name":full,"brand":{"@type":"Brand","name":sp.brand},"url":pageUrl};
-      if(pr.length) obj.aggregateRating={"@type":"AggregateRating","ratingValue":a.toFixed(1),"bestRating":"5","ratingCount":pr.length};
-      ld.textContent=JSON.stringify(obj);
+      if(pr.length){
+        if(!ld){ld=document.createElement('script');ld.type='application/ld+json';ld.id='product-ld';document.head.appendChild(ld);}
+        ld.textContent=JSON.stringify({"@context":"https://schema.org","@type":"Product","name":full,"brand":{"@type":"Brand","name":sp.brand},"url":pageUrl,
+          "aggregateRating":{"@type":"AggregateRating","ratingValue":a.toFixed(1),"bestRating":"5","ratingCount":pr.length}});
+      } else if(ld) ld.remove();
     } else {
       document.title="SnacksCheck – Rate Snacks & Find the Good Stuff";
       setMeta('meta[name="description"]','content',"Do a quick snack check before you buy: community snack ratings with Nutri-Score grades, allergen filters and full nutrition data across 10,000+ products.");
