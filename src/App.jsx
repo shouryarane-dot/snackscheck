@@ -371,7 +371,7 @@ function AuthModal({ onClose, t, onOpenTos }) {
   };
   return (
     <div style={{background:P.card,borderRadius:20,padding:28,maxWidth:340,width:"100%",margin:"0 auto",boxShadow:"0 8px 40px rgba(0,0,0,0.12)"}}>
-      <div style={{width:56,height:56,borderRadius:16,background:"white",border:`1.5px solid ${P.border}`,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:16,overflow:"hidden"}}><img src="/snakie.png" alt="Snakie" style={{width:"84%",height:"84%",objectFit:"contain"}}/></div>
+      <img src="/snakie-face.png" alt="Snakie" style={{width:60,height:60,objectFit:"contain",marginBottom:16,display:"block"}}/>
       <div style={{display:"flex",background:"#F5F5F5",borderRadius:12,padding:3,marginBottom:20,gap:3}}>
         {[['login','Log in'],['signup','Sign up']].map(([m,label])=>(
           <button key={m} onClick={()=>{setMode(m);setError('');setResetSent(false);}}
@@ -1022,7 +1022,7 @@ export default function SnackCheck() {
     return (
       <div style={{background:P.orange,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100}}>
         <div style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer"}} onClick={()=>setView("landing")}>
-          <div style={{width:34,height:34,borderRadius:10,background:"white",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}><img src="/snakie.png" alt="Snakie" style={{width:"84%",height:"84%",objectFit:"contain"}}/></div>
+          <img src="/snakie-face.png" alt="Snakie" style={{width:40,height:40,objectFit:"contain"}}/>
           <div>
             <div style={{fontSize:17,fontWeight:800,color:"white",letterSpacing:-0.5,lineHeight:1}}>SnacksCheck</div>
             {subtitle&&<div style={{fontSize:10,color:"rgba(255,255,255,0.7)",letterSpacing:1.5,textTransform:"uppercase",marginTop:1}}>{subtitle}</div>}
@@ -1236,7 +1236,7 @@ export default function SnackCheck() {
       {authModal}
       <div style={{background:P.orange,padding:"14px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <div style={{width:36,height:36,borderRadius:10,background:"white",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}><img src="/snakie.png" alt="Snakie" style={{width:"84%",height:"84%",objectFit:"contain"}}/></div>
+          <img src="/snakie-face.png" alt="Snakie" style={{width:42,height:42,objectFit:"contain"}}/>
           <div style={{fontSize:18,fontWeight:800,color:"white",letterSpacing:-0.5}}>SnacksCheck</div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -1383,7 +1383,7 @@ export default function SnackCheck() {
       {/* Footer */}
       <div style={{background:P.card,borderTop:`1px solid ${P.border}`,padding:"24px",textAlign:"center"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:8}}>
-          <div style={{width:28,height:28,borderRadius:8,background:"white",border:`1px solid ${P.border}`,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}><img src="/snakie.png" alt="Snakie" style={{width:"84%",height:"84%",objectFit:"contain"}}/></div>
+          <img src="/snakie-face.png" alt="Snakie" style={{width:32,height:32,objectFit:"contain"}}/>
           <span style={{fontSize:15,fontWeight:700,color:P.text}}>SnacksCheck</span>
         </div>
         <p style={{fontSize:13,color:P.muted,marginBottom:8}}>{l.footer}</p>
