@@ -1642,9 +1642,17 @@ export default function SnackCheck() {
             if(!user){setShowAuthModal(true);return;}
             setForm({brand:dBrand,name:dName,flavor:dFlavor,category:dCat,score:0,pros:"",cons:"",image:null,location:"",isExisting:true});
             setView("rate");
-          }} style={{width:"100%",background:P.orange,color:"white",border:"none",borderRadius:12,padding:"13px",fontSize:15,fontWeight:700,cursor:"pointer",marginBottom:20}}>
+          }} style={{width:"100%",background:P.orange,color:"white",border:"none",borderRadius:12,padding:"13px",fontSize:15,fontWeight:700,cursor:"pointer",marginBottom:10}}>
             + {t.addRating}
           </button>
+
+          {/* Wisssh List button — only for snacks this user hasn't rated yet */}
+          {!pRatings.some(r=>r.userId===user?.id)&&(
+            <button onClick={()=>toggleWishlist(selProd)}
+              style={{width:"100%",background:inWishlist(selProd)?P.orangeLight:"white",color:P.orange,border:`1.5px solid ${P.orange}`,borderRadius:12,padding:"12px",fontSize:14,fontWeight:700,cursor:"pointer",marginBottom:20}}>
+              {inWishlist(selProd)?"🐍 On your Wisssh List — tap to remove":"🐍 Add to Wisssh List"}
+            </button>
+          )}
 
           {/* Reviews */}
           {pRatings.length>0&&<>
@@ -1859,8 +1867,8 @@ export default function SnackCheck() {
                       {!(user&&pRats?.some(r=>r.userId===user.id))&&(
                         <button onClick={e=>{e.stopPropagation();toggleWishlist(p.productCode);}}
                           title={inWishlist(p.productCode)?"On your Wisssh List — tap to remove":"Add to Wisssh List"}
-                          style={{position:"absolute",top:8,right:8,width:30,height:30,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:inWishlist(p.productCode)?14:18,lineHeight:1,display:"flex",alignItems:"center",justifyContent:"center",background:inWishlist(p.productCode)?P.orange:"rgba(255,255,255,0.92)",color:P.orange,boxShadow:"0 1px 4px rgba(0,0,0,0.18)"}}>
-                          {inWishlist(p.productCode)?"🐍":"＋"}
+                          style={{position:"absolute",top:8,right:8,border:"none",cursor:"pointer",fontSize:11,fontWeight:700,lineHeight:1,display:"flex",alignItems:"center",gap:4,padding:"6px 9px",borderRadius:14,background:inWishlist(p.productCode)?P.orange:"rgba(255,255,255,0.94)",color:inWishlist(p.productCode)?"white":P.orange,boxShadow:"0 1px 4px rgba(0,0,0,0.18)"}}>
+                          {inWishlist(p.productCode)?<>🐍 ✓</>:<>🐍 Wisssh</>}
                         </button>
                       )}
                     </div>
