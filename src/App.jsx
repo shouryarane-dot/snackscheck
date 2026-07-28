@@ -418,6 +418,7 @@ export default function SnackCheck() {
   const [loading,setLoading]=useState(true);
   const [view,setView]=useState("landing");
   const [tab,setTab]=useState("all");
+  const [wishlist,setWishlist]=useState([]); // product_codes on the user's Wisssh List
   const [ratings,setRatings]=useState([]);
   const [cat,setCat]=useState("all");
   const [search,setSearch]=useState("");
@@ -602,6 +603,27 @@ export default function SnackCheck() {
       setRatings(rs=>rs.map(r=>imgById[r.id]?{...r,image:imgById[r.id]}:r));
     });
   },[selProd]);
+
+  // Load the user's Wisssh List (wish list of snacks to try)
+  useEffect(()=>{
+    if(!user?.id){setWishlist([]);return;}
+    supabase.from('wishlist').select('product_code').eq('user_id',user.id).then(({data})=>{
+      if(data) setWishlist(data.map(d=>d.product_code));
+    });
+  },[user?.id]);
+
+  const inWishlist=code=>wishlist.includes(code);
+  const toggleWishlist=async code=>{
+    if(!user){setShowAuthModal(true);return;}
+    if(inWishlist(code)){
+      setWishlist(w=>w.filter(c=>c!==code));
+      await supabase.from('wishlist').delete().eq('user_id',user.id).eq('product_code',code);
+    }else{
+      setWishlist(w=>[...w,code]);
+      const {error}=await supabase.from('wishlist').insert([{user_id:user.id,product_code:code}]);
+      if(error) setWishlist(w=>w.filter(c=>c!==code)); // table not set up yet — undo
+    }
+  };
 
   // One-time self-migration: quietly move this user's old inline photos to
   // Storage. Shrinks the database and speeds up the site for everyone.
@@ -853,6 +875,11 @@ export default function SnackCheck() {
         return;
       }
       setRatings(prev=>[...prev,r]);
+      // Rated a snack that was on the Wisssh List? It graduates to My ratings.
+      if(wishlist.includes(prodCode)){
+        setWishlist(w=>w.filter(c=>c!==prodCode));
+        supabase.from('wishlist').delete().eq('user_id',user.id).eq('product_code',prodCode);
+      }
       setSubmitted(true);
       setTimeout(()=>{setSubmitted(false);setView("home");setForm({brand:"",name:"",flavor:"",category:"chips",score:0,pros:"",cons:"",image:null,location:""});setProductInfo(null);setAcQuery("");setAcOpen(false);},2000);
     } catch(e){
@@ -1664,15 +1691,18 @@ export default function SnackCheck() {
       {profileModal}
       {shareModal}
       <div style={{display:"flex",background:P.card,borderBottom:`1.5px solid ${P.border}`}}>
-        {[{id:"all",icon:"🌍",label:t.allSnacks},{id:"mine",icon:"👤",label:t.myRatings}].map(tb=>(
-          <button key={tb.id} onClick={()=>{if(tb.id==="mine"&&!user){setShowAuthModal(true);}else{setTab(tb.id);}}}
+        {[{id:"all",icon:"🌍",label:t.allSnacks},{id:"wisssh",icon:"🐍",label:"Wisssh List"},{id:"mine",icon:"👤",label:t.myRatings}].map(tb=>{
+          const badge=tb.id==="mine"?(user?ratings.filter(r=>r.userId===user.id).length:0):tb.id==="wisssh"?wishlist.length:0;
+          return (
+          <button key={tb.id} onClick={()=>{if(tb.id!=="all"&&!user){setShowAuthModal(true);}else{setTab(tb.id);}}}
             style={{flex:1,padding:"12px 0",border:"none",background:"none",cursor:"pointer",fontSize:14,fontWeight:tab===tb.id?700:400,color:tab===tb.id?P.orange:P.muted,borderBottom:tab===tb.id?`2.5px solid ${P.orange}`:"2.5px solid transparent",transition:"all .15s",position:"relative"}}>
             {tb.icon} {tb.label}
-            {tb.id==="mine"&&tab!=="mine"&&user&&ratings.filter(r=>r.userId===user?.id).length>0&&(
-              <span style={{position:"absolute",top:8,right:"calc(50% - 52px)",background:P.orange,color:"white",borderRadius:10,fontSize:10,fontWeight:700,padding:"1px 6px"}}>{ratings.filter(r=>r.userId===user?.id).length}</span>
+            {tab!==tb.id&&badge>0&&(
+              <span style={{position:"absolute",top:8,right:"calc(50% - 58px)",background:P.orange,color:"white",borderRadius:10,fontSize:10,fontWeight:700,padding:"1px 6px"}}>{badge}</span>
             )}
           </button>
-        ))}
+          );
+        })}
       </div>
       <div style={{display:"flex",gap:8,overflowX:"auto",padding:"10px 14px",background:P.card,borderBottom:`1.5px solid ${P.border}`}}>
         {CAT_IDS.map((c,i)=>(
@@ -1792,7 +1822,7 @@ export default function SnackCheck() {
         </div>
       )}
       <div style={{padding:"6px 16px",fontSize:11,color:P.muted,background:P.bg,letterSpacing:.3}}>
-        {tab==="all"?`${t.products(dirProducts.length)}`:t.myRatingsCount(myRatings.length,userName||"...")}
+        {tab==="all"?`${t.products(dirProducts.length)}`:tab==="wisssh"?`${wishlist.length} snack${wishlist.length===1?"":"s"} on your Wisssh List`:t.myRatingsCount(myRatings.length,userName||"...")}
       </div>
       {tab==="all"&&(productsLoading
         ? <div style={{textAlign:"center",padding:60,color:P.muted}}>
@@ -1826,6 +1856,13 @@ export default function SnackCheck() {
                           style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}
                           onError={e=>e.currentTarget.style.display="none"}
                         />}
+                      {!(user&&pRats?.some(r=>r.userId===user.id))&&(
+                        <button onClick={e=>{e.stopPropagation();toggleWishlist(p.productCode);}}
+                          title={inWishlist(p.productCode)?"On your Wisssh List — tap to remove":"Add to Wisssh List"}
+                          style={{position:"absolute",top:8,right:8,width:30,height:30,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:inWishlist(p.productCode)?14:18,lineHeight:1,display:"flex",alignItems:"center",justifyContent:"center",background:inWishlist(p.productCode)?P.orange:"rgba(255,255,255,0.92)",color:P.orange,boxShadow:"0 1px 4px rgba(0,0,0,0.18)"}}>
+                          {inWishlist(p.productCode)?"🐍":"＋"}
+                        </button>
+                      )}
                     </div>
                     <div style={{padding:12}}>
                       <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:1,color:P.text}}>{p.brand}</div>
@@ -1854,6 +1891,49 @@ export default function SnackCheck() {
             )}
           </>
       )}
+      {tab==="wisssh"&&(wishlist.length===0
+        ? <div style={{textAlign:"center",padding:60,color:P.muted}}>
+            <img src="/snakie-face.png" alt="Snakie" style={{width:72,height:72,objectFit:"contain",marginBottom:12}}/>
+            <div style={{fontWeight:600,color:P.text}}>Your Wisssh List is empty</div>
+            <div style={{fontSize:13,marginTop:6,maxWidth:280,margin:"6px auto 16px"}}>Spot a snack you're curious about? Tap the ＋ on any card and Snakie will keep it warm here.</div>
+            <button onClick={()=>setTab("all")} style={{background:P.orange,color:"white",border:"none",borderRadius:12,padding:"10px 24px",fontSize:14,fontWeight:700,cursor:"pointer"}}>Explore snacks</button>
+          </div>
+        : <div style={{display:"grid",gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(auto-fill,minmax(200px,1fr))",gap:12,padding:14}}>
+            {wishlist.map(code=>{
+              const p=products.find(pr=>pr.productCode===code);
+              if(!p) return null;
+              const pRats=grouped[p.productCode];
+              const catIdx=CAT_IDS.indexOf(p.category);
+              const displayName=p.name.toLowerCase().startsWith(p.brand.toLowerCase())?p.name.slice(p.brand.length).trim():p.name;
+              const cardImage=(pRats?.find(r=>r.image)?.image)||p.imageUrl||null;
+              return (
+                <div key={code} style={{background:P.card,borderRadius:16,overflow:"hidden",border:`1.5px solid ${P.border}`,display:"flex",flexDirection:"column",transition:"all .15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.borderColor=P.orange;}}
+                  onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.borderColor=P.border;}}>
+                  <div onClick={()=>{setSelProd(p.productCode);setView("detail");}} style={{cursor:"pointer",flex:1}}>
+                    <div style={{position:"relative",width:"100%",height:120,background:P.orangeLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:40}}>
+                      {CAT_ICONS[catIdx]||"🍿"}
+                      {cardImage&&<img src={cardImage.replace(/^http:\/\//,'https://')} alt={p.name} loading="lazy" referrerPolicy="no-referrer"
+                        style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}} onError={e=>e.currentTarget.style.display="none"}/>}
+                      <button onClick={e=>{e.stopPropagation();toggleWishlist(code);}} title="Remove from Wisssh List"
+                        style={{position:"absolute",top:8,right:8,width:28,height:28,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.45)",color:"white"}}>✕</button>
+                    </div>
+                    <div style={{padding:12}}>
+                      <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:1,color:P.text}}>{p.brand}</div>
+                      <div style={{fontSize:13,fontWeight:700,lineHeight:1.2,marginBottom:1,color:P.text}}>{displayName}</div>
+                      <div style={{fontSize:12,color:P.muted}}>{p.flavor}</div>
+                      {pRats&&<div style={{marginTop:6,display:"flex",alignItems:"center",gap:6}}><ScorePill score={parseFloat(avg(pRats).toFixed(1))}/><span style={{fontSize:11,color:P.muted}}>{pRats.length}×</span></div>}
+                    </div>
+                  </div>
+                  <button onClick={()=>{setForm({brand:p.brand,name:p.name,flavor:p.flavor||"",category:p.category||"chips",score:0,pros:"",cons:"",image:null,location:"",isExisting:true});setView("rate");}}
+                    style={{width:"100%",background:P.orangeLight,border:"none",borderTop:`1px solid rgba(245,166,35,0.25)`,color:P.orange,fontSize:12,fontWeight:700,cursor:"pointer",padding:"8px 0"}}>
+                    ★ Rate it
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+      )}
       {tab==="mine"&&(myRatings.length===0
         ? <div style={{textAlign:"center",padding:60,color:P.muted}}>
             <div style={{fontSize:48,marginBottom:12}}>🍿</div>
@@ -1879,35 +1959,42 @@ export default function SnackCheck() {
                 </div>
               ))}
             </div>
+            <div style={{display:"grid",gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(auto-fill,minmax(200px,1fr))",gap:12}}>
             {myRatings.map(r=>{
               const catIdx=CAT_IDS.indexOf(r.category);
+              const prod=products.find(p=>p.productCode===r.productCode);
+              const cardImage=r.image||prod?.imageUrl||null;
+              const displayName=r.name.toLowerCase().startsWith(r.brand.toLowerCase())?r.name.slice(r.brand.length).trim():r.name;
               return (
                 <div key={r.id}
-                  style={{background:P.card,borderRadius:14,marginBottom:10,border:`1.5px solid ${P.border}`,overflow:"hidden",transition:"all .15s"}}
-                  onMouseEnter={e=>{e.currentTarget.style.borderColor=P.orange;e.currentTarget.style.transform="translateX(3px)";}}
+                  style={{background:P.card,borderRadius:16,overflow:"hidden",border:`1.5px solid ${P.border}`,display:"flex",flexDirection:"column",transition:"all .15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.borderColor=P.orange;e.currentTarget.style.transform="translateY(-3px)";}}
                   onMouseLeave={e=>{e.currentTarget.style.borderColor=P.border;e.currentTarget.style.transform="";}}>
-                  <div onClick={()=>{setSelProd(r.productCode);setView("detail");}} style={{display:"flex",gap:12,alignItems:"center",padding:"13px 15px",cursor:"pointer"}}>
-                    <div style={{width:44,height:44,borderRadius:12,background:P.orangeLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>{CAT_ICONS[catIdx]}</div>
-                    <div style={{flex:1,minWidth:0}}>
+                  <div onClick={()=>{setSelProd(r.productCode);setView("detail");}} style={{cursor:"pointer",flex:1}}>
+                    <div style={{position:"relative",width:"100%",height:120,background:P.orangeLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:40}}>
+                      {CAT_ICONS[catIdx]||"🍿"}
+                      {cardImage&&<img src={cardImage.replace(/^http:\/\//,'https://')} alt={r.name} loading="lazy" referrerPolicy="no-referrer"
+                        style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}} onError={e=>e.currentTarget.style.display="none"}/>}
+                      <div style={{position:"absolute",top:8,right:8}}><ScorePill score={r.score}/></div>
+                    </div>
+                    <div style={{padding:12}}>
                       <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:.8,color:P.orange}}>{r.brand}</div>
-                      <div style={{fontSize:14,fontWeight:700,color:P.text,lineHeight:1.2}}>{r.name}{r.flavor?` — ${r.flavor}`:""}</div>
-                      <div style={{display:"flex",gap:4,flexWrap:"wrap",marginTop:4}}>
+                      <div style={{fontSize:13,fontWeight:700,color:P.text,lineHeight:1.2}}>{displayName}{r.flavor?` — ${r.flavor}`:""}</div>
+                      <div style={{display:"flex",gap:4,flexWrap:"wrap",marginTop:5}}>
                         {r.pros?.slice(0,2).map((p,i)=><span key={i} style={{background:P.greenLight,color:P.green,borderRadius:6,padding:"1px 7px",fontSize:11,fontWeight:600}}>✓ {p}</span>)}
                         {r.cons?.slice(0,1).map((c2,i)=><span key={i} style={{background:P.redLight,color:P.red,borderRadius:8,padding:"1px 7px",fontSize:11,fontWeight:600}}>✗ {c2}</span>)}
                       </div>
-                    </div>
-                    <div style={{textAlign:"right",flexShrink:0,display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
-                      <ScorePill score={r.score}/>
-                      <div style={{fontSize:10,color:P.muted}}>{timeAgo(r.timestamp)}</div>
+                      <div style={{fontSize:10,color:P.muted,marginTop:6}}>{timeAgo(r.timestamp)}</div>
                     </div>
                   </div>
                   <button onClick={e=>{e.stopPropagation();setShareRating(r);setShareStep('prep');}}
-                    style={{width:"100%",background:P.orangeLight,border:"none",borderTop:`1px solid rgba(245,166,35,0.25)`,color:P.orange,fontSize:12,fontWeight:600,cursor:"pointer",padding:"7px 0",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
+                    style={{width:"100%",background:P.orangeLight,border:"none",borderTop:`1px solid rgba(245,166,35,0.25)`,color:P.orange,fontSize:12,fontWeight:600,cursor:"pointer",padding:"8px 0",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
                     ↗ share your verdict
                   </button>
                 </div>
               );
             })}
+            </div>
           </div>
       )}
       <div style={{position:"fixed",bottom:24,right:24,zIndex:50}}>
