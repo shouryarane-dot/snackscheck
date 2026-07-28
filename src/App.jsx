@@ -1001,27 +1001,34 @@ export default function SnackCheck() {
       </div>
     );
     return (
-      <div style={{position:"fixed",inset:0,background:"#1a1a1a",zIndex:300,display:"flex",flexDirection:"column"}}>
-        {hasImg
-          ?<div style={{flex:"0 0 42%",position:"relative"}}><img src={r.image} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/><div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,transparent 50%,#1a1a1a 100%)"}}/></div>
-          :<div style={{flex:"0 0 34%",background:`linear-gradient(135deg,${P.orange} 0%,${P.orangeDark} 100%)`,display:"flex",alignItems:"center",justifyContent:"center",position:"relative"}}><span style={{fontSize:80}}>{CAT_ICONS[catIdx]||"🍿"}</span><div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,transparent 45%,#1a1a1a 100%)"}}/></div>
-        }
-        <div style={{flex:1,padding:"22px 28px 48px",display:"flex",flexDirection:"column",justifyContent:"space-between"}}>
-          <div>
-            <div style={{fontSize:10,color:"rgba(255,255,255,0.32)",letterSpacing:"0.18em",textTransform:"uppercase",marginBottom:8}}>MY SNACK VERDICT</div>
-            <div style={{fontSize:13,fontWeight:700,color:P.orange,textTransform:"uppercase",letterSpacing:1,marginBottom:3}}>{r.brand}</div>
-            <div style={{fontSize:26,fontWeight:800,color:"white",lineHeight:1.15,marginBottom:10}}>{dn}{r.flavor?` — ${r.flavor}`:""}</div>
-            <div style={{fontSize:32,color:P.orange,letterSpacing:4,marginBottom:18}}>{"★".repeat(r.score)}{"☆".repeat(5-r.score)}</div>
-            {(r.pros?.length>0||r.cons?.length>0)&&(
-              <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-                {r.pros?.slice(0,3).map((p,i)=><span key={i} style={{background:"rgba(245,166,35,0.18)",color:P.orange,borderRadius:20,padding:"6px 14px",fontSize:13,fontWeight:600}}>✓ {p}</span>)}
-                {r.cons?.slice(0,2).map((c,i)=><span key={i} style={{background:"rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.6)",borderRadius:20,padding:"6px 14px",fontSize:13}}>✗ {c}</span>)}
-              </div>
-            )}
+      <div style={{position:"fixed",inset:0,background:"#0d0d0d",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center"}}
+        onClick={e=>{if(e.target===e.currentTarget)setShareRating(null);}}>
+        {/* Phone-shaped card: full screen on mobile, centered card on desktop */}
+        <div style={{position:"relative",display:"flex",flexDirection:"column",background:"#1a1a1a",
+          width:isMobile?"100%":380,height:isMobile?"100%":"min(88vh, 680px)",
+          borderRadius:isMobile?0:28,overflow:"hidden",boxShadow:isMobile?"none":"0 24px 70px rgba(0,0,0,0.65)"}}>
+          {hasImg
+            ?<div style={{flex:"0 0 42%",position:"relative"}}><img src={r.image} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/><div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,transparent 50%,#1a1a1a 100%)"}}/></div>
+            :<div style={{flex:"0 0 34%",background:`linear-gradient(135deg,${P.orange} 0%,${P.orangeDark} 100%)`,display:"flex",alignItems:"center",justifyContent:"center",position:"relative"}}><span style={{fontSize:80}}>{CAT_ICONS[catIdx]||"🍿"}</span><div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,transparent 45%,#1a1a1a 100%)"}}/></div>
+          }
+          <div style={{flex:1,padding:"22px 28px 32px",display:"flex",flexDirection:"column",justifyContent:"space-between"}}>
+            <div>
+              <div style={{fontSize:10,color:"rgba(255,255,255,0.32)",letterSpacing:"0.18em",textTransform:"uppercase",marginBottom:8}}>MY SNACK VERDICT</div>
+              <div style={{fontSize:13,fontWeight:700,color:P.orange,textTransform:"uppercase",letterSpacing:1,marginBottom:3}}>{r.brand}</div>
+              <div style={{fontSize:26,fontWeight:800,color:"white",lineHeight:1.15,marginBottom:10}}>{dn}{r.flavor?` — ${r.flavor}`:""}</div>
+              <div style={{fontSize:32,color:P.orange,letterSpacing:4,marginBottom:18}}>{"★".repeat(r.score)}{"☆".repeat(5-r.score)}</div>
+              {(r.pros?.length>0||r.cons?.length>0)&&(
+                <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+                  {r.pros?.slice(0,3).map((p,i)=><span key={i} style={{background:"rgba(245,166,35,0.18)",color:P.orange,borderRadius:20,padding:"6px 14px",fontSize:13,fontWeight:600}}>✓ {p}</span>)}
+                  {r.cons?.slice(0,2).map((c,i)=><span key={i} style={{background:"rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.6)",borderRadius:20,padding:"6px 14px",fontSize:13}}>✗ {c}</span>)}
+                </div>
+              )}
+            </div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,0.22)",letterSpacing:"0.1em",textTransform:"uppercase"}}>snackscheck.com · Rate snacks. Find the good stuff.</div>
           </div>
-          <div style={{fontSize:11,color:"rgba(255,255,255,0.22)",letterSpacing:"0.1em",textTransform:"uppercase"}}>snackscheck.com · Rate snacks. Find the good stuff.</div>
+          <button onClick={()=>setShareRating(null)} style={{position:"absolute",top:16,right:16,background:"rgba(255,255,255,0.1)",border:"none",color:"rgba(255,255,255,0.3)",borderRadius:8,width:34,height:34,fontSize:15,cursor:"pointer"}}>✕</button>
         </div>
-        <button onClick={()=>setShareRating(null)} style={{position:"absolute",top:16,right:16,background:"rgba(255,255,255,0.1)",border:"none",color:"rgba(255,255,255,0.3)",borderRadius:8,width:34,height:34,fontSize:15,cursor:"pointer"}}>✕</button>
+        {!isMobile&&<div style={{position:"absolute",bottom:26,left:0,right:0,textAlign:"center",fontSize:13,color:"rgba(255,255,255,0.4)"}}>Screenshot the card (Win + Shift + S) and share it anywhere</div>}
       </div>
     );
   })();
