@@ -1706,7 +1706,7 @@ export default function SnackCheck() {
       {profileModal}
       {shareModal}
       <div style={{display:"flex",background:P.card,borderBottom:`1.5px solid ${P.border}`}}>
-        {[{id:"all",icon:"🌍",label:t.allSnacks},{id:"wisssh",icon:"🐍",label:"Wisssh List"},{id:"mine",icon:"👤",label:t.myRatings}].map(tb=>{
+        {[{id:"all",icon:"🌍",label:"All Snacksss"},{id:"wisssh",icon:"🐍",label:"Wisssh List"},{id:"mine",icon:"👤",label:"My Ratingsss"}].map(tb=>{
           const badge=tb.id==="mine"?(user?ratings.filter(r=>r.userId===user.id).length:0):tb.id==="wisssh"?wishlist.length:0;
           return (
           <button key={tb.id} onClick={()=>{if(tb.id!=="all"&&!user){setShowAuthModal(true);}else{setTab(tb.id);}}}
